@@ -317,9 +317,7 @@ def Coord_yes(self):
                 w = plgn.Wire()
                 self.canva._3dDisplay.DisplayColoredShape(w, 'YELLOW', False)        #,'WHITE'
                 self.SetStatusText("Готово", 2)
-                self.canva.MakePLine = False
-                self.canva.lstPnt = []
-                self.canva.GumLine = False                    
+                CancelOp(self)                 
                 return
 
     coord1 = coordStr.split(',')
@@ -346,9 +344,7 @@ def Coord_yes(self):
             gp_Pnt(pnt2[0], pnt2[1], pnt2[2]))
         self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'BLACK', False)        #
         self.SetStatusText("Готово", 2)
-        self.canva.MakeLine = False
-        self.canva.lstPnt = []
-        self.canva.GumLine = False
+        CancelOp(self)
     # Временная линия    
     if (self.canva.MakePLine and (len(self.canva.lstPnt) > 1)):
         #if not (self.canva._3dDisplay.Context.HasOpenedContext()):
@@ -371,6 +367,9 @@ def CancelOp(self):
     if self.canva.tmpEdge: 
         self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
         self.canva.tmpEdge = None
+    if self.canva.gumline_edge:
+	self.canva._3dDisplay.Context.Erase(self.canva.gumline_edge)
+	self.canva.gumline_edge=None
     self.canva.MakePLine = False
     self.canva.MakeLine = False
     self.canva.GumLine = False

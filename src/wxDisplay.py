@@ -121,6 +121,8 @@ class GraphicsCanva3D(wx.Panel):
         self.EdStep         = None
         self.EdCmd          = None
 
+	self.gumline_edge = None
+
         if sys.platform=='win32':
             self.Init3dViewer()
 
@@ -501,9 +503,9 @@ class GraphicsCanva3D(wx.Panel):
                 
                 dc=wx.ClientDC(self)
                 dc.BeginDrawing()
-                dc.SetPen(wx.Pen(wx.WHITE, 1, wx.DOT))##     BLACK_DASHED_PEN
+                dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))##     BLACK_DASHED_PEN
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
-                dc.SetLogicalFunction(wx.XOR)
+                dc.SetLogicalFunction(wx.COPY)
                 if self._drawline:
                     #dc.DrawLine(self._drawline)
                     dc.DrawLine(self._drawline[0],self._drawline[1],self._drawline[2],self._drawline[3])
@@ -511,6 +513,17 @@ class GraphicsCanva3D(wx.Panel):
                 self._drawline = [pntDspl[0],pntDspl[1], pt.x,pt.y]
                 dc.EndDrawing()
                 
+		xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
+        	resPnt = [xt,yt,zt]
+		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.worldPt[0], self.worldPt[1], self.worldPt[2]),gp_Pnt(resPnt[0], resPnt[1], resPnt[2])).Edge()
+		if self.gumline_edge:
+		    self._3dDisplay.Context.Erase(self.gumline_edge)
+		shape=OCC.AIS.AIS_Shape(edge)
+		shape.UnsetSelectionMode()
+		self.gumline_edge = shape.GetHandle()
+           	self._3dDisplay.Context.SetColor(self.gumline_edge,OCC.Quantity.Quantity_NOC_BLACK,0)
+                self._3dDisplay.Context.Display(self.gumline_edge, False)
+
                 #view_mgr = display.View.View().GetObject().ViewManager()
                 #layer = Visual3d_Layer(view_mgr, Aspect_TOL_UNDERLAY, False)
                 #if (self.m_hLayer == None):
