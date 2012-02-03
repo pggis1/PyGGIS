@@ -251,5 +251,85 @@ def getNear(pnt, cloud):
             if distance2d(pnt,p) < distance2d(pnt,near):
                 near = p
     return near            
+
+
+#Points coords configuration dialog
+class CoordsDlg(wx.Dialog):
+    def __init__(self,parent,ID,title,coords=[],
+                 size=wx.DefaultSize, pos=wx.DefaultPosition,
+                 style=wx.DEFAULT_DIALOG_STYLE):
+        pre = wx.PreDialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, (570,300), style)
+        self.this = pre.this        
+
+	self.panel2 = wx.BoxSizer(wx.HORIZONTAL)
+	
+	AddLineBtn=wx.Button(self, -1, "Добавить точку")
+	self.Bind(wx.EVT_BUTTON, self.OnAddLine, AddLineBtn)
+        self.panel2.Add(AddLineBtn)
+
+	DelLineBtn=wx.Button(self, -1, "Удалить точку")
+	self.Bind(wx.EVT_BUTTON, self.OnDelLines, DelLineBtn)
+        self.panel2.Add(DelLineBtn)
+
+	self.panel3 = wx.BoxSizer(wx.HORIZONTAL)
+	CloseBtn=wx.Button(self, -1, "Закрыть без сохранения")
+	self.Bind(wx.EVT_BUTTON, self.OnClose, CloseBtn)
+        self.panel3.Add(CloseBtn)
+	SaveBtn=wx.Button(self, -1, "Сохранить")
+	self.Bind(wx.EVT_BUTTON, self.OnSave, SaveBtn)
+        self.panel3.Add(SaveBtn)
+
+	self.panel1 = wx.BoxSizer(wx.VERTICAL)
+	self.grid=wx.grid.Grid(self, -1,size=(570,260),name = "Coords")
+	self.grid.CreateGrid(1,3,1)
+	self.grid.SetColLabelValue(0,"x")
+	self.grid.SetColLabelValue(1,"y")
+	self.grid.SetColLabelValue(2,"z")
+	#self.Bind(wx.grid.EVT_GRID_CELL_CHANGE,self.OnCellChange,self.grid)
+	self.panel1.Add(self.grid,0, wx.EXPAND)
+	self.panel1.Add(self.panel2, 0, wx.EXPAND)
+
+	self.superMainPanel = wx.BoxSizer(wx.VERTICAL)
+	self.superMainPanel.Add(self.panel1)
+	self.superMainPanel.Add(self.panel3)
+	self.SetSizer(self.superMainPanel)
+        self.SetAutoLayout(1)
+        self.superMainPanel.Fit(self)
+	
+	self.grid.ClearGrid()
+	self.grid.DeleteRows(0,self.grid.GetNumberRows(),True)
+	for i in range(len(coords)):
+	    self.grid.AppendRows(1,True)
+	    for j in range(3):
+		if coords[i][j]=='':
+		    self.grid.SetCellValue(i,j,'0')
+		else:
+		    self.grid.SetCellValue(i,j,str(coords[i][j]))
+
+	self.save=False		
+	
+    def OnAddLine(self,event):
+	self.grid.AppendRows(1,True)
+
+    def OnDelLines(self,event):
+	self.grid.DeleteRows(self.grid.GetNumberRows()-1,1,True)
+
+    def OnClose(self,event):
+	self.Close()
+
+    def OnSave(self,event):
+	self.save=True
+	self.Close()
+
+    def ret(self):
+	result=[]
+	for i in range(self.grid.GetNumberRows()):
+	    result.append([0,0,0])
+	    for j in range(3):
+		if not self.grid.GetCellValue(i,j)=='':
+		    result[i][j]=float(self.grid.GetCellValue(i,j))
+	return result                 
                 
                  
