@@ -257,6 +257,47 @@ class GraphicsCanva3D(wx.Panel):
                 #print resPnt,[neaP1[0],neaP1[1],neaP1[2]],[neaP2[0],neaP2[1],neaP2[2]]           
             pass
         elif snap == 3:    # center
+
+	    self._3dDisplay.Select(self.startPt.x, self.startPt.y)
+            sel_shape = self._3dDisplay.selected_shape
+            if sel_shape:
+                pnts = getPoints(sel_shape)
+                midleH = 0
+                for pnt in pnts:
+                    midleH += pnt[2]
+                midleH = midleH/len(pnts)
+                cur = gp_Pnt(resPnt[0],resPnt[1],midleH)
+                      
+                te = ShapeToTopology()
+                bt = BRep.BRep_Tool()
+                #print bt
+                isP1 = False
+                isNea = False
+                for pnt in pnts:
+                    if not isP1:
+                        p1 = pnt
+                        isP1 = True
+                    else:
+                        p2 = pnt
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(p1[0], p1[1], p1[2]),
+                                                       gp_Pnt(p2[0], p2[1], p2[2])).Edge()
+                        curve = bt.Curve(edge)[0]
+                        proj_P_C = GeomAPI_ProjectPointOnCurve(cur, curve)
+                        proj = proj_P_C.NearestPoint()
+                        if not isNea:
+                            isNea = True
+                            nea = proj
+                            neaP1 = p1; neaP2 = p2
+                        else:
+                            if (nea.Distance(cur) > proj.Distance(cur)):
+                                nea = proj
+                                neaP1 = p1; neaP2 = p2
+                        p1 = p2
+                #resPnt = [nea.X(),nea.Y(),nea.Z()]
+		cx=min(neaP1[0],neaP2[0])+math.fabs(max(neaP1[0],neaP2[0])-min(neaP1[0],neaP2[0]))/2
+		cy=min(neaP1[1],neaP2[1])+math.fabs(max(neaP1[1],neaP2[1])-min(neaP1[1],neaP2[1]))/2
+		cz=min(neaP1[2],neaP2[2])+math.fabs(max(neaP1[2],neaP2[2])-min(neaP1[2],neaP2[2]))/2
+		resPnt = [cx,cy,cz]
             pass
         elif snap == 4:    # tangent
             pass
