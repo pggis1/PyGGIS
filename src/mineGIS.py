@@ -437,6 +437,10 @@ class AppFrame(wx.Frame):
         edit_menu.Append(e_explore, MNU_EXPLORE[0], MNU_EXPLORE[1])
         self.Bind(wx.EVT_MENU, self.OnCExplore, id=e_explore)
 
+	e_edit = wx.NewId()
+        edit_menu.Append(e_edit, 'Редактировать елемент', 'Вызвать окно редактора координат')
+        self.Bind(wx.EVT_MENU, self.OnCEdit, id=e_edit)
+
         e_EdBrInsV = wx.NewId()
         edit_menu.Append(e_EdBrInsV, MNU_EdBrInsV[0], MNU_EdBrInsV[1])
         self.Bind(wx.EVT_MENU, self.OnEdBrInsV, id=e_EdBrInsV)
@@ -1163,6 +1167,9 @@ class AppFrame(wx.Frame):
         """ Заказ на просмотр элемента """
         CExplore(self)
         
+    def OnCEdit(self,event):
+	""" Изменение координат объекта"""
+	CEdit(self)
         
     def onCoord_yes(self, event):
         """ Ввод координат из окна Point от кнопки или мыши """
