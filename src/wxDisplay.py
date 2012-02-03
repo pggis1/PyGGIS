@@ -130,7 +130,7 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        #self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgLGray.bmp"))
+        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
         self._3dDisplay.DisplayTriedron()
         ##self._3dDisplay.SetModeShaded()
         self._3dDisplay.SetModeWireFrame()
