@@ -38,6 +38,7 @@
 #import OCC
 from OCC import TopAbs, TopoDS, BRep, TopExp
 from OCC.AIS import AIS_Shape
+from OCC.TopoDS import TopoDS_Shape
 from OCC.BRep import *
 from OCC.BRepBuilderAPI import *
 from OCC.BRepOffsetAPI import *
@@ -60,6 +61,7 @@ from utils import *
 from OCC.Visual3d import Visual3d_Layer
 from OCC.Aspect import *
 from OCC import BRep
+from OCC import Prs3d
 
 import math
 import sys
@@ -699,6 +701,62 @@ class GraphicsCanva3D(wx.Panel):
     def SaveAsImage(self, filename):
         """Save the current canvas view to an image file."""
         self._3dDisplay.ExportToImage(filename)
+
+
+    def DisplayCustomShape(self, shapes, color='YELLOW', update=True, line_type = 0, line_thickness = 1,toggle=True, ):
+        ais_shapes = []
+
+        if isinstance(color, str):
+            dict_color = {'WHITE':OCC.Quantity.Quantity_NOC_WHITE,
+                          'BLUE':OCC.Quantity.Quantity_NOC_BLUE1,
+                          'RED':OCC.Quantity.Quantity_NOC_RED,
+                          'GREEN':OCC.Quantity.Quantity_NOC_GREEN,
+                          'YELLOW':OCC.Quantity.Quantity_NOC_YELLOW,
+                          # new
+                          'CYAN':OCC.Quantity.Quantity_NOC_CYAN1,
+                          'WHITE':OCC.Quantity.Quantity_NOC_WHITE,
+                          'BLACK':OCC.Quantity.Quantity_NOC_BLACK,
+                          'ORANGE':OCC.Quantity.Quantity_NOC_ORANGE, }
+            color = dict_color[color]
+        elif isinstance(color, Quantity_Color):
+            pass
+        else:
+            raise ValueError('color should either be a string ( "BLUE" ) or a Quantity_Color(0.1, 0.8, 0.1) got %s' % color)
+
+        if issubclass(shapes.__class__, TopoDS_Shape):
+            shapes = [shapes]
+            SOLO = True
+        else:
+            SOLO = False
+            
+	if line_type==0:
+	    line_type=OCC.Aspect.Aspect_TOL_SOLID
+	else:
+	    line_type=OCC.Aspect.Aspect_TOL_DASH
+	
+        for shape in shapes:
+	    shape_to_display=OCC.AIS.AIS_Shape(shape)
+            if toggle==False:
+		shape_to_display.UnsetSelectionMode()
+            shape_to_display.SetContext(self._3dDisplay.Context.GetHandle())
+            LineType=Prs3d.Prs3d_LineAspect(color, line_type, line_thickness);
+
+            Drawer=shape_to_display.Attributes().GetObject()
+            Drawer.SetWireAspect(LineType.GetHandle())
+            Drawer.SetLineAspect(LineType.GetHandle())
+    	    shape_to_display.SetAttributes(Drawer.GetHandle())
+ 
+	    shape_to_display=shape_to_display.GetHandle()
+	    ais_shapes.append(shape_to_display)
+            if update:
+                self._3dDisplay.Context.Display(shape_to_display, True)
+                self._3dDisplay.FitAll()
+            else:
+                self._3dDisplay.Context.Display(shape_to_display, False)  
+        if SOLO:
+            return ais_shapes[0]
+        else:
+            return ais_shapes
 
 if __name__=="__main__":
     from OCC.BRepPrimAPI import *
