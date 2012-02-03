@@ -1241,7 +1241,7 @@ class AppFrame(wx.Frame):
             self.canva.EdStep = 1
             self.SetStatusText("Куда?", 0)
         else:
-            self.SetStatusText("*** Нет Near***", 0)
+            self.SetStatusText("*** Нет Near ***", 0)
             #self.SetStatusText("Включите Near", 3)
         pass
                 
@@ -1256,9 +1256,14 @@ class AppFrame(wx.Frame):
     def OnEdBrBrkV(self, event):
         """ Разбить линию в точке  """
         self.canva.SetTogglesToFalse(event)
-        self.canva.EdCmd   = CMD_EdBrBrkV
-        self.canva.EdStep = 1
-        self.SetStatusText("", 0)
+        # сохранить старые привязки
+        self.canva.snap.SetSelection(2)
+        if (self.canva.snap.GetCurrentSelection() == 2):
+            self.canva.EdCmd = CMD_EdBrBrkV
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет Near ***", 0)
         pass
                 
     def OnEdBrDelB(self, event):

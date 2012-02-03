@@ -257,7 +257,6 @@ class GraphicsCanva3D(wx.Panel):
                 #print resPnt,[neaP1[0],neaP1[1],neaP1[2]],[neaP2[0],neaP2[1],neaP2[2]]           
             pass
         elif snap == 3:    # center
-
 	    self._3dDisplay.Select(self.startPt.x, self.startPt.y)
             sel_shape = self._3dDisplay.selected_shape
             if sel_shape:
@@ -316,6 +315,7 @@ class GraphicsCanva3D(wx.Panel):
             #self.frame.canva.lstPnt = self.frame.canva.lstPnt + [resPnt]
             self.worldPt = resPnt
             return 
+
         self.dragStartPos = self.startPt        #evt.GetPosition()
         self._3dDisplay.MoveTo(self.dragStartPos.x,self.dragStartPos.y)     # cyx 
         self._3dDisplay.StartRotation(self.dragStartPos.x,self.dragStartPos.y)
@@ -372,8 +372,84 @@ class GraphicsCanva3D(wx.Panel):
         if (self.EdCmd == CMD_EdBrMoveV) and (self.EdStep == 1):
             # move vertex
             pass
+
+	### разорвать линию
         if (self.EdCmd == CMD_EdBrBrkV) and (self.EdStep == 1):
-            # Break line
+            # Получить цвет, тип линии, толщину и др. параметры линии
+            selObj = self._3dDisplay.Context.SelectedInteractive()
+            selColor = None
+            if selObj.GetObject().HasColor():
+                selColor = self._3dDisplay.Context.Color(selObj)
+            #print("selColor=", selColor)
+            newPntsFirst = []
+	    newPntsSecond = []
+
+	    #найти местоположение разрыва
+	    index=0
+	    for i in range(len(pnts)):
+		if pnts[i]==neaP1:
+		    index=i
+		    break
+	    #задать точки для половины до разрыва
+	    for i in range(index+1):
+		newPntsFirst.append(pnts[i])
+	    newPntsFirst.append(resPnt) 
+	    #задать точки для половины после разрыва
+	    newPntsSecond.append(resPnt)
+	    for i in range(index+1,len(pnts)):
+		newPntsSecond.append(pnts[i])
+
+	    #print newPntsFirst
+	    #print newPntsSecond
+            sel_shape=self._3dDisplay.selected_shape
+            indexInfo = None; 
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        indexInfo = i
+                        break
+            # get params sel object
+            self._3dDisplay.Context.Erase(selObj)           # Удалить старый
+
+            plgn1 = BRepBuilderAPI_MakePolygon()             # Построить первую половину
+            for pnt1 in newPntsFirst:
+                plgn1.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            #if closeP:
+            #    plgn.Close()
+            w1 = plgn1.Wire()
+            newShape1 = self._3dDisplay.DisplayColoredShape(w1,'YELLOW', False)
+
+            plgn2 = BRepBuilderAPI_MakePolygon()             # Построить вторую половину
+            for pnt1 in newPntsSecond:
+                plgn2.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            #if closeP:
+            #    plgn.Close()
+            w2 = plgn2.Wire()
+            newShape2 = self._3dDisplay.DisplayColoredShape(w2,'YELLOW', False)
+
+            # Установить цвет, тип,толщину и др.
+            if selColor:
+                self._3dDisplay.Context.SetColor(newShape1,selColor,0)
+                self._3dDisplay.Context.SetColor(newShape2,selColor,0)
+            if indexInfo <> None:
+                self.drawList[indexInfo][2] = newShape1.GetObject()
+                self.drawList[indexInfo][-1] = True
+                #print oldInfo
+                #self.drawList[indexInfo] = oldInfo          # Обновить список
+		#создать новый объект
+		newInfo = []
+		for i in range(len(self.drawList[indexInfo])):
+		    newInfo.append(self.drawList[indexInfo][i])
+		newInfo[1] = -1
+		newInfo[2] = newShape2.GetObject()
+		newInfo[-1]=True
+		self.drawList=self.drawList+[newInfo]
+
+            self.frame.SetStatusText("Готово!", 2)
+            self.EdCmd = 0; self.EdStep = 0
+            # Восстановить старые привязки
+            self.frame.canva.snap.SetSelection(0)
             pass
         
         ### Удалить линию с экрана и из списка объектов, если есть
