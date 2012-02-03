@@ -1204,22 +1204,6 @@ class AppFrame(wx.Frame):
         
     def OnRefresh(self, event):
         """ Обновить окно  """
-	edge = BRepBuilderAPI_MakeEdge(gp_Pnt(1,2,3),gp_Pnt(7,8,3)).Edge()
-	shape=OCC.AIS.AIS_Shape(edge)
-	#shape.UnsetSelectionMode()
-	shape.SetContext(self.canva._3dDisplay.Context.GetHandle())
-	LineType=Prs3d.Prs3d_LineAspect(OCC.Quantity.Quantity_NOC_RED, OCC.Aspect.Aspect_TOL_DASH, 10);
-	#shape.SetAspect(LineType)
-
-	Drawer=shape.Attributes().GetObject()
-	Drawer.SetWireAspect(LineType.GetHandle())
-	Drawer.SetLineAspect(LineType.GetHandle())
-	shape.SetAttributes(Drawer.GetHandle())
-
-	temp_edge = shape.GetHandle()
-        #self.canva._3dDisplay.Context.SetColor(temp_edge,OCC.Quantity.Quantity_NOC_BLUE,0)
-	#self.canva._3dDisplay.Context.SetWidth(temp_edge,8)
-        self.canva._3dDisplay.Context.Display(temp_edge, False)
         Refresh(self)
 
 #=== Edit menu =========================================================           
