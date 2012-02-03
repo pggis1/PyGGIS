@@ -237,6 +237,48 @@ def CExplore(self):
     else:
         self.SetStatusText("Выберите объект и повторите команду", 0)
 
+def CEdit(self):
+    """ Изменение координат объекта"""
+    sel_shape = self.canva._3dDisplay.selected_shape
+    if not sel_shape:
+	self.SetStatusText("Выберите объект и повторите команду", 0)
+	return
+    pnts=getPoints(sel_shape)
+    dlg = CoordsDlg(self, - 1, "Диалог изменения координат",pnts)#,int(self.body_cnt_h.Value))
+    dlg.CenterOnScreen()
+    dlg.ShowModal()
+    if dlg.save:
+	newpoints=dlg.ret()
+	selObj = self.canva._3dDisplay.Context.SelectedInteractive()
+	selColor = None
+	if selObj.GetObject().HasColor():
+	    selColor = self.canva._3dDisplay.Context.Color(selObj)
+	self.canva._3dDisplay.Context.Erase(selObj)
+	    
+	indexInfo = None; 
+	for i in range(len(self.canva.drawList)):
+	    s1 = self.canva.drawList[i][2]
+	    if s1:
+		if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+		    indexInfo = i
+                    break
+        # get params sel object
+	self.canva._3dDisplay.Context.Erase(selObj)           # Удалить старый
+	plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
+	for pnt1 in newpoints:
+	    plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+	w = plgn.Wire()
+	newShape = self.canva._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+	# Установить цвет, тип,толщину и др.
+	if selColor:
+	    self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
+	if indexInfo <> None:
+	    oldInfo = self.canva.drawList[indexInfo]
+            oldInfo[2] = newShape.GetObject()
+            oldInfo[5] = True
+            self.canva.drawList[indexInfo] = oldInfo          # Обновить список
+    dlg.Destroy()
+
 #def CErase(self):
 #    """ Заказ на удаление элемента """
 #    self.canva.SetTogglesToFalse(event)

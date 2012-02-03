@@ -7,6 +7,7 @@ LoadDlg, getPoints, parsGeometry, makeLINESTRING, distance2d
 """
 
 import wx
+import wx.grid
 import psycopg2
 import OCC
 #from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
