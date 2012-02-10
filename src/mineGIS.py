@@ -324,7 +324,7 @@ class AppFrame(wx.Frame):
 				['drill',u'ПереместитьСкважину',self.NavigateMenu,None],
 
 			['add',u'Съезды',self.NavigateMenu,None,'ways'],
-				['ways',u'Скользящий',self.NavigateMenu,None,'ways_slide'],
+				['ways',u'Скользящий',self.OnEdgePLine,None,'ways_slide'],
 					['ways_slide',u'ОтменитьПосл',self.OnEdgeUndo,None],
 					['ways_slide',u'Закончить',self.OnEdgeEnd,None],
 				['ways',u'Стационарный',self.NavigateMenu,None,'ways_normal'],
