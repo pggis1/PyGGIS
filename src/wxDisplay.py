@@ -124,6 +124,7 @@ class GraphicsCanva3D(wx.Panel):
         self.EdCmd          = None
 
 	self.gumline_edge = None
+	self.MakePoint = False
 
         if sys.platform=='win32':
             self.Init3dViewer()
@@ -132,7 +133,7 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
+        #self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
         self._3dDisplay.DisplayTriedron()
         ##self._3dDisplay.SetModeShaded()
         self._3dDisplay.SetModeWireFrame()
@@ -316,6 +317,11 @@ class GraphicsCanva3D(wx.Panel):
             self.frame.SetStatusText("Полилиния. Дай далееﾵ", 0)
             #self.frame.canva.lstPnt = self.frame.canva.lstPnt + [resPnt]
             self.worldPt = resPnt
+            return 
+	
+	if self.MakePoint:
+            self.worldPt = resPnt
+	    self.frame.onCoord_yes(evt)
             return 
 
         self.dragStartPos = self.startPt        #evt.GetPosition()
@@ -617,12 +623,13 @@ class GraphicsCanva3D(wx.Panel):
             view = self._3dDisplay.GetView().GetObject()            
             # view = <OCC.V3d.V3d_View; proxy of <Swig Object of type 'V3d_View *' at 0xa2d3a60> >
             pt = event.GetPosition()
-            if (self.GumLine and self.worldPt):
-                pntDspl = view.Convert(self.worldPt[0], self.worldPt[1], self.worldPt[2])
+            #if (self.GumLine and self.worldPt):
+	    if (self.GumLine and len(self.lstPnt)>0):
+                pntDspl = view.Convert(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2])
                 
                 dc=wx.ClientDC(self)
                 dc.BeginDrawing()
-                dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))##     BLACK_DASHED_PEN
+                dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))##     BLACK_DASHED_PEN ##DOT
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 dc.SetLogicalFunction(wx.COPY)
                 if self._drawline:
@@ -632,9 +639,8 @@ class GraphicsCanva3D(wx.Panel):
                 self._drawline = [pntDspl[0],pntDspl[1], pt.x,pt.y]
                 dc.EndDrawing()
                 
-		xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
-        	resPnt = [xt,yt,zt]
-		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.worldPt[0], self.worldPt[1], self.worldPt[2]),gp_Pnt(resPnt[0], resPnt[1], resPnt[2])).Edge()
+		resPnt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
+		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], resPnt[2])).Edge()
 		if self.gumline_edge:
 		    self._3dDisplay.Context.Erase(self.gumline_edge)
 		shape=OCC.AIS.AIS_Shape(edge)
@@ -642,6 +648,7 @@ class GraphicsCanva3D(wx.Panel):
 		self.gumline_edge = shape.GetHandle()
            	self._3dDisplay.Context.SetColor(self.gumline_edge,OCC.Quantity.Quantity_NOC_BLACK,0)
                 self._3dDisplay.Context.Display(self.gumline_edge, False)
+		#self.gumline_edge=self.DisplayCustomShape(edge, color='BLACK', update=False, line_type = 1, line_thickness = 1,toggle=False)
 
                 #view_mgr = display.View.View().GetObject().ViewManager()
                 #layer = Visual3d_Layer(view_mgr, Aspect_TOL_UNDERLAY, False)

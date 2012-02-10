@@ -19,6 +19,8 @@ from math import *
 from inpLAS import *
 from random import random
 
+from OCC.Quantity import Quantity_Color
+
 def SaveProt(self):
     """ Сохранение протокола в файле """
     global txtWin
@@ -39,6 +41,7 @@ def CLine(self):
     #self.canva.SetTogglesToFalse(event)
     self.canva.MakeLine = True
     self.canva.MakePLine = False
+    self.canva.MakePoint = False
     self.canva.GumLine = True
     self.canva.lstPnt = []
     self.SetStatusText("Отрезок. Дай начало", 0)
@@ -51,6 +54,7 @@ def PLine(self):
     #self.canva.SetTogglesToFalse(event)
     self.canva.MakePLine = True
     self.canva.MakeLine = False
+    self.canva.MakePoint = False
     self.canva.GumLine = True
     self.canva.lstPnt = []
     self.canva.tmpEdge = None
@@ -70,6 +74,16 @@ def CAxis(self):
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
                         gp_Pnt(0, 0, 10000))
     self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'CYAN')
+
+def Point(self):
+    self.canva.MakePLine = False
+    self.canva.MakeLine = False
+    self.canva.MakePoint = True
+    self.canva.GumLine = False
+    self.canva.lstPnt = []
+    self.canva.tmpEdge = None
+    self.SetStatusText("Укажите точку", 0)
+    self._refreshui()
 
 def CreateDB(self): 
     """ Создание элементов в базе данных PostGIS """ 
@@ -285,24 +299,24 @@ def CEdit(self):
 #    self.canva.MakeErase = True
 #    self._refreshui()
 #    self.SetStatusText("Укажите удаляемый элемент", 0)
-        
-def Coord_yes(self):
+
+def Coord_yes(self,drawP=False,closeP=False):
     """ Ввод координат из окна Point от кнопки или мыши """
     Z = float(self.canva.coordZ.GetValue())
     coordStr = self.canva.coord.GetValue()
     #print(coordStr)
     if self.canva.MakePLine:            
         # PolyLine
-        drawP = False
-        closeP = False
+        #drawP = False
+        #closeP = False
         if (len(self.canva.lstPnt) > 2): #Close or End
-            if (coordStr.upper().find('C') <>- 1):   #Close
+            """if (coordStr.upper().find('C') <>- 1):   #Close
                 #print('Close pline')
                 drawP = True
                 closeP = True
             if (not (coordStr.strip())):   #End
                 #print('End pline')
-                drawP = True
+                drawP = True"""
             #print('drawP=', drawP)
             if drawP:
                 #if (self.canva._3dDisplay.Context.HasOpenedContext()):
@@ -315,11 +329,46 @@ def Coord_yes(self):
                 if closeP:
                     plgn.Close()
                 w = plgn.Wire()
-                self.canva._3dDisplay.DisplayColoredShape(w, 'YELLOW', False)        #,'WHITE'
+		id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
+		#Quantity_Color(0.1,0.1,0.1)
+		if self.menu_now=='start_edge' or self.menu_now=='continue_edge':
+		    edge_type=self.egde_typeList[self.edge_typeCur.GetCurrentSelection()]
+		    #geom=makeLINESTRING(self.canva.lstPnt)
+		    #q="INSERT INTO edge (hor,edge_type,geom) VALUES ("+str(id_hor)+","+str(edge_type[0])+","+geom+");"
+		    for i in range(len(self.colorList)):
+			if self.colorList[i][0]==edge_type[3]:
+			    r=int(str(self.colorList[i][2]))/255.0
+			    g=int(str(self.colorList[i][3]))/255.0
+			    b=int(str(self.colorList[i][4]))/255.0
+			    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+			    break
+		    self.canva.drawList = self.canva.drawList + [[0,-1,s1.GetObject(),id_hor,edge_type[0],True]]
+		elif self.menu_now=='start_body':
+		    #face = BRepBuilderAPI_MakeFace(w);
+	            #ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, 5)).Shape();#float(self.bodyh.GetValue())
+		    sort=self.sortList[self.sortCur.GetCurrentSelection()]
+		    #geom=makeLINESTRING(self.canva.lstPnt)
+		    #q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str('0')+","+str(sort[0])+","+geom+");"  
+		    for i in range(len(self.colorList)):
+			if self.colorList[i][0]==sort[3]:
+			    r=int(str(self.colorList[i][2]))/255.0
+			    g=int(str(self.colorList[i][3]))/255.0
+			    b=int(str(self.colorList[i][4]))/255.0
+			    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+			    break							#point,h_body
+		    self.canva.drawList = self.canva.drawList + [[1,-1,s1.GetObject(),id_hor,0,0,sort[0],sort[3],sort[6],True]]
+		elif self.menu_now=='start_isoline':
+		    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
+		    heigth=1
+		    #geom=makeLINESTRING(self.canva.lstPnt)
+		    #q="INSERT INTO topograph (heigth,coord_sys,geom) VALUES ("+str(heigth)+","+str(coord_sys)+","+geom+");" 
+		    s1=self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
+		    self.canva.drawList = self.canva.drawList + [[3,-1,s1,heigth,coord_sys,True]]
+
                 self.SetStatusText("Готово", 2)
+		self.menu_now
                 CancelOp(self)                 
                 return
-
     coord1 = coordStr.split(',')
     lst1 = []
     for crd in coord1:
@@ -345,6 +394,7 @@ def Coord_yes(self):
         self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'BLACK', False)        #
         self.SetStatusText("Готово", 2)
         CancelOp(self)
+
     # Временная линия    
     if (self.canva.MakePLine and (len(self.canva.lstPnt) > 1)):
         #if not (self.canva._3dDisplay.Context.HasOpenedContext()):
@@ -358,6 +408,37 @@ def Coord_yes(self):
             plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
         w = plgn.Wire()
         self.canva.tmpEdge = self.canva._3dDisplay.DisplayColoredShape(w, 'ORANGE', False)        #,'WHITE'
+    elif self.canva.MakePoint:
+	x=self.canva.lstPnt[-1][0]
+	y=self.canva.lstPnt[-1][1]
+	h=self.canva.lstPnt[-1][2]
+	self.canva.lstPnt=self.canva.lstPnt[:-1]
+	size=5
+	edgeUp = BRepBuilderAPI_MakePolygon()
+	edgeUp.Add(gp_Pnt(x-size,y-size,1))
+	edgeUp.Add(gp_Pnt(x,y,h))
+	edgeUp.Add(gp_Pnt(x-size,y+size,1))
+	edgeUp.Add(gp_Pnt(x+size,y+size,1))
+	edgeUp.Add(gp_Pnt(x,y,h))
+	edgeUp.Add(gp_Pnt(x+size,y-size,1))
+	edgeUp.Add(gp_Pnt(x-size,y-size,1))
+	edgeUp.Add(gp_Pnt(x-size,y+size,1))
+	edgeUp.Add(gp_Pnt(x+size,y-size,1))
+	edgeUp.Add(gp_Pnt(x+size,y+size,1))
+	edgeUp.Add(gp_Pnt(x-size,y-size,1))
+	edgeUp.Close()
+	if drawP:
+	    id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
+	    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
+	    #q="INSERT INTO drills (horiz,coord_system, cords,type_drill) VALUES ("+str(id_hor)+","+str(coord_sys)+",'{"+x+","+y+","+h+"}',1)"
+	    s1=self.canva._3dDisplay.DisplayColoredShape(edgeUp.Shape(), 'RED', False)
+	    CancelOp(self)
+	    return
+	if self.canva.tmpEdge:
+
+            self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+            self.canva.tmpEdge = None
+	self.canva.tmpEdge = self.canva._3dDisplay.DisplayColoredShape(edgeUp.Shape(), 'ORANGE', False)
                 
 def CancelOp(self):
     """ Отмена рисования элементов """
@@ -368,10 +449,11 @@ def CancelOp(self):
         self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
         self.canva.tmpEdge = None
     if self.canva.gumline_edge:
-	self.canva._3dDisplay.Context.Erase(self.canva.gumline_edge)
-	self.canva.gumline_edge=None
+        self.canva._3dDisplay.Context.Erase(self.canva.gumline_edge)
+        self.canva.gumline_edge=None
     self.canva.MakePLine = False
     self.canva.MakeLine = False
+    self.canva.MakePoint = False
     self.canva.GumLine = False
     self.canva.lstPnt = []
     self.SetStatusText("Отмена", 2)

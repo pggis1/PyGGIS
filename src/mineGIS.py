@@ -71,8 +71,6 @@ from regim import *
 from utils import *
 from ggisFun import *
 
-from OCC import Prs3d
-
 VERSION = "for_pyOCE_0.5"
 
 def CreateMaskedBitmap(fname, h=16, w=16):
@@ -263,9 +261,86 @@ class AppFrame(wx.Frame):
         self.panel4.SetSizer( topsizer_P )    # use the sizer for layout
         
         self.tb1 = self.CreateRightToolbar()        
-        self.tb2 = self.CreateGgisToolbar()        
+        self.tb2 = self.CreateGgisToolbar()    
         self._mgr.AddPane(self.tb1, wx.aui.AuiPaneInfo().Name("View").Caption("View").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
         self._mgr.AddPane(self.tb2, wx.aui.AuiPaneInfo().Name("GGIS").Caption("GGIS").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
+	
+	#Кнопочное меню
+	self.buttonMenu=[
+		#['',u'Главное меню',self.NavigateMenu,None,'main'],
+		['main',u'Debug',self.OnDebug,None,'main'],
+		['add',u'Главное меню',self.NavigateMenu,None,'main'],
+		['edge',u'Главное меню',self.NavigateMenu,None,'main'],
+		['body',u'Главное меню',self.NavigateMenu,None,'main'],
+		['isoline',u'Главное меню',self.NavigateMenu,None,'main'],
+		['drill',u'Главное меню',self.NavigateMenu,None,'main'],
+		['ways',u'Главное меню',self.NavigateMenu,None,'main'],
+		['edit',u'Главное меню',self.NavigateMenu,None,'main'],
+		['',u'---',None,None,'main'],
+		['main',u'Задание',self.NavigateMenu,None,'add'],
+			['add',u'Бровка',self.NavigateMenu,None,'edge'],
+				['edge',u'Начать',self.OnEdgePLine,None,'start_edge'],
+					['start_edge',u'ОтменитьПосл',self.OnEdgeUndo,None,'edge'],
+					['start_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
+					['start_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
+					['start_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
+				['edge',u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
+					['continue_edge',u'ОтменитьПосл',self.NavigateMenu,None],
+					['continue_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
+					['continue_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
+					['continue_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
+				['edge',u'---'],
+				['edge',u'УдалитьБровку',self.OnEdBrDelB,None],
+				['edge',u'РазбитьБровку',self.OnEdBrBrkV,None],
+				['edge',u'ВставитьТочку',self.OnEdBrInsV,None],
+				['edge',u'УдалитьТочку',self.OnEdBrDelV,None],
+				['edge',u'ПеремесТочку',self.OnEdBrMoveV,None],
+
+			['add',u'Тело',self.NavigateMenu,None,'body'],
+				['body',u'Начать',self.OnEdgePLine,None,'start_body'],
+					['start_body',u'ОтменитьПосл',self.OnEdgeUndo,None,'body'],
+					['start_body',u'Закончить',self.OnEdgeEnd,None,'body'],
+					['start_body',u'Замкнуть',self.OnEdgeClose,None,'body'],
+					['start_body',u'Отмена',self.OnEdgeCancel,None,'body'],
+				['body',u'---'],
+				['body',u'УдалитьТело',self.OnEdBrDelB,None],
+
+			['add',u'Рельеф',self.NavigateMenu,None,'isoline'],
+				['isoline',u'Начать',self.OnEdgePLine,None,'start_isoline'],
+					['start_isoline',u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
+					['start_isoline',u'Закончить',self.OnEdgeClose,None,'isoline'],
+					['start_isoline',u'Отмена',self.OnEdgeCancel,None,'isoline'],
+				['isoline',u'---'],
+				['isoline',u'УдалитьИзолинию',self.OnEdBrDelB,None],
+				['isoline',u'ВставитьТочку',self.OnEdBrInsV,None],
+				['isoline',u'УдалитьТочку',self.OnEdBrDelV,None],
+				['isoline',u'ПеремесТочку',self.OnEdBrMoveV,None],
+
+			['add',u'Скважина',self.NavigateMenu,None,'drill'],
+				['drill',u'Задать',self.OnDrillStart,None,'start_drill'],
+					['start_drill',u'Создать',self.OnDrillAdd,None,'drill'],
+					['start_drill',u'Отмена',self.OnEdgeCancel,None,'drill'],
+				['drill',u'УдалитьСкважину',self.OnEdBrDelB,None],
+				['drill',u'ПереместитьСкважину',self.NavigateMenu,None],
+
+			['add',u'Съезды',self.NavigateMenu,None,'ways'],
+				['ways',u'Скользящий',self.NavigateMenu,None,'ways_slide'],
+					['ways_slide',u'ОтменитьПосл',self.OnEdgeUndo,None],
+					['ways_slide',u'Закончить',self.OnEdgeEnd,None],
+				['ways',u'Стационарный',self.NavigateMenu,None,'ways_normal'],
+					['ways_normal',u'ВыбратьБорт',self.NavigateMenu,None],
+					['ways_normal',u'ПоЧасовой',self.NavigateMenu,None],
+					['ways_normal',u'ПротивЧасовой',self.NavigateMenu,None],
+					['ways_normal',u'Закончить',self.NavigateMenu,None],
+			
+		['main',u'Корректировка',self.NavigateMenu,None,'edit'],
+			['edit',u'Прирезка',self.NavigateMenu,None,'cut'],
+			['edit',u'Отсечь',self.NavigateMenu,None,'merge'],
+		]
+	self.menu_now='main'
+	self.tb3 = self.CreateMenu() 
+	self.NavigateMenu();
+	self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left())
 
         self._mgr.Update()
         #self._mgr.GetPane("Help").MinSize((-1,-1)) # now make it so that the help pane can be resized
@@ -488,6 +563,78 @@ class AppFrame(wx.Frame):
         #self.canva.MakeErase = False
         self.canva.drawList = []
         self.canva.tmpEdge = None
+
+    def CreateMenu(self):
+	return wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, (300,500), wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
+
+    def NavigateMenu(self,event=None,menuname='main'):
+	if(event<>None):
+	    for i,v in enumerate(self.buttonMenu):
+		if v[1]==event.EventObject.GetLabelText() and (v[0]==self.menu_now or v[0]==''):
+		    menuname=v[4]
+		    self.menu_now=menuname
+		    break
+	else:
+	    self.menu_now=menuname
+	self.tb3.ClearTools()
+	self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
+	self.tb3.AddSeparator()
+	for i,v in enumerate(self.buttonMenu):
+	    if v[0]==menuname or (v[0]==''and not menuname=='main'):
+		if v[1]==u'---':
+		    self.tb3.AddSeparator()
+		else:
+		    self.buttonMenu[i][3]=wx.Button(self.tb3, -1, v[1],size=(130,30))
+	    	    self.tb3.AddControl(self.buttonMenu[i][3])
+	    	    self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][2], self.buttonMenu[i][3])
+	self.tb3.Fit()
+
+    def OnDrillStart(self,event):
+	Point(self)
+	self.NavigateMenu(event)
+
+    def OnDrillAdd(self,event):
+	Coord_yes(self,True)
+	self.NavigateMenu(event)
+
+    def OnEdgePLine(self,event):
+	self.OnPLine(event)
+	self.NavigateMenu(event)
+
+    def OnEdgeCancel(self,event):
+	self.OnCancel(event)
+	self.NavigateMenu(event)
+
+    def OnEdgeEnd(self,event):
+	Coord_yes(self,True)
+	self.NavigateMenu(event)
+
+    def OnEdgeClose(self,event):
+	Coord_yes(self,True,True)
+	self.NavigateMenu(event)
+
+    def OnEdgeContinue(self,event):
+	sel_shape=self.canva._3dDisplay.selected_shape
+        if sel_shape:
+	    pnts = getPoints(sel_shape)
+	    self.OnPLine(event)
+	    self.canva.lstPnt=pnts
+	    self.NavigateMenu(event)
+
+    def OnEdgeUndo(self,event):
+	if len(self.canva.lstPnt)>2:
+	    self.canva.coord.SetValue(str(self.canva.lstPnt[-2][0])+','+str(self.canva.lstPnt[-2][1])+','+str(self.canva.lstPnt[-2][2]))
+	    self.canva.lstPnt=self.canva.lstPnt[:-2]
+	    Coord_yes(self)
+	elif len(self.canva.lstPnt)==2:
+	    self.canva.coord.SetValue(str(self.canva.lstPnt[0][0])+','+str(self.canva.lstPnt[0][1])+','+str(self.canva.lstPnt[0][2]))
+	    self.canva.lstPnt=[]
+	    Coord_yes(self)
+	    if self.canva.tmpEdge: 
+                self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+                self.canva.tmpEdge = None
+	else:
+	    self.OnEdgeCancel(event)
 
     def CreateRightToolbar(self):
         # Начало формирования палитры
@@ -719,7 +866,7 @@ class AppFrame(wx.Frame):
         self.egde_typeList = []     # Глобальный список типов бровок
         typeLst = []                # Локальный для списка выбора
         for edge in edges_type:
-            self.egde_typeList = self.egde_typeList + list(edge)
+            self.egde_typeList = self.egde_typeList + [list(edge)]
             typeLst = typeLst + [edge[1]]
         if (typeLst):
             value = typeLst[0]
@@ -740,7 +887,7 @@ class AppFrame(wx.Frame):
         self.sortList = []      # Глобальный список типов бровок
         sortLst = []            # Локальный для списка выбора
         for sort in sorts_type:
-            self.sortList = self.sortList + list(sort)
+            self.sortList = self.sortList + [list(sort)]
             sortLst = sortLst + [sort[1]]
         if (sortLst):
             value = sortLst[0]
@@ -762,7 +909,7 @@ class AppFrame(wx.Frame):
         self.coordList = []      # Глобальный список типов бровок
         coordLst = []            # Локальный для списка выбора
         for coord in coord_systems:
-            self.coordList = self.coordList + list(coord)
+            self.coordList = self.coordList + [list(coord)]
             coordLst = coordLst + [coord[2]]
         if (coordLst):
             value = coordLst[0]
@@ -786,7 +933,7 @@ class AppFrame(wx.Frame):
         self.line_typeList = []     # Глобальный список типов линий
         lineLst = []                # Локальный для списка выбора
         for line in lines_type:
-            self.line_typeList = self.line_typeList + list(line)
+            self.line_typeList = self.line_typeList + [list(line)]
             lineLst = lineLst + [line[1]]
         if (lineLst):
             value = lineLst[0]
@@ -807,7 +954,7 @@ class AppFrame(wx.Frame):
         self.colorList = []         # Глобальный список цветов
         colorLst = []               # Локальный для списка выбора
         for color in colorS:
-            self.colorList = self.colorList + list(color)
+            self.colorList = self.colorList + [list(color)]
             colorLst = colorLst + [color[1]]
         if (colorLst):
             value = colorLst[0]
@@ -1128,7 +1275,7 @@ class AppFrame(wx.Frame):
             needSave = needSave or element[-1]
         #print "Need closing window : " + str(needSave)
         if needSave:
-            saveProt(self)
+            #SaveProt(self)
             if YesNo(self, u"Выйти без сохранения?", caption=u'Были изменены элементы карьера'):
                 self._mgr.UnInit()
                 self.Destroy()
@@ -1203,7 +1350,7 @@ class AppFrame(wx.Frame):
         Etalon(self)
         
     def OnRefresh(self, event):
-        """ Обновить окно  """
+	""" Обновить окно  """
         Refresh(self)
 
 #=== Edit menu =========================================================           
@@ -1258,6 +1405,23 @@ class AppFrame(wx.Frame):
         self.SetStatusText("Укажите объект", 0)
         pass
                 
+    def OnDebug(self,event):
+	print '---==========---'
+	print 'self.canva.drawList:'
+	print self.canva.drawList
+	print 'self.horList:'
+	print self.horList
+	print 'self.egde_typeList:'
+	print self.egde_typeList
+	print 'self.sortList:'
+	print self.sortList
+	print 'self.coordList:'
+	print self.coordList
+	print 'self.line_typeList:'
+	print self.line_typeList
+	print 'self.colorList:'
+
+
 #====================================================================
     
 if __name__ == "__main__":
