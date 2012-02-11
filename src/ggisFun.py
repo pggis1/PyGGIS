@@ -333,8 +333,15 @@ def Coord_yes(self,drawP=False,closeP=False):
 		#Quantity_Color(0.1,0.1,0.1)
 		if self.menu_now=='start_edge' or self.menu_now=='continue_edge':
 		    edge_type=self.egde_typeList[self.edge_typeCur.GetCurrentSelection()]
-		    #geom=makeLINESTRING(self.canva.lstPnt)
-		    #q="INSERT INTO edge (hor,edge_type,geom) VALUES ("+str(id_hor)+","+str(edge_type[0])+","+geom+");"
+		    geom=makeLINESTRING(self.canva.lstPnt)
+		    q="INSERT INTO edge (hor,edge_type,geom) VALUES ("+str(id_hor)+","+str(edge_type[0])+","+geom+") RETURNING id_edge;"
+		    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
+                    curs = conn.cursor()
+		    curs.execute(q)
+		    id_edge=curs.fetchone()[0]
+		    conn.commit() 
+		    curs.close()
+		    conn.close()
 		    for i in range(len(self.colorList)):
 			if self.colorList[i][0]==edge_type[3]:
 			    r=int(str(self.colorList[i][2]))/255.0
@@ -342,13 +349,20 @@ def Coord_yes(self,drawP=False,closeP=False):
 			    b=int(str(self.colorList[i][4]))/255.0
 			    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
 			    break
-		    self.canva.drawList = self.canva.drawList + [[0,-1,s1.GetObject(),id_hor,edge_type[0],True]]
+		    self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],True]]
 		elif self.menu_now=='start_body':
 		    #face = BRepBuilderAPI_MakeFace(w);
 	            #ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, 5)).Shape();#float(self.bodyh.GetValue())
 		    sort=self.sortList[self.sortCur.GetCurrentSelection()]
-		    #geom=makeLINESTRING(self.canva.lstPnt)
-		    #q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str('0')+","+str(sort[0])+","+geom+");"  
+		    geom=makeLINESTRING(self.canva.lstPnt)
+		    q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str('0')+","+str(sort[0])+","+geom+") RETURNING id_body;"  
+		    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
+                    curs = conn.cursor()
+		    curs.execute(q)
+		    id_body=curs.fetchone()[0]
+		    conn.commit() 
+		    curs.close()
+		    conn.close()
 		    for i in range(len(self.colorList)):
 			if self.colorList[i][0]==sort[3]:
 			    r=int(str(self.colorList[i][2]))/255.0
@@ -356,14 +370,21 @@ def Coord_yes(self,drawP=False,closeP=False):
 			    b=int(str(self.colorList[i][4]))/255.0
 			    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
 			    break							#point,h_body
-		    self.canva.drawList = self.canva.drawList + [[1,-1,s1.GetObject(),id_hor,0,0,sort[0],sort[3],sort[6],True]]
+		    self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,0,sort[0],sort[3],sort[6],True]]
 		elif self.menu_now=='start_isoline':
 		    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
 		    heigth=1
-		    #geom=makeLINESTRING(self.canva.lstPnt)
-		    #q="INSERT INTO topograph (heigth,coord_sys,geom) VALUES ("+str(heigth)+","+str(coord_sys)+","+geom+");" 
+		    geom=makeLINESTRING(self.canva.lstPnt)
+		    q="INSERT INTO topograph (heigth,coord_sys,geom) VALUES ("+str(heigth)+","+str(coord_sys)+","+geom+") RETURNING id_topo;" 
+		    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
+                    curs = conn.cursor()
+		    curs.execute(q)
+		    id_topo=curs.fetchone()[0]
+		    conn.commit() 
+		    curs.close()
+		    conn.close()
 		    s1=self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
-		    self.canva.drawList = self.canva.drawList + [[3,-1,s1,heigth,coord_sys,True]]
+		    self.canva.drawList = self.canva.drawList + [[3,id_topo,s1,heigth,coord_sys,True]]
 
                 self.SetStatusText("Готово", 2)
 		self.menu_now
@@ -411,30 +432,27 @@ def Coord_yes(self,drawP=False,closeP=False):
     elif self.canva.MakePoint:
 	x=self.canva.lstPnt[-1][0]
 	y=self.canva.lstPnt[-1][1]
-	h=self.canva.lstPnt[-1][2]
+	z=self.canva.lstPnt[-1][2]
+	dept=16
 	self.canva.lstPnt=self.canva.lstPnt[:-1]
-	"""size=5
-	edgeUp = BRepBuilderAPI_MakePolygon()
-	edgeUp.Add(gp_Pnt(x-size,y-size,1))
-	edgeUp.Add(gp_Pnt(x,y,h))
-	edgeUp.Add(gp_Pnt(x-size,y+size,1))
-	edgeUp.Add(gp_Pnt(x+size,y+size,1))
-	edgeUp.Add(gp_Pnt(x,y,h))
-	edgeUp.Add(gp_Pnt(x+size,y-size,1))
-	edgeUp.Add(gp_Pnt(x-size,y-size,1))
-	edgeUp.Add(gp_Pnt(x-size,y+size,1))
-	edgeUp.Add(gp_Pnt(x+size,y-size,1))
-	edgeUp.Add(gp_Pnt(x+size,y+size,1))
-	edgeUp.Add(gp_Pnt(x-size,y-size,1))
-	edgeUp.Close()"""
-	skv = BRepPrim_Cylinder(gp_Pnt(x,y,1), 0.1, h)
+	skv = BRepPrim_Cylinder(gp_Pnt(x,y,z), 0.1, dept)
         skv = skv.Shell()
 	if drawP:
 	    id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
 	    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
-	    #q="INSERT INTO drills (horiz,coord_system, cords,type_drill) VALUES ("+str(id_hor)+","+str(coord_sys)+",'{"+x+","+y+","+h+"}',1)"
+	    type_drill=1
+	    q="INSERT INTO drills (horiz,coord_system, coord_x, coord_y, coord_z,type_drill,name) VALUES ("+str(id_hor)+","+str(coord_sys)+","+str(x)+","+str(y)+","+str(z)+",1,'Скважина') RETURNING id_drill_fld;"
+	    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
+            curs = conn.cursor()
+	    curs.execute(q)
+	    id_drill=curs.fetchone()[0]
+	    q_dept="INSERT INTO dril_pars (id_drill,id_par,value) VALUES (" + str(id_drill)+",6," + "%.1f"%(dept,) + ");"
+	    curs.execute(q_dept)
+	    conn.commit() 
+	    curs.close()
+	    conn.close()
 	    s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
-	    self.canva.drawList = self.canva.drawList + [[2,-1,s1,id_hor,coord_sys,type_drill,coord_x,coord_y,coord_z,dept,name,False]]
+	    self.canva.drawList = self.canva.drawList + [[2,id_drill,s1,id_hor,coord_sys,type_drill,x,y,z,dept,'name',False]]
 	    CancelOp(self)
 	    return
 	if self.canva.tmpEdge:
@@ -601,7 +619,7 @@ def Refresh(self):
         for rec in rows:
             id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = rec
             # Прочитать глубину скважины из БД
-            query = "SELECT val FROM dril_pars WHERE (id_par=6) and (id_drill=" + str(id_drill_fld) + ");"
+            query = "SELECT value FROM dril_pars WHERE (id_par=6) and (id_drill=" + str(id_drill_fld) + ");"
             curs.execute(query)
             pars = curs.fetchone()
             if pars:

@@ -644,7 +644,7 @@ class GraphicsCanva3D(wx.Panel):
                 dc.EndDrawing()
                 
 		resPnt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
-		Z = float(self.frame.coordZ.GetValue())
+		Z = float(self.coordZ.GetValue())
 		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], Z+0*resPnt[2])).Edge()
 		if self.gumline_edge:
 		    self._3dDisplay.Context.Erase(self.gumline_edge)
@@ -730,7 +730,7 @@ class GraphicsCanva3D(wx.Panel):
                           'BLACK':OCC.Quantity.Quantity_NOC_BLACK,
                           'ORANGE':OCC.Quantity.Quantity_NOC_ORANGE, }
             color = dict_color[color]
-        elif isinstance(color, Quantity_Color):
+        elif isinstance(color, OCC.Quantity.Quantity_Color):
             pass
         else:
             raise ValueError('color should either be a string ( "BLUE" ) or a Quantity_Color(0.1, 0.8, 0.1) got %s' % color)

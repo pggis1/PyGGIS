@@ -559,6 +559,7 @@ class AppFrame(wx.Frame):
         self.canva.GumLine = False
         self.canva.MakeLine = False
         self.canva.MakePLine = False
+	self.canva.MakePoint = False
         self.canva.startPt = False
         #self.canva.MakeErase = False
         self.canva.drawList = []
@@ -589,6 +590,17 @@ class AppFrame(wx.Frame):
 	    	    self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][2], self.buttonMenu[i][3])
 	self.tb3.Fit()
 
+    def getTypeByMenu(self):
+	if self.menu_now=='start_edge' or self.menu_now=='continue_edge' or self.menu_now=='edge':
+	    return 0
+	elif self.menu_now=='start_body' or self.menu_now=='body':
+	    return 1
+	elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
+	    return 2
+	elif self.menu_now=='start_drill' or self.menu_now=='drill':
+	    return 3
+	return -1
+
     def OnDrillStart(self,event):
 	Point(self)
 	self.NavigateMenu(event)
@@ -616,6 +628,16 @@ class AppFrame(wx.Frame):
     def OnEdgeContinue(self,event):
 	sel_shape=self.canva._3dDisplay.selected_shape
         if sel_shape:
+	    object_type=self.getTypeByMenu()
+            indexInfo = None; 
+            for i in range(len(self.canva.drawList)):
+                s1 = self.canva.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape) and self.canva.drawList[i][0]==object_type):
+                        indexInfo = i
+                        break
+            if indexInfo == None:
+		return
 	    pnts = getPoints(sel_shape)
 	    self.OnPLine(event)
 	    self.canva.lstPnt=pnts
@@ -1420,6 +1442,7 @@ class AppFrame(wx.Frame):
 	print 'self.line_typeList:'
 	print self.line_typeList
 	print 'self.colorList:'
+	print self.colorList
 
 
 #====================================================================
