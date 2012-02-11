@@ -529,7 +529,7 @@ def Refresh(self):
         conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
         curs = conn.cursor()
         query = "select id_edge,hor,edge_type,ST_AsEWKT(geom),point,color from edge,horizons,edge_type "
-        query = query + "where (id_hor in " + setHorIds + ") and (edge.hor=horizons.id_hor);"
+        query = query + "where (id_hor in " + setHorIds + ") and (edge.hor=horizons.id_hor) and (edge.edge_type=edge_type.id_edge_type);;"
         self.msgWin.AppendText("Query = " + query + "\n")
         curs.execute(query)
         rows = curs.fetchall()
