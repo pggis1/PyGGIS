@@ -144,7 +144,7 @@ def parsGeometry(geom):
         pntXYZ=[]
         xyz=pnt.split(' ')
         for val in xyz:
-            if val.isdigit():
+            #if val.isdigit():
                 pntXYZ = pntXYZ + [float(val)]
         lstXYZ = lstXYZ + [pntXYZ]
     return lstXYZ

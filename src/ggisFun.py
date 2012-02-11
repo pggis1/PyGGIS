@@ -333,7 +333,10 @@ def Coord_yes(self,drawP=False,closeP=False):
 		#Quantity_Color(0.1,0.1,0.1)
 		if self.menu_now=='start_edge' or self.menu_now=='continue_edge':
 		    edge_type=self.egde_typeList[self.edge_typeCur.GetCurrentSelection()]
-		    geom=makeLINESTRING(self.canva.lstPnt)
+		    if closeP:
+		        geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
+		    else:
+			geom=makeLINESTRING(self.canva.lstPnt)
 		    q="INSERT INTO edge (hor,edge_type,geom) VALUES ("+str(id_hor)+","+str(edge_type[0])+","+geom+") RETURNING id_edge;"
 		    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
@@ -349,13 +352,14 @@ def Coord_yes(self,drawP=False,closeP=False):
 			    b=int(str(self.colorList[i][4]))/255.0
 			    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
 			    break
-		    self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],True]]
+		    self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],False]]
 		elif self.menu_now=='start_body':
-		    #face = BRepBuilderAPI_MakeFace(w);
-	            #ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, 5)).Shape();#float(self.bodyh.GetValue())
 		    sort=self.sortList[self.sortCur.GetCurrentSelection()]
-		    geom=makeLINESTRING(self.canva.lstPnt)
-		    q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str('0')+","+str(sort[0])+","+geom+") RETURNING id_body;"  
+		    if closeP:
+		        geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
+		    else:
+			geom=makeLINESTRING(self.canva.lstPnt)
+		    q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str('5')+","+str(sort[0])+","+geom+") RETURNING id_body;"  
 		    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
 		    curs.execute(q)
@@ -363,18 +367,23 @@ def Coord_yes(self,drawP=False,closeP=False):
 		    conn.commit() 
 		    curs.close()
 		    conn.close()
+		    face = BRepBuilderAPI_MakeFace(w);
+	            ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, 5)).Shape();#float(self.bodyh.GetValue())
 		    for i in range(len(self.colorList)):
 			if self.colorList[i][0]==sort[3]:
 			    r=int(str(self.colorList[i][2]))/255.0
 			    g=int(str(self.colorList[i][3]))/255.0
 			    b=int(str(self.colorList[i][4]))/255.0
-			    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+			    s1=self.canva._3dDisplay.DisplayColoredShape(ShapeFused, OCC.Quantity.Quantity_Color(r,g,b,0), False)
 			    break							#point,h_body
-		    self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,0,sort[0],sort[3],sort[6],True]]
+		    self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,0,sort[0],sort[3],sort[6],False]]
 		elif self.menu_now=='start_isoline':
 		    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
 		    heigth=1
-		    geom=makeLINESTRING(self.canva.lstPnt)
+		    if closeP:
+		        geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
+		    else:
+			geom=makeLINESTRING(self.canva.lstPnt)
 		    q="INSERT INTO topograph (heigth,coord_sys,geom) VALUES ("+str(heigth)+","+str(coord_sys)+","+geom+") RETURNING id_topo;" 
 		    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
@@ -384,7 +393,7 @@ def Coord_yes(self,drawP=False,closeP=False):
 		    curs.close()
 		    conn.close()
 		    s1=self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
-		    self.canva.drawList = self.canva.drawList + [[3,id_topo,s1,heigth,coord_sys,True]]
+		    self.canva.drawList = self.canva.drawList + [[3,id_topo,s1,heigth,coord_sys,False]]
 
                 self.SetStatusText("Готово", 2)
 		self.menu_now
@@ -441,7 +450,8 @@ def Coord_yes(self,drawP=False,closeP=False):
 	    id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
 	    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
 	    type_drill=1
-	    q="INSERT INTO drills (horiz,coord_system, coord_x, coord_y, coord_z,type_drill,name) VALUES ("+str(id_hor)+","+str(coord_sys)+","+str(x)+","+str(y)+","+str(z)+",1,'Скважина') RETURNING id_drill_fld;"
+	    name="Скважина"
+	    q="INSERT INTO drills (horiz,coord_system, coord_x, coord_y, coord_z,type_drill,name) VALUES ("+str(id_hor)+","+str(coord_sys)+","+str(x)+","+str(y)+","+str(z)+",1,'"+name+"') RETURNING id_drill_fld;"
 	    conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
             curs = conn.cursor()
 	    curs.execute(q)
@@ -452,7 +462,7 @@ def Coord_yes(self,drawP=False,closeP=False):
 	    curs.close()
 	    conn.close()
 	    s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
-	    self.canva.drawList = self.canva.drawList + [[2,id_drill,s1,id_hor,coord_sys,type_drill,x,y,z,dept,'name',False]]
+	    self.canva.drawList = self.canva.drawList + [[2,id_drill,s1,id_hor,coord_sys,type_drill,x,y,z,dept,name,False]]
 	    CancelOp(self)
 	    return
 	if self.canva.tmpEdge:
@@ -545,7 +555,7 @@ def Refresh(self):
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
             w = plgn.Wire()
             #s = self.canva._3dDisplay.DisplayColoredShape(w, 'BLUE', False)
-	    s=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(clrRed,clrGreen,clrBlue,0), False)
+	    s=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
         #print("Бровки=",self.canva.edgeList)
@@ -599,7 +609,7 @@ def Refresh(self):
             #print myFaceProfile, aPrismVec
             myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec).Shape()
             #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
-	    s=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(clrRed,clrGreen,clrBlue,0), False)
+	    s=self.canva._3dDisplay.DisplayColoredShape(myBody, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
             #s = self.canva._3dDisplay.DisplayColoredShape(myBody, 'BLUE', False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[1, id_body, s1, id_hor, point, h_body, id_sort, color, color_fill, False]]
