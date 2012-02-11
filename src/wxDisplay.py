@@ -331,6 +331,9 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay.Select(self.dragStartPos.x, self.dragStartPos.y)
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
+            sel_shape=self._3dDisplay.selected_shape
+	    if not sel_shape:
+		return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
             selColor = None
@@ -344,7 +347,6 @@ class GraphicsCanva3D(wx.Panel):
                 if pnt == neaP1:
                      newPnts = newPnts + [resPnt]
             #print newPnts 
-            sel_shape=self._3dDisplay.selected_shape
             indexInfo = None; 
             for i in range(len(self.drawList)):
                 s1 = self.drawList[i][2]
@@ -383,6 +385,9 @@ class GraphicsCanva3D(wx.Panel):
 
 	### разорвать линию
         if (self.EdCmd == CMD_EdBrBrkV) and (self.EdStep == 1):
+            sel_shape=self._3dDisplay.selected_shape
+	    if not sel_shape:
+		return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
             selColor = None
@@ -409,7 +414,6 @@ class GraphicsCanva3D(wx.Panel):
 
 	    #print newPntsFirst
 	    #print newPntsSecond
-            sel_shape=self._3dDisplay.selected_shape
             indexInfo = None; 
             for i in range(len(self.drawList)):
                 s1 = self.drawList[i][2]
@@ -465,8 +469,8 @@ class GraphicsCanva3D(wx.Panel):
             # delete edge
             # s = None; Mod = True; Save As -> DELETE FROM edge
             sel_shape = self._3dDisplay.selected_shape
-            selObj = self._3dDisplay.Context.SelectedInteractive()
-            if selObj:
+            if sel_shape:
+		selObj = self._3dDisplay.Context.SelectedInteractive()
                 #import OCC
                 self._3dDisplay.Context.Erase(selObj)
                 #self.MakeErase = False
@@ -640,7 +644,8 @@ class GraphicsCanva3D(wx.Panel):
                 dc.EndDrawing()
                 
 		resPnt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
-		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], resPnt[2])).Edge()
+		Z = float(self.frame.coordZ.GetValue())
+		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], Z+0*resPnt[2])).Edge()
 		if self.gumline_edge:
 		    self._3dDisplay.Context.Erase(self.gumline_edge)
 		shape=OCC.AIS.AIS_Shape(edge)

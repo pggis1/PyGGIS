@@ -332,7 +332,7 @@ class AppFrame(wx.Frame):
 					['ways_normal',u'ПоЧасовой',self.NavigateMenu,None],
 					['ways_normal',u'ПротивЧасовой',self.NavigateMenu,None],
 					['ways_normal',u'Закончить',self.NavigateMenu,None],
-			
+
 		['main',u'Корректировка',self.NavigateMenu,None,'edit'],
 			['edit',u'Прирезка',self.NavigateMenu,None,'cut'],
 			['edit',u'Отсечь',self.NavigateMenu,None,'merge'],
