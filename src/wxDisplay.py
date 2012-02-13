@@ -123,8 +123,8 @@ class GraphicsCanva3D(wx.Panel):
         self.EdStep         = None
         self.EdCmd          = None
 
-	self.gumline_edge = None
-	self.MakePoint = False
+        self.gumline_edge = None
+        self.MakePoint = False
 
         if sys.platform=='win32':
             self.Init3dViewer()
@@ -260,7 +260,7 @@ class GraphicsCanva3D(wx.Panel):
                 #print resPnt,[neaP1[0],neaP1[1],neaP1[2]],[neaP2[0],neaP2[1],neaP2[2]]           
             pass
         elif snap == 3:    # center
-	    self._3dDisplay.Select(self.startPt.x, self.startPt.y)
+            self._3dDisplay.Select(self.startPt.x, self.startPt.y)
             sel_shape = self._3dDisplay.selected_shape
             if sel_shape:
                 pnts = getPoints(sel_shape)
@@ -296,10 +296,10 @@ class GraphicsCanva3D(wx.Panel):
                                 neaP1 = p1; neaP2 = p2
                         p1 = p2
                 #resPnt = [nea.X(),nea.Y(),nea.Z()]
-		cx=min(neaP1[0],neaP2[0])+math.fabs(max(neaP1[0],neaP2[0])-min(neaP1[0],neaP2[0]))/2
-		cy=min(neaP1[1],neaP2[1])+math.fabs(max(neaP1[1],neaP2[1])-min(neaP1[1],neaP2[1]))/2
-		cz=min(neaP1[2],neaP2[2])+math.fabs(max(neaP1[2],neaP2[2])-min(neaP1[2],neaP2[2]))/2
-		resPnt = [cx,cy,cz]
+                cx=min(neaP1[0],neaP2[0])+math.fabs(max(neaP1[0],neaP2[0])-min(neaP1[0],neaP2[0]))/2
+                cy=min(neaP1[1],neaP2[1])+math.fabs(max(neaP1[1],neaP2[1])-min(neaP1[1],neaP2[1]))/2
+                cz=min(neaP1[2],neaP2[2])+math.fabs(max(neaP1[2],neaP2[2])-min(neaP1[2],neaP2[2]))/2
+                resPnt = [cx,cy,cz]
             pass
         elif snap == 4:    # tangent
             pass
@@ -318,10 +318,10 @@ class GraphicsCanva3D(wx.Panel):
             #self.frame.canva.lstPnt = self.frame.canva.lstPnt + [resPnt]
             self.worldPt = resPnt
             return 
-	
-	if self.MakePoint:
+        
+        if self.MakePoint:
             self.worldPt = resPnt
-	    self.frame.onCoord_yes(evt)
+            self.frame.onCoord_yes(evt)
             return 
 
         self.dragStartPos = self.startPt        #evt.GetPosition()
@@ -332,8 +332,8 @@ class GraphicsCanva3D(wx.Panel):
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
             sel_shape=self._3dDisplay.selected_shape
-	    if not sel_shape:
-		return
+            if not sel_shape:
+                return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
             selColor = None
@@ -383,11 +383,11 @@ class GraphicsCanva3D(wx.Panel):
             # move vertex
             pass
 
-	### разорвать линию
+        ### разорвать линию
         if (self.EdCmd == CMD_EdBrBrkV) and (self.EdStep == 1):
             sel_shape=self._3dDisplay.selected_shape
-	    if not sel_shape:
-		return
+            if not sel_shape:
+                return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
             selColor = None
@@ -395,25 +395,25 @@ class GraphicsCanva3D(wx.Panel):
                 selColor = self._3dDisplay.Context.Color(selObj)
             #print("selColor=", selColor)
             newPntsFirst = []
-	    newPntsSecond = []
+            newPntsSecond = []
 
-	    #найти местоположение разрыва
-	    index=0
-	    for i in range(len(pnts)):
-		if pnts[i]==neaP1:
-		    index=i
-		    break
-	    #задать точки для половины до разрыва
-	    for i in range(index+1):
-		newPntsFirst.append(pnts[i])
-	    newPntsFirst.append(resPnt) 
-	    #задать точки для половины после разрыва
-	    newPntsSecond.append(resPnt)
-	    for i in range(index+1,len(pnts)):
-		newPntsSecond.append(pnts[i])
+            #найти местоположение разрыва
+            index=0
+            for i in range(len(pnts)):
+                if pnts[i]==neaP1:
+                    index=i
+                    break
+            #задать точки для половины до разрыва
+            for i in range(index+1):
+                newPntsFirst.append(pnts[i])
+            newPntsFirst.append(resPnt) 
+            #задать точки для половины после разрыва
+            newPntsSecond.append(resPnt)
+            for i in range(index+1,len(pnts)):
+                newPntsSecond.append(pnts[i])
 
-	    #print newPntsFirst
-	    #print newPntsSecond
+            #print newPntsFirst
+            #print newPntsSecond
             indexInfo = None; 
             for i in range(len(self.drawList)):
                 s1 = self.drawList[i][2]
@@ -449,14 +449,14 @@ class GraphicsCanva3D(wx.Panel):
                 self.drawList[indexInfo][-1] = True
                 #print oldInfo
                 #self.drawList[indexInfo] = oldInfo          # Обновить список
-		#создать новый объект
-		newInfo = []
-		for i in range(len(self.drawList[indexInfo])):
-		    newInfo.append(self.drawList[indexInfo][i])
-		newInfo[1] = -1
-		newInfo[2] = newShape2.GetObject()
-		newInfo[-1]=True
-		self.drawList=self.drawList+[newInfo]
+                #создать новый объект
+                newInfo = []
+                for i in range(len(self.drawList[indexInfo])):
+                    newInfo.append(self.drawList[indexInfo][i])
+                newInfo[1] = -1
+                newInfo[2] = newShape2.GetObject()
+                newInfo[-1]=True
+                self.drawList=self.drawList+[newInfo]
 
             self.frame.SetStatusText("Готово!", 2)
             self.EdCmd = 0; self.EdStep = 0
@@ -470,7 +470,7 @@ class GraphicsCanva3D(wx.Panel):
             # s = None; Mod = True; Save As -> DELETE FROM edge
             sel_shape = self._3dDisplay.selected_shape
             if sel_shape:
-		selObj = self._3dDisplay.Context.SelectedInteractive()
+                selObj = self._3dDisplay.Context.SelectedInteractive()
                 #import OCC
                 self._3dDisplay.Context.Erase(selObj)
                 #self.MakeErase = False
@@ -628,7 +628,7 @@ class GraphicsCanva3D(wx.Panel):
             # view = <OCC.V3d.V3d_View; proxy of <Swig Object of type 'V3d_View *' at 0xa2d3a60> >
             pt = event.GetPosition()
             #if (self.GumLine and self.worldPt):
-	    if (self.GumLine and len(self.lstPnt)>0):
+            if (self.GumLine and len(self.lstPnt)>0):
                 pntDspl = view.Convert(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2])
                 
                 dc=wx.ClientDC(self)
@@ -643,17 +643,17 @@ class GraphicsCanva3D(wx.Panel):
                 self._drawline = [pntDspl[0],pntDspl[1], pt.x,pt.y]
                 dc.EndDrawing()
                 
-		resPnt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
-		Z = float(self.coordZ.GetValue())
-		edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], Z+0*resPnt[2])).Edge()
-		if self.gumline_edge:
-		    self._3dDisplay.Context.Erase(self.gumline_edge)
-		shape=OCC.AIS.AIS_Shape(edge)
-		shape.UnsetSelectionMode()
-		self.gumline_edge = shape.GetHandle()
-           	self._3dDisplay.Context.SetColor(self.gumline_edge,OCC.Quantity.Quantity_NOC_BLACK,0)
+                resPnt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
+                Z = float(self.coordZ.GetValue())
+                edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], Z+0*resPnt[2])).Edge()
+                if self.gumline_edge:
+                    self._3dDisplay.Context.Erase(self.gumline_edge)
+                shape=OCC.AIS.AIS_Shape(edge)
+                shape.UnsetSelectionMode()
+                self.gumline_edge = shape.GetHandle()
+                self._3dDisplay.Context.SetColor(self.gumline_edge,OCC.Quantity.Quantity_NOC_BLACK,0)
                 self._3dDisplay.Context.Display(self.gumline_edge, False)
-		#self.gumline_edge=self.DisplayCustomShape(edge, color='BLACK', update=False, line_type = 1, line_thickness = 1,toggle=False)
+                #self.gumline_edge=self.DisplayCustomShape(edge, color='BLACK', update=False, line_type = 1, line_thickness = 1,toggle=False)
 
                 #view_mgr = display.View.View().GetObject().ViewManager()
                 #layer = Visual3d_Layer(view_mgr, Aspect_TOL_UNDERLAY, False)
@@ -741,25 +741,25 @@ class GraphicsCanva3D(wx.Panel):
         else:
             SOLO = False
             
-	if line_type==0:
-	    line_type=OCC.Aspect.Aspect_TOL_SOLID
-	else:
-	    line_type=OCC.Aspect.Aspect_TOL_DASH
-	
+        if line_type==0:
+            line_type=OCC.Aspect.Aspect_TOL_SOLID
+        else:
+            line_type=OCC.Aspect.Aspect_TOL_DASH
+        
         for shape in shapes:
-	    shape_to_display=OCC.AIS.AIS_Shape(shape)
+            shape_to_display=OCC.AIS.AIS_Shape(shape)
             if toggle==False:
-		shape_to_display.UnsetSelectionMode()
+                shape_to_display.UnsetSelectionMode()
             shape_to_display.SetContext(self._3dDisplay.Context.GetHandle())
             LineType=Prs3d.Prs3d_LineAspect(color, line_type, line_thickness);
 
             Drawer=shape_to_display.Attributes().GetObject()
             Drawer.SetWireAspect(LineType.GetHandle())
             Drawer.SetLineAspect(LineType.GetHandle())
-    	    shape_to_display.SetAttributes(Drawer.GetHandle())
+            shape_to_display.SetAttributes(Drawer.GetHandle())
  
-	    shape_to_display=shape_to_display.GetHandle()
-	    ais_shapes.append(shape_to_display)
+            shape_to_display=shape_to_display.GetHandle()
+            ais_shapes.append(shape_to_display)
             if update:
                 self._3dDisplay.Context.Display(shape_to_display, True)
                 self._3dDisplay.FitAll()

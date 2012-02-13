@@ -8,16 +8,16 @@
 ##of python bindings for OpenCasacde library.
 ##
 ##This software is governed by the CeCILL license under French law and
-##abiding by the rules of distribution of free software.  You can  use, 
+##abiding by the rules of distribution of free software.  You can  use,
 ##modify and/ or redistribute the software under the terms of the CeCILL
 ##license as circulated by CEA, CNRS and INRIA at the following URL
-##"http://www.cecill.info". 
+##"http://www.cecill.info".
 ##
 ##As a counterpart to the access to the source code and  rights to copy,
 ##modify and redistribute granted by the license, users are provided only
 ##with a limited warranty  and the software's author,  the holder of the
 ##economic rights,  and the successive licensors  have only  limited
-##liability. 
+##liability.
 ##
 ##In this respect, the user's attention is drawn to the risks associated
 ##with loading,  using,  modifying and/or developing or reproducing the
@@ -26,9 +26,9 @@
 ##therefore means  that it is reserved for developers  and  experienced
 ##professionals having in-depth computer knowledge. Users are therefore
 ##encouraged to load and test the software's suitability as regards their
-##requirements in conditions enabling the security of their systems and/or 
-##data to be ensured and,  more generally, to use and operate it in the 
-##same conditions as regards security. 
+##requirements in conditions enabling the security of their systems and/or
+##data to be ensured and,  more generally, to use and operate it in the
+##same conditions as regards security.
 ##
 ##The fact that you are presently reading this means that you have had
 ##knowledge of the CeCILL license and that you accept its terms.
@@ -169,23 +169,23 @@ def LoadLayout(fname):
         return maximised, position, size, perspective
     except:
         pass
-    
-def YesNo(parent, question, caption='Yes or No?'): 
-    dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION) 
-    result = dlg.ShowModal() == wx.ID_YES 
-    dlg.Destroy() 
-    return result 
-    
+
+def YesNo(parent, question, caption='Yes or No?'):
+    dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
+    result = dlg.ShowModal() == wx.ID_YES
+    dlg.Destroy()
+    return result
+
 class AppFrame(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, - 1, "pyOCC ГГИС %s" % VERSION,
                           style=wx.DEFAULT_FRAME_STYLE, size=MW_SIZE)
-        
+
         self._mgr = wx.aui.AuiManager()
-        self._mgr.SetManagedWindow(self) 
+        self._mgr.SetManagedWindow(self)
 
         self._recentfiles = GetRecentFiles(os.path.join(THISPATH, "recentfiles"))
-        
+
         #nb = wx.aui.AuiNotebook(self, -1, style = wx.NB_BOTTOM ,
         nb = wx.Notebook(self, -1, style = wx.NB_LEFT ,
                                 size = wx.DefaultSize
@@ -200,8 +200,8 @@ class AppFrame(wx.Frame):
         #imageList.Add(py_icon);
         #imageList.Add(py_icon);
 
-        
-        self.panel1 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Геометрия карьера 
+
+        self.panel1 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Геометрия карьера
         nb.AddPage(self.panel1, 'К')
         topsizer_K = wx.BoxSizer( wx.VERTICAL );
         self.panel1.win = wx.Window(self.panel1, -1,
@@ -214,8 +214,8 @@ class AppFrame(wx.Frame):
                      wx.ALL,        # and make border all around
                      2 )            # set border width to 2
         self.panel1.SetSizer( topsizer_K )    # use the sizer for layout
-        
-        self.canva = GraphicsCanva3D(self.panel1.win)      #panel1.win  
+
+        self.canva = GraphicsCanva3D(self.panel1.win)      #panel1.win
         self._mgr.AddPane(self.canva, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
 
         self.panel2 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Панель для настройки параметров
@@ -248,7 +248,7 @@ class AppFrame(wx.Frame):
         self.panel3.SetSizer( topsizer_M )    # use the sizer for layout
         self.msgWin.AppendText("Сегодня: " +
                   time.strftime("%d.%m.%Y %H:%M", time.localtime(time.time())) + "\n")
-        
+
         self.panel4 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Для интерпретаатора питона
         nb.AddPage(self.panel4, 'П')
         topsizer_P = wx.BoxSizer( wx.VERTICAL );
@@ -259,88 +259,97 @@ class AppFrame(wx.Frame):
         self.pyshell = py
         topsizer_P.Add(py, flag=wx.EXPAND)
         self.panel4.SetSizer( topsizer_P )    # use the sizer for layout
-        
-        self.tb1 = self.CreateRightToolbar()        
-        self.tb2 = self.CreateGgisToolbar()    
+
+        self.tb1 = self.CreateRightToolbar()
+        self.tb2 = self.CreateGgisToolbar()
         self._mgr.AddPane(self.tb1, wx.aui.AuiPaneInfo().Name("View").Caption("View").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
         self._mgr.AddPane(self.tb2, wx.aui.AuiPaneInfo().Name("GGIS").Caption("GGIS").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
-	
-	#Кнопочное меню
-	self.buttonMenu=[
-		#['',u'Главное меню',self.NavigateMenu,None,'main'],
-		['main',u'Debug',self.OnDebug,None,'main'],
-		['add',u'Главное меню',self.NavigateMenu,None,'main'],
-		['edge',u'Главное меню',self.NavigateMenu,None,'main'],
-		['body',u'Главное меню',self.NavigateMenu,None,'main'],
-		['isoline',u'Главное меню',self.NavigateMenu,None,'main'],
-		['drill',u'Главное меню',self.NavigateMenu,None,'main'],
-		['ways',u'Главное меню',self.NavigateMenu,None,'main'],
-		['edit',u'Главное меню',self.NavigateMenu,None,'main'],
-		['',u'---',None,None,'main'],
-		['main',u'Задание',self.NavigateMenu,None,'add'],
-			['add',u'Бровка',self.NavigateMenu,None,'edge'],
-				['edge',u'Начать',self.OnEdgePLine,None,'start_edge'],
-					['start_edge',u'ОтменитьПосл',self.OnEdgeUndo,None,'edge'],
-					['start_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
-					['start_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
-					['start_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
-				['edge',u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
-					['continue_edge',u'ОтменитьПосл',self.NavigateMenu,None],
-					['continue_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
-					['continue_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
-					['continue_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
-				['edge',u'---'],
-				['edge',u'УдалитьБровку',self.OnEdBrDelB,None],
-				['edge',u'РазбитьБровку',self.OnEdBrBrkV,None],
-				['edge',u'ВставитьТочку',self.OnEdBrInsV,None],
-				['edge',u'УдалитьТочку',self.OnEdBrDelV,None],
-				['edge',u'ПеремесТочку',self.OnEdBrMoveV,None],
 
-			['add',u'Тело',self.NavigateMenu,None,'body'],
-				['body',u'Начать',self.OnEdgePLine,None,'start_body'],
-					['start_body',u'ОтменитьПосл',self.OnEdgeUndo,None,'body'],
-					['start_body',u'Закончить',self.OnEdgeEnd,None,'body'],
-					['start_body',u'Замкнуть',self.OnEdgeClose,None,'body'],
-					['start_body',u'Отмена',self.OnEdgeCancel,None,'body'],
-				['body',u'---'],
-				['body',u'УдалитьТело',self.OnEdBrDelB,None],
+        #Кнопочное меню
+        self.buttonMenu=[
+                #['',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['add',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['add',u'---',None,None,'main'],
+                ['edge',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['edge',u'---',None,None,'main'],
+                ['body',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['body',u'---',None,None,'main'],
+                ['isoline',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['isoline',u'---',None,None,'main'],
+                ['drill',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['drill',u'---',None,None,'main'],
+                ['ways',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['ways',u'---',None,None,'main'],
+                ['edit',u'Главное меню',self.NavigateMenu,None,'main'],
+                ['edit',u'---',None,None,'main'],
+                ['main',u'Задание',self.NavigateMenu,None,'add'],
+                        ['add',u'Бровка',self.NavigateMenu,None,'edge'],
+                                ['edge',u'Начать',self.OnEdgePLine,None,'start_edge'],
+                                        ['start_edge',u'ОтменитьПосл',self.OnEdgeUndo,None,'edge'],
+                                        ['start_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
+                                        ['start_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
+                                        ['start_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
+                                ['edge',u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
+                                        ['continue_edge',u'ОтменитьПосл',self.NavigateMenu,None],
+                                        ['continue_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
+                                        ['continue_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
+                                        ['continue_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
+                                ['edge',u'---'],
+                                ['edge',u'УдалитьБровку',self.OnEdBrDelB,None],
+                                ['edge',u'РазбитьБровку',self.OnEdBrBrkV,None],
+                                ['edge',u'ВставитьТочку',self.OnEdBrInsV,None],
+                                ['edge',u'УдалитьТочку',self.OnEdBrDelV,None],
+                                ['edge',u'ПеремесТочку',self.OnEdBrMoveV,None],
 
-			['add',u'Рельеф',self.NavigateMenu,None,'isoline'],
-				['isoline',u'Начать',self.OnEdgePLine,None,'start_isoline'],
-					['start_isoline',u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
-					['start_isoline',u'Закончить',self.OnEdgeClose,None,'isoline'],
-					['start_isoline',u'Отмена',self.OnEdgeCancel,None,'isoline'],
-				['isoline',u'---'],
-				['isoline',u'УдалитьИзолинию',self.OnEdBrDelB,None],
-				['isoline',u'ВставитьТочку',self.OnEdBrInsV,None],
-				['isoline',u'УдалитьТочку',self.OnEdBrDelV,None],
-				['isoline',u'ПеремесТочку',self.OnEdBrMoveV,None],
+                        ['add',u'Тело',self.NavigateMenu,None,'body'],
+                                ['body',u'Начать',self.OnEdgePLine,None,'start_body'],
+                                        ['start_body',u'ОтменитьПосл',self.OnEdgeUndo,None,'body'],
+                                        ['start_body',u'Закончить',self.OnEdgeEnd,None,'body'],
+                                        ['start_body',u'Замкнуть',self.OnEdgeClose,None,'body'],
+                                        ['start_body',u'Отмена',self.OnEdgeCancel,None,'body'],
+                                ['body',u'---'],
+                                ['body',u'УдалитьТело',self.OnEdBrDelB,None],
 
-			['add',u'Скважина',self.NavigateMenu,None,'drill'],
-				['drill',u'Задать',self.OnDrillStart,None,'start_drill'],
-					['start_drill',u'Создать',self.OnDrillAdd,None,'drill'],
-					['start_drill',u'Отмена',self.OnEdgeCancel,None,'drill'],
-				['drill',u'УдалитьСкважину',self.OnEdBrDelB,None],
-				['drill',u'ПереместитьСкважину',self.NavigateMenu,None],
+                        ['add',u'Рельеф',self.NavigateMenu,None,'isoline'],
+                                ['isoline',u'Начать',self.OnEdgePLine,None,'start_isoline'],
+                                        ['start_isoline',u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
+                                        ['start_isoline',u'Закончить',self.OnEdgeClose,None,'isoline'],
+                                        ['start_isoline',u'Отмена',self.OnEdgeCancel,None,'isoline'],
+                                ['isoline',u'---'],
+                                ['isoline',u'УдалитьИзолинию',self.OnEdBrDelB,None],
+                                ['isoline',u'ВставитьТочку',self.OnEdBrInsV,None],
+                                ['isoline',u'УдалитьТочку',self.OnEdBrDelV,None],
+                                ['isoline',u'ПеремесТочку',self.OnEdBrMoveV,None],
 
-			['add',u'Съезды',self.NavigateMenu,None,'ways'],
-				['ways',u'Скользящий',self.OnEdgePLine,None,'ways_slide'],
-					['ways_slide',u'ОтменитьПосл',self.OnEdgeUndo,None],
-					['ways_slide',u'Закончить',self.OnEdgeEnd,None],
-				['ways',u'Стационарный',self.NavigateMenu,None,'ways_normal'],
-					['ways_normal',u'ВыбратьБорт',self.NavigateMenu,None],
-					['ways_normal',u'ПоЧасовой',self.NavigateMenu,None],
-					['ways_normal',u'ПротивЧасовой',self.NavigateMenu,None],
-					['ways_normal',u'Закончить',self.NavigateMenu,None],
+                        ['add',u'Скважина',self.NavigateMenu,None,'drill'],
+                                ['drill',u'Задать',self.OnDrillStart,None,'start_drill'],
+                                        ['start_drill',u'Создать',self.OnDrillAdd,None,'drill'],
+                                        ['start_drill',u'Отмена',self.OnEdgeCancel,None,'drill'],
+                                ['drill',u'УдалитьСкважину',self.OnEdBrDelB,None],
+                                ['drill',u'ПереместитьСкважину',self.NavigateMenu,None],
 
-		['main',u'Корректировка',self.NavigateMenu,None,'edit'],
-			['edit',u'Прирезка',self.NavigateMenu,None,'cut'],
-			['edit',u'Отсечь',self.NavigateMenu,None,'merge'],
-		]
-	self.menu_now='main'
-	self.tb3 = self.CreateMenu() 
-	self.NavigateMenu();
-	self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left())
+                        ['add',u'Съезды',self.NavigateMenu,None,'ways'],
+                                ['ways',u'Скользящий',self.OnEdgePLine,None,'ways_slide'],
+                                        ['ways_slide',u'ОтменитьПосл',self.OnEdgeUndo,None],
+                                        ['ways_slide',u'Закончить',self.OnEdgeEnd,None],
+                                ['ways',u'Стационарный',self.NavigateMenu,None,'ways_normal'],
+                                        ['ways_normal',u'ВыбратьБорт',self.NavigateMenu,None],
+                                        ['ways_normal',u'ПоЧасовой',self.NavigateMenu,None],
+                                        ['ways_normal',u'ПротивЧасовой',self.NavigateMenu,None],
+                                        ['ways_normal',u'Закончить',self.NavigateMenu,None],
+
+                ['main',u'Корректировка',self.NavigateMenu,None,'edit'],
+                        ['edit',u'Прирезка',self.NavigateMenu,None,'cut'],
+                        ['edit',u'Отсечь',self.NavigateMenu,None,'merge'],
+                ['',u'---',None,None,'main'],
+                ['',u'Debug',self.OnDebug,None,'main'],
+                ['',u'СохранитьБД',self.OnSaveDB,None],
+                ['',u'ПоказатьВсё',self._zoomall,None]
+                ]
+        self.menu_now='main'
+        self.tb3 = self.CreateMenu()
+        self.NavigateMenu();
+        self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left())
 
         self._mgr.Update()
         #self._mgr.GetPane("Help").MinSize((-1,-1)) # now make it so that the help pane can be resized
@@ -362,7 +371,7 @@ class AppFrame(wx.Frame):
         # Creating Menu
         menuBar = wx.MenuBar()
         FileMenu = wx.Menu()
-        
+
         file_id = wx.NewId()
         FileMenu.Append(file_id, MNU_OPEN[0], MNU_OPEN[1])
         self.Bind(wx.EVT_MENU, self.OnOpen, id=file_id)
@@ -380,12 +389,12 @@ class AppFrame(wx.Frame):
         FileMenu.Append(saveasbmp_id, MNU_SAVEAS[0], MNU_SAVEAS[1])
         self.Bind(wx.EVT_MENU, self.SaveAsImage, id=saveasbmp_id)
         FileMenu.AppendSeparator()
-        
+
         execpy_id = wx.NewId()
         FileMenu.Append(execpy_id, MNU_SCRIPT[0], MNU_SCRIPT[1])
         self.Bind(wx.EVT_MENU, self.ExecPyFile, id=execpy_id)
         FileMenu.AppendSeparator()
-        
+
         exit_id = wx.NewId()
         FileMenu.Append(exit_id, MNU_EXIT[0], MNU_EXIT[1])
         self.Bind(wx.EVT_MENU, self.OnExit, id=exit_id)
@@ -397,13 +406,13 @@ class AppFrame(wx.Frame):
             for f in reversed(self._recentfiles):
                 self.filehistory.AddFileToHistory(f)
         self.Bind(wx.EVT_MENU_RANGE, self.OnClickRecentFile, id=wx.ID_FILE1, id2=wx.ID_FILE9)
-        
+
         menuBar.Append(FileMenu, MNU_FILE)
         # View menu
         viewmenu = wx.Menu()
         restoreperspectiveID = wx.NewId()
         viewmenu.Append(restoreperspectiveID, u'Restore default layout', 'Restore the UI to the default layout.')
-        self.Bind(wx.EVT_MENU, self.OnRestoreDefaultPerspective, id=restoreperspectiveID)       
+        self.Bind(wx.EVT_MENU, self.OnRestoreDefaultPerspective, id=restoreperspectiveID)
         viewmenu.AppendSeparator()
         v_Top = wx.NewId()
         viewmenu.Append(v_Top, MNU_TOP[0], MNU_TOP[1])
@@ -470,73 +479,73 @@ class AppFrame(wx.Frame):
         displaymode_menu.Append(d_aoff, MNU_AALIASof[0], MNU_AALIASof[1])
         self.Bind(wx.EVT_MENU, self.OnAntialiasingOff, id=d_aoff)
         menuBar.Append(displaymode_menu, MNU_DISMODE)
-        
+
         #=========================================================
         # Меню для демонстрации создания примитивов  === add cyx
         construct_menu = wx.Menu()
         c_axis = wx.NewId()
         construct_menu.Append(c_axis, MNU_CRAXIS[0], MNU_CRAXIS[1])
         self.Bind(wx.EVT_MENU, self.OnCAxis, id=c_axis)
-        
+
         c_topograph = wx.NewId()
         construct_menu.Append(c_topograph, MNU_CRDEMODB[0], MNU_CRDEMODB[1])
         self.Bind(wx.EVT_MENU, self.OnCreateDB, id=c_topograph)
-        
+
         c_pit = wx.NewId()
         construct_menu.Append(c_pit, MNU_CRPIT[0], MNU_CRPIT[1])
         self.Bind(wx.EVT_MENU, self.OnDemoPit, id=c_pit)
-        
+
         c_lidar = wx.NewId()
         construct_menu.Append(c_lidar, MNU_LIDAR[0], MNU_LIDAR[1])
         self.Bind(wx.EVT_MENU, self.OnLidar, id=c_lidar)
-        
+
         c_etalon = wx.NewId()
         construct_menu.Append(c_etalon, "Эталон", "Эталон")
         self.Bind(wx.EVT_MENU, self.OnEtalon, id=c_etalon)
-        
+
         #c_explore = wx.NewId()
         #construct_menu.Append(c_explore, MNU_EXPLORE[0], MNU_EXPLORE[1])
         #self.Bind(wx.EVT_MENU, self.OnCExplore, id=c_explore)
-        
+
         #c_erase = wx.NewId()
         #construct_menu.Append(c_erase, MNU_ERASE[0], MNU_ERASE[1])
         #self.Bind(wx.EVT_MENU, self.OnCErase, id=c_erase)
-        
+
         menuBar.Append(construct_menu, MNU_CREATE)
 
         #=========================================================
         # Меню для редактирования элементов  === add cyx
-        edit_menu = wx.Menu()        
-                
+        edit_menu = wx.Menu()
+
         e_explore = wx.NewId()
         edit_menu.Append(e_explore, MNU_EXPLORE[0], MNU_EXPLORE[1])
         self.Bind(wx.EVT_MENU, self.OnCExplore, id=e_explore)
 
-	e_edit = wx.NewId()
+        e_edit = wx.NewId()
         edit_menu.Append(e_edit, 'Редактировать елемент', 'Вызвать окно редактора координат')
         self.Bind(wx.EVT_MENU, self.OnCEdit, id=e_edit)
 
         e_EdBrInsV = wx.NewId()
         edit_menu.Append(e_EdBrInsV, MNU_EdBrInsV[0], MNU_EdBrInsV[1])
         self.Bind(wx.EVT_MENU, self.OnEdBrInsV, id=e_EdBrInsV)
-        
+
         e_EdBrMoveV = wx.NewId()
         edit_menu.Append(e_EdBrMoveV, MNU_EdBrMoveV[0], MNU_EdBrMoveV[1])
         self.Bind(wx.EVT_MENU, self.OnEdBrMoveV, id=e_EdBrMoveV)
-        
+
         e_EdBrDelV = wx.NewId()
         edit_menu.Append(e_EdBrDelV, MNU_EdBrDelV[0], MNU_EdBrDelV[1])
         self.Bind(wx.EVT_MENU, self.OnEdBrDelV, id=e_EdBrDelV)
-        
+
         e_EdBrBrkV = wx.NewId()
         edit_menu.Append(e_EdBrBrkV, MNU_EdBrBrkV[0], MNU_EdBrBrkV[1])
         self.Bind(wx.EVT_MENU, self.OnEdBrBrkV, id=e_EdBrBrkV)
-        
+
         e_EdBrDelB = wx.NewId()
         edit_menu.Append(e_EdBrDelB, MNU_EdBrDelB[0], MNU_EdBrDelB[1])
         self.Bind(wx.EVT_MENU, self.OnEdBrDelB, id=e_EdBrDelB)
-        
-        
+
+
         menuBar.Append(edit_menu, MNU_EDIT)
         #==========================================================
         # About menu
@@ -545,7 +554,7 @@ class AppFrame(wx.Frame):
         about_menu.Append(a_id, MNU_ABOUT[0], MNU_ABOUT[1])
         self.Bind(wx.EVT_MENU, self.OnAbout, id=a_id)
         menuBar.Append(about_menu, MNU_HELP)
-        
+
         self.SetMenuBar(menuBar)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self._refreshui()
@@ -555,81 +564,82 @@ class AppFrame(wx.Frame):
         self.SetStatusText("Приглашение", 0)
         self.SetStatusText("Координаты курсора", 1)
         self.SetStatusText("Результат", 2)
-        
+
         self.canva.GumLine = False
         self.canva.MakeLine = False
         self.canva.MakePLine = False
-	self.canva.MakePoint = False
+        self.canva.MakePoint = False
         self.canva.startPt = False
         #self.canva.MakeErase = False
         self.canva.drawList = []
         self.canva.tmpEdge = None
 
     def CreateMenu(self):
-	return wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, (300,500), wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
+        return wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, (300,500), wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
 
     def NavigateMenu(self,event=None,menuname='main'):
-	if(event<>None):
-	    for i,v in enumerate(self.buttonMenu):
-		if v[1]==event.EventObject.GetLabelText() and (v[0]==self.menu_now or v[0]==''):
-		    menuname=v[4]
-		    self.menu_now=menuname
-		    break
-	else:
-	    self.menu_now=menuname
-	self.tb3.ClearTools()
-	self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
-	self.tb3.AddSeparator()
-	for i,v in enumerate(self.buttonMenu):
-	    if v[0]==menuname or (v[0]==''and not menuname=='main'):
-		if v[1]==u'---':
-		    self.tb3.AddSeparator()
-		else:
-		    self.buttonMenu[i][3]=wx.Button(self.tb3, -1, v[1],size=(130,30))
-	    	    self.tb3.AddControl(self.buttonMenu[i][3])
-	    	    self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][2], self.buttonMenu[i][3])
-	self.tb3.Fit()
+        if(event<>None):
+            for i,v in enumerate(self.buttonMenu):
+                if v[1]==event.EventObject.GetLabelText() and (v[0]==self.menu_now or v[0]==''):
+                    menuname=v[4]
+                    self.menu_now=menuname
+                    break
+        else:
+            self.menu_now=menuname
+        self.tb3.ClearTools()
+        self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
+        if not menuname=='main':
+            self.tb3.AddSeparator()
+        for i,v in enumerate(self.buttonMenu):
+            if v[0]==menuname or v[0]=='':
+                if v[1]==u'---':
+                    self.tb3.AddSeparator()
+                else:
+                    self.buttonMenu[i][3]=wx.Button(self.tb3, -1, v[1],size=(130,30))
+                    self.tb3.AddControl(self.buttonMenu[i][3])
+                    self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][2], self.buttonMenu[i][3])
+        self.tb3.Fit()
 
     def getTypeByMenu(self):
-	if self.menu_now=='start_edge' or self.menu_now=='continue_edge' or self.menu_now=='edge':
-	    return 0
-	elif self.menu_now=='start_body' or self.menu_now=='body':
-	    return 1
-	elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
-	    return 2
-	elif self.menu_now=='start_drill' or self.menu_now=='drill':
-	    return 3
-	return -1
+        if self.menu_now=='start_edge' or self.menu_now=='continue_edge' or self.menu_now=='edge':
+            return 0
+        elif self.menu_now=='start_body' or self.menu_now=='body':
+            return 1
+        elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
+            return 2
+        elif self.menu_now=='start_drill' or self.menu_now=='drill':
+            return 3
+        return -1
 
     def OnDrillStart(self,event):
-	Point(self)
-	self.NavigateMenu(event)
+        Point(self)
+        self.NavigateMenu(event)
 
     def OnDrillAdd(self,event):
-	Coord_yes(self,True)
-	self.NavigateMenu(event)
+        Coord_yes(self,True)
+        self.NavigateMenu(event)
 
     def OnEdgePLine(self,event):
-	self.OnPLine(event)
-	self.NavigateMenu(event)
+        self.OnPLine(event)
+        self.NavigateMenu(event)
 
     def OnEdgeCancel(self,event):
-	self.OnCancel(event)
-	self.NavigateMenu(event)
+        self.OnCancel(event)
+        self.NavigateMenu(event)
 
     def OnEdgeEnd(self,event):
-	Coord_yes(self,True)
-	self.NavigateMenu(event)
+        Coord_yes(self,True)
+        self.NavigateMenu(event)
 
     def OnEdgeClose(self,event):
-	Coord_yes(self,True,True)
-	self.NavigateMenu(event)
+        Coord_yes(self,True,True)
+        self.NavigateMenu(event)
 
     def OnEdgeContinue(self,event):
-	sel_shape=self.canva._3dDisplay.selected_shape
+        sel_shape=self.canva._3dDisplay.selected_shape
         if sel_shape:
-	    object_type=self.getTypeByMenu()
-            indexInfo = None; 
+            object_type=self.getTypeByMenu()
+            indexInfo = None;
             for i in range(len(self.canva.drawList)):
                 s1 = self.canva.drawList[i][2]
                 if s1:
@@ -637,26 +647,28 @@ class AppFrame(wx.Frame):
                         indexInfo = i
                         break
             if indexInfo == None:
-		return
-	    pnts = getPoints(sel_shape)
-	    self.OnPLine(event)
-	    self.canva.lstPnt=pnts
-	    self.NavigateMenu(event)
+                return
+            selObj = self.canva._3dDisplay.Context.SelectedInteractive()
+            self.canva._3dDisplay.Context.Erase(selObj)
+            pnts = getPoints(sel_shape)
+            self.canva.lstPnt=pnts
+            self.OnPLine(event)
+            self.NavigateMenu(event)
 
     def OnEdgeUndo(self,event):
-	if len(self.canva.lstPnt)>2:
-	    self.canva.coord.SetValue(str(self.canva.lstPnt[-2][0])+','+str(self.canva.lstPnt[-2][1])+','+str(self.canva.lstPnt[-2][2]))
-	    self.canva.lstPnt=self.canva.lstPnt[:-2]
-	    Coord_yes(self)
-	elif len(self.canva.lstPnt)==2:
-	    self.canva.coord.SetValue(str(self.canva.lstPnt[0][0])+','+str(self.canva.lstPnt[0][1])+','+str(self.canva.lstPnt[0][2]))
-	    self.canva.lstPnt=[]
-	    Coord_yes(self)
-	    if self.canva.tmpEdge: 
+        if len(self.canva.lstPnt)>2:
+            self.canva.coord.SetValue(str(self.canva.lstPnt[-2][0])+','+str(self.canva.lstPnt[-2][1])+','+str(self.canva.lstPnt[-2][2]))
+            self.canva.lstPnt=self.canva.lstPnt[:-2]
+            Coord_yes(self)
+        elif len(self.canva.lstPnt)==2:
+            self.canva.coord.SetValue(str(self.canva.lstPnt[0][0])+','+str(self.canva.lstPnt[0][1])+','+str(self.canva.lstPnt[0][2]))
+            self.canva.lstPnt=[]
+            Coord_yes(self)
+            if self.canva.tmpEdge:
                 self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
                 self.canva.tmpEdge = None
-	else:
-	    self.OnEdgeCancel(event)
+        else:
+            self.OnEdgeCancel(event)
 
     def CreateRightToolbar(self):
         # Начало формирования палитры
@@ -704,30 +716,30 @@ class AppFrame(wx.Frame):
         tb.AddCheckTool(id=self.rotateID, bitmap=rotate,
                        shortHelp="Rotate",
                        longHelp="Dynamically rotate the view when the mouse moves.")
-        self.Bind(wx.EVT_TOOL, self._rotate, id=self.rotateID)     
+        self.Bind(wx.EVT_TOOL, self._rotate, id=self.rotateID)
         # Конец формирования палитры
-        tb.Realize()        
+        tb.Realize()
         return tb
 
     def CreateGgisToolbar(self):
         # Начало формирования палитры кнопочного меню
-        tb = wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER) 
+        tb = wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
         tb.SetToolBitmapSize((24, 24))
-        # Отмена        
-        img_cancel = CreatePng(os.path.join(THISPATH, 'icons', 'process-stop.png'), 16, 16)        
+        # Отмена
+        img_cancel = CreatePng(os.path.join(THISPATH, 'icons', 'process-stop.png'), 16, 16)
         self.cancelID = wx.NewId()
         tb.AddLabelTool(self.cancelID, 'Stop', img_cancel, shortHelp='Отмена')
         self.Bind(wx.EVT_TOOL, self.OnCancel, id=self.cancelID)
 
-        # Линия        
-        img_line = CreatePng(os.path.join(THISPATH, 'icons', 'segment.png'), 16, 16)        
+        # Линия
+        img_line = CreatePng(os.path.join(THISPATH, 'icons', 'segment.png'), 16, 16)
         self.lineID = wx.NewId()
         tb.AddLabelTool(self.lineID, 'Line', img_line, shortHelp='Отрезок')
         self.Bind(wx.EVT_TOOL, self.OnCLine, id=self.lineID)
 
-        # Полилиния        
+        # Полилиния
         self.plineID = wx.NewId()
-        img_pline = CreatePng(os.path.join(THISPATH, 'icons', 'linear.png'), 16, 16)        
+        img_pline = CreatePng(os.path.join(THISPATH, 'icons', 'linear.png'), 16, 16)
         tb.AddLabelTool(self.plineID, 'PLine', img_pline, shortHelp='Полилиния')
         self.Bind(wx.EVT_TOOL, self.OnPLine, id=self.plineID)
 
@@ -758,7 +770,7 @@ class AppFrame(wx.Frame):
                                       wx.CB_SIMPLE)
         tb.AddControl(self.canva.snap)
         # Конец формирования палитры
-        tb.Realize()        
+        tb.Realize()
         return tb
 
     def createOptionsPane(self):
@@ -771,43 +783,43 @@ class AppFrame(wx.Frame):
         # IsChecked(i)  - проверка выбора i-го горизонта в списке self.horList
         # self.gorCur   - комполнет выбора текущего горизонта
         # self.gorCur.GetCurrentSelection() - номер выбранного в self.horList
-        # 
+        #
         # self.objList = ["Бровки", "Тела", "Скважины", "Изолинии", "Отметки","Надписи", "БВР"]
         # self.chkObjs  - компонент с выбранными объектами, аналог self.gorLst
         # IsChecked(i)  - проверка выбора i-го объекта в списке self.objList
-        # 
-        # self.stepXY   - компонент с выбранным шагом сетки 
+        #
+        # self.stepXY   - компонент с выбранным шагом сетки
         # self.stepXY.GetValue() - выбранный размер сетки как целое от 0 до 100
-        # 
+        #
         # self.egde_typeList - список типов бровок в БД
         # [[id_edge_type,  name, line_type, color, thickness] , ... ]
         # self.edge_typeCur  - компонент с выбранным именем типа бровки
         # self.edge_typeCur.GetCurrentSelection() - номер выбранного в self.edge_typeList
-        # 
+        #
         # self.sortList - список сортов РТ  в формате
         #[[id_sort,  name, norm_weight, color, line_type, thickness, color_fill, description] , ... ]
         # self.sortCur  - компонент с выбранным именем сорта
         # self.sortCur.GetCurrentSelection() - номер выбранного в self.sortList
-        # 
+        #
         # self.coordList - список используемых систем координат из БД в формате
         # [[id_coord_system, id_srid, description] , ... ]
         # self.coordCur - компонент с выбранным именем системы координат
         # self.coordCur.GetCurrentSelection() - номер выбранного в self.coordList
-        # 
+        #
         # self.line_typeList - список используемых типов линий из БД в формате
         #[[id_type_line, name, description] , ... ]
         # self.line_typeCur - компонент с выбранным именем линии
         # self.line_typeCur.GetCurrentSelection() - номер выбранного в self.line_typeList
-        # 
+        #
         # self.colorList - список используемых цветов из БД в формате
-        # # [[id_color, name_color, red, green, blue] , ... ] 
+        # # [[id_color, name_color, red, green, blue] , ... ]
         # self.colorCur  - компонент с выбранным именем цвета
         # self.colorCur.GetCurrentSelection() - номер выбранного в self.colorList
-        # 
-        # self.lineWidth - компонент с выбранной толщиной линии 
+        #
+        # self.lineWidth - компонент с выбранной толщиной линии
         # self.lineWidth.GetValue() - выбранная толщина линии от 0 до 10
-        # 
-        # 
+        #
+        #
         panel = self.panel2     #.win
         dataBox = wx.BoxSizer(wx.HORIZONTAL)    # Общий sizer
         # Горизонты
@@ -824,13 +836,13 @@ class AppFrame(wx.Frame):
                                  size = (130,20)),
                     flag=wx.EXPAND)
 
-        self.gorLst = wx.CheckListBox(panel, -1,                                 
+        self.gorLst = wx.CheckListBox(panel, -1,
                                  #(10,30),
                                  size=(120,300),
                                  choices=self.horList,
                                  style=wx.LB_MULTIPLE)
         horBox.Add(self.gorLst, flag=wx.EXPAND)
-        
+
         horBox.Add((10,40))
         horBox.Add(wx.StaticText(panel, -1, "Текущий горизонт",size=(180,20)),
                    flag=wx.EXPAND)
@@ -865,7 +877,7 @@ class AppFrame(wx.Frame):
                                   size=(120, 30),
                                   style = wx.SP_ARROW_KEYS,
                                   min = 0, max = 100, initial = 0)
-        
+
         objBox.Add(self.stepXY, flag=wx.EXPAND)
         objBox.Add((10,40))
 
@@ -875,7 +887,7 @@ class AppFrame(wx.Frame):
                                size = (100,30))
         self.Bind(wx.EVT_BUTTON, self.OnRefresh, btnRefresh)
         objBox.Add(btnRefresh, flag=wx.EXPAND)
-        
+
         dataBox.Add(objBox, flag=wx.EXPAND)     # Включить в сайзер
         dataBox.Add((40,10))
 
@@ -884,7 +896,7 @@ class AppFrame(wx.Frame):
                     flag=wx.EXPAND)
         #[[id_edge_type,  name, line_type, color, thickness] , ... ]
         edges_type = GetRowsTbl("edge_type", "")
-         
+
         self.egde_typeList = []     # Глобальный список типов бровок
         typeLst = []                # Локальный для списка выбора
         for edge in edges_type:
@@ -905,7 +917,7 @@ class AppFrame(wx.Frame):
                     flag=wx.EXPAND)
         #[[id_sort,  name, norm_weight, color, line_type, thickness, color_fill, description] , ... ]
         sorts_type = GetRowsTbl("sorts", "")
-         
+
         self.sortList = []      # Глобальный список типов бровок
         sortLst = []            # Локальный для списка выбора
         for sort in sorts_type:
@@ -927,7 +939,7 @@ class AppFrame(wx.Frame):
                     flag=wx.EXPAND)
         #[[id_coord_system, id_srid, description] , ... ]
         coord_systems = GetRowsTbl("coord_systems", "")
-         
+
         self.coordList = []      # Глобальный список типов бровок
         coordLst = []            # Локальный для списка выбора
         for coord in coord_systems:
@@ -943,7 +955,7 @@ class AppFrame(wx.Frame):
                                          choices=coordLst,
                                          style=wx.CB_READONLY)
         par1Box.Add(self.coordCur, flag=wx.EXPAND, border = 1)
-        
+
         dataBox.Add(par1Box,flag=wx.EXPAND)     # Включить в сайзер
         dataBox.Add((40,10))
 
@@ -951,7 +963,7 @@ class AppFrame(wx.Frame):
         par2Box.Add(wx.StaticText(panel,-1,"Тип линии",size=(130,20)),
                     flag=wx.EXPAND)
         lines_type = GetRowsTbl("line_type", "")
-        #[[id_type_line, name, description] , ... ]        
+        #[[id_type_line, name, description] , ... ]
         self.line_typeList = []     # Глобальный список типов линий
         lineLst = []                # Локальный для списка выбора
         for line in lines_type:
@@ -972,7 +984,7 @@ class AppFrame(wx.Frame):
                     flag=wx.EXPAND)
 
         colorS = GetRowsTbl("color", "")
-        # [[id_color, name_color, red, green, blue] , ... ] 
+        # [[id_color, name_color, red, green, blue] , ... ]
         self.colorList = []         # Глобальный список цветов
         colorLst = []               # Локальный для списка выбора
         for color in colorS:
@@ -997,18 +1009,18 @@ class AppFrame(wx.Frame):
                                   size=(120, 30),
                                   style = wx.SP_ARROW_KEYS,
                                   min = 0, max = 10, initial = 1)
-        
+
         par2Box.Add(self.lineWidth, flag=wx.EXPAND)
 
 
         dataBox.Add(par2Box,flag=wx.EXPAND)     # Включить в сайзер
         #dataBox.Add((40,10))
 
-        
+
         panel.SetSizer(dataBox)
         panel.SetAutoLayout(True)
         dataBox.Fit(panel)
-      
+
         pass
     #=====================================================
     def ExecPyFile(self, event):
@@ -1020,10 +1032,10 @@ class AppFrame(wx.Frame):
         if dlg.ShowModal() <> wx.ID_OK:
             dlg.Destroy()
             return False
-        
+
         fullpathname = dlg.GetPath()
         self.workingdir = os.path.dirname(fullpathname)
-        
+
         wx.BeginBusyCursor()
         try:
             if self.pyshell:
@@ -1033,14 +1045,14 @@ class AppFrame(wx.Frame):
             execfile(fullpathname, locals)
         except Exception, errno:
             msg = "Error in script [%s]\n%s" % (fullpathname, errno)
-            dlg = wx.MessageDialog(self, msg, "Method Error", wx.OK | wx.ICON_INFORMATION) 
-            dlg.ShowModal() 
-            dlg.Destroy() 
+            dlg = wx.MessageDialog(self, msg, "Method Error", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
             msg = "Unable to execute script [%s]" % (fullpathname)
         wx.EndBusyCursor()
-    
+
     def OnAbout(self, event):
-        info = wx.AboutDialogInfo()    
+        info = wx.AboutDialogInfo()
         info.Name = "pythonOCC Interactive Console"
         info.Version = VERSION
         info.Copyright = "(C) 2008-2009 Andy Haywood"
@@ -1052,7 +1064,7 @@ class AppFrame(wx.Frame):
         redistribute the software under the terms of the CeCILL license as circulated by CEA, CNRS
         and INRIA at the following URL "http://www.cecill.info"."""
         wx.AboutBox(info)
-        
+
     def OnRestoreDefaultPerspective(self, event):
         """Restore the UI to the default layout."""
         self._mgr.LoadPerspective(self.DefaultPerspective)
@@ -1082,7 +1094,7 @@ class AppFrame(wx.Frame):
         self.tb1.ToggleTool(self.panID, self.canva.DynaPan)
         self.tb1.ToggleTool(self.rotateID, self.canva.DynaRotate)
         self.canva.SetDynaCursor()
-      
+
     def SaveAsImage(self, event):
         if not hasattr(self, "workingdir"):
             self.workingdir = "."
@@ -1095,11 +1107,11 @@ class AppFrame(wx.Frame):
         else:
             self.canva._3dDisplay.Repaint()
             imagefilename = dlg.GetPath()
-            dlg.Destroy()   
+            dlg.Destroy()
             if imagefilename:
                 self.canva._3dDisplay.Repaint()
                 self.canva.SaveAsImage(str(imagefilename))
-        
+
     def OnRestoreDefaultPerspective(self, event):
         """Restore the UI to the default layout."""
         self._mgr.LoadPerspective(self.DefaultPerspective)
@@ -1122,7 +1134,7 @@ class AppFrame(wx.Frame):
         self.browser = b
         help_icon = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'help.png'), 16, 16)
         self.notebook.AddPage(b, "Help", True, help_icon)
-        
+
     def _createpythonshell(self):
         intronote = "Interactive Python Shell for pythonOCC."
         py = wx.py.shell.Shell(self.panel4, - 1, introText=intronote)
@@ -1133,7 +1145,7 @@ class AppFrame(wx.Frame):
         #py_icon = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'py.png'), 16, 16)
         #self.notebook.AddPage(py, "Python shell", True, py_icon)
         self.pyshell = py
-        
+
     def View_Top(self, event):
         self.canva._3dDisplay.View_Top()
 
@@ -1142,16 +1154,16 @@ class AppFrame(wx.Frame):
 
     def View_Left(self, event):
         self.canva._3dDisplay.View_Left()
-        
+
     def View_Right(self, event):
         self.canva._3dDisplay.View_Right()
-        
+
     def View_Front(self, event):
         self.canva._3dDisplay.View_Front()
-        
+
     def View_Rear(self, event):
         self.canva._3dDisplay.View_Rear()
-        
+
     def View_Iso(self, event):
         #print "View Iso!!"
         self.canva._3dDisplay.View_Iso()
@@ -1167,24 +1179,24 @@ class AppFrame(wx.Frame):
 
     def OnSelectionNeutral(self, event):
         self.canva._3dDisplay.SetSelectionModeNeutral()
-    
+
     def OnDisplayModeWireframe(self, event):
         self.canva._3dDisplay.SetModeWireFrame()
-    
+
     def OnDisplayModeShaded(self, event):
         self.canva._3dDisplay.SetModeShaded()
-    
+
     def OnDisplayModeQHLR(self, event):
         #print "Display QHLR"
         self.canva._3dDisplay.SetModeQuickHLR()
-    
+
     def OnDisplayModeEHLR(self, event):
         #print "Display EHLR"
         self.canva._3dDisplay.SetModeExactHLR()
-    
+
     def OnAntialiasingOn(self, event):
         self.canva._3dDisplay.EnableAntiAliasing()
-    
+
     def OnAntialiasingOff(self, event):
         self.canva._3dDisplay.DisableAntiAliasing()
 
@@ -1202,22 +1214,22 @@ class AppFrame(wx.Frame):
     def _pointer(self, event):
         self.canva.SetTogglesToFalse(event)
         self._refreshui()
-        
+
     def _dynamiczoom(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaZoom = True
         self._refreshui()
-        
+
     def _pan(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaPan = True
         self._refreshui()
-    
+
     def _rotate(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaRotate = True
         self._refreshui()
-        
+
     def OnOpen(self, event):
         # Choose file dialog
         if not hasattr(self, "_workingdir"):
@@ -1242,13 +1254,13 @@ class AppFrame(wx.Frame):
         self._addRecentFileToList(path)
         dlg.Destroy()
         self.LoadFile(path)
-        
+
     def OnClickRecentFile(self, event):
         # get the file based on the menu ID
         fileNum = event.GetId() - wx.ID_FILE1
         fname = self.filehistory.GetHistoryFile(fileNum)
         self.LoadFile(fname)
-        
+
     def LoadFile(self, filename):
         extension = os.path.basename(filename).split(".").pop().lower()
         start_time = time.time()
@@ -1285,10 +1297,10 @@ class AppFrame(wx.Frame):
         print "%s STEP file loaded and displayed in %f seconds." % (filename, duration)
         self.msgWin.AppendText("%s STEP file loaded and displayed in %f seconds." %
                                (filename, duration) + "\n")
-        
+
     def OnExit(self, event):
         self.OnClose(event)
-        
+
     def OnClose(self, event):
         SaveRecentFiles(self._recentfiles, os.path.join ( THISPATH, "recentfiles" ))
         SaveProt(self)
@@ -1303,8 +1315,8 @@ class AppFrame(wx.Frame):
                 self.Destroy()
         else:
             self._mgr.UnInit()
-            self.Destroy()             
-        
+            self.Destroy()
+
     def _addRecentFileToList(self, fname):
         while fname in self._recentfiles:
             self._recentfiles.remove(fname)
@@ -1314,51 +1326,51 @@ class AppFrame(wx.Frame):
     #===================================================================
     # Обработка меню ГГИС добавил Суханов В.И.
     # Тексты функций расположены в модуле ggisFun.py
-    
+
     def OnCLine(self, event):
         """Рисование отрезка"""
         CLine(self)
 
-    
+
     def OnPLine(self, event):
         """ Рисование ломаной """
         PLine(self)
-         
+
     def OnCAxis(self, event):
         """ Рисование длинных осей """
         CAxis(self)
 
-    def OnCreateDB(self, event): 
-        """ Создание элементов в базе данных PostGIS """ 
+    def OnCreateDB(self, event):
+        """ Создание элементов в базе данных PostGIS """
         CreateDB(self)
 
     def OnCExplore(self, event):
         """ Заказ на просмотр элемента """
         CExplore(self)
-        
+
     def OnCEdit(self,event):
-	""" Изменение координат объекта"""
-	CEdit(self)
-        
+        """ Изменение координат объекта"""
+        CEdit(self)
+
     def onCoord_yes(self, event):
         """ Ввод координат из окна Point от кнопки или мыши """
         Coord_yes(self)
-                
+
     def OnCancel(self, event):
         """ Отмена рисования элементов """
         self.canva.SetTogglesToFalse(event)
         CancelOp(self)
 
     def OnDemoPit(self, event):
-        """ Прямое рисование элементов карьера без сохранения в СУБД 
+        """ Прямое рисование элементов карьера без сохранения в СУБД
         для нагрузочного тестирования"""
         self.canva.SetTogglesToFalse(event)
         DemoPit(self)
-        
+
     def OnLoadDB(self, event):
         """ Загрузка элементов из базы данных PostGIS """
         LoadDB(self)
-        
+
     def OnSaveDB(self, event):
         """ Сохранить изменения в БД """
         SaveDB(self)
@@ -1370,12 +1382,12 @@ class AppFrame(wx.Frame):
     def OnEtalon(self, event):
         """ Рисовать файл эталон  """
         Etalon(self)
-        
+
     def OnRefresh(self, event):
-	""" Обновить окно  """
+        """ Обновить окно  """
         Refresh(self)
 
-#=== Edit menu =========================================================           
+#=== Edit menu =========================================================
     def OnEdBrMoveV(self, event):
         """ Перенести вершину бровки """
         self.canva.SetTogglesToFalse(event)
@@ -1383,7 +1395,7 @@ class AppFrame(wx.Frame):
         self.canva.EdStep = 1
         self.SetStatusText("", 0)
         pass
-                
+
     def OnEdBrInsV(self, event):
         """ Вставить вершину  """
         self.canva.SetTogglesToFalse(event)
@@ -1397,7 +1409,7 @@ class AppFrame(wx.Frame):
             self.SetStatusText("*** Нет Near ***", 0)
             #self.SetStatusText("Включите Near", 3)
         pass
-                
+
     def OnEdBrDelV(self, event):
         """ Удалить вершину  """
         self.canva.SetTogglesToFalse(event)
@@ -1405,7 +1417,7 @@ class AppFrame(wx.Frame):
         self.canva.EdStep = 1
         self.SetStatusText("", 0)
         pass
-                
+
     def OnEdBrBrkV(self, event):
         """ Разбить линию в точке  """
         self.canva.SetTogglesToFalse(event)
@@ -1418,7 +1430,7 @@ class AppFrame(wx.Frame):
         else:
             self.SetStatusText("*** Нет Near ***", 0)
         pass
-                
+
     def OnEdBrDelB(self, event):
         """ Удалить линию  """
         self.canva.SetTogglesToFalse(event)
@@ -1426,27 +1438,27 @@ class AppFrame(wx.Frame):
         self.canva.EdStep = 1
         self.SetStatusText("Укажите объект", 0)
         pass
-                
+
     def OnDebug(self,event):
-	print '---==========---'
-	print 'self.canva.drawList:'
-	print self.canva.drawList
-	print 'self.horList:'
-	print self.horList
-	print 'self.egde_typeList:'
-	print self.egde_typeList
-	print 'self.sortList:'
-	print self.sortList
-	print 'self.coordList:'
-	print self.coordList
-	print 'self.line_typeList:'
-	print self.line_typeList
-	print 'self.colorList:'
-	print self.colorList
+        print '---==========---'
+        print 'self.canva.drawList:'
+        print self.canva.drawList
+        print 'self.horList:'
+        print self.horList
+        print 'self.egde_typeList:'
+        print self.egde_typeList
+        print 'self.sortList:'
+        print self.sortList
+        print 'self.coordList:'
+        print self.coordList
+        print 'self.line_typeList:'
+        print self.line_typeList
+        print 'self.colorList:'
+        print self.colorList
 
 
 #====================================================================
-    
+
 if __name__ == "__main__":
     app = wx.PySimpleApp()
     wx.InitAllImageHandlers()
@@ -1458,6 +1470,6 @@ if __name__ == "__main__":
         wx.SafeYield()
         frame.canva.Init3dViewer()
         frame.canva._3dDisplay.View_Top()
-        #frame.pyshell.interp.locals["display"] = frame.canva._3dDisplay        
+        #frame.pyshell.interp.locals["display"] = frame.canva._3dDisplay
     app.SetTopWindow(frame)
-    app.MainLoop()            
+    app.MainLoop()
