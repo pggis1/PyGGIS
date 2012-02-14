@@ -355,11 +355,12 @@ def Coord_yes(self,drawP=False,closeP=False):
                     self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],False]]
                 elif self.menu_now=='start_body':
                     sort=self.sortList[self.sortCur.GetCurrentSelection()]
+                    bodyh=float(self.bodyH.GetValue())
                     if closeP:
                         geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
                     else:
                         geom=makeLINESTRING(self.canva.lstPnt)
-                    q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str('5')+","+str(sort[0])+","+geom+") RETURNING id_body;"  
+                    q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str(bodyh)+","+str(sort[0])+","+geom+") RETURNING id_body;"
                     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
                     curs.execute(q)
@@ -368,7 +369,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                     curs.close()
                     conn.close()
                     face = BRepBuilderAPI_MakeFace(w);
-                    ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, 5)).Shape();#float(self.bodyh.GetValue())
+                    ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, bodyh)).Shape();#float(self.bodyh.GetValue())
                     for i in range(len(self.colorList)):
                         if self.colorList[i][0]==sort[3]:
                             r=int(str(self.colorList[i][2]))/255.0
@@ -376,7 +377,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                             b=int(str(self.colorList[i][4]))/255.0
                             s1=self.canva._3dDisplay.DisplayColoredShape(ShapeFused, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                             break                                                        #point,h_body
-                    self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,0,sort[0],sort[3],sort[6],False]]
+                    self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,bodyh,sort[0],sort[3],sort[6],False]]
                 elif self.menu_now=='start_isoline':
                     coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
                     heigth=1
@@ -442,7 +443,7 @@ def Coord_yes(self,drawP=False,closeP=False):
         x=self.canva.lstPnt[-1][0]
         y=self.canva.lstPnt[-1][1]
         z=self.canva.lstPnt[-1][2]
-        dept=16
+        dept=float(self.drillH.GetValue())
         self.canva.lstPnt=self.canva.lstPnt[:-1]
         skv = BRepPrim_Cylinder(gp_Pnt(x,y,z), 0.1, dept)
         skv = skv.Shell()
@@ -450,7 +451,7 @@ def Coord_yes(self,drawP=False,closeP=False):
             id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
             coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
             type_drill=1
-            name="Скважина"
+            name=self.drillName.GetValue()
             q="INSERT INTO drills (horiz,coord_system, coord_x, coord_y, coord_z,type_drill,name) VALUES ("+str(id_hor)+","+str(coord_sys)+","+str(x)+","+str(y)+","+str(z)+",1,'"+name+"') RETURNING id_drill_fld;"
             conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
             curs = conn.cursor()

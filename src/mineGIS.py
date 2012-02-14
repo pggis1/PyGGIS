@@ -239,7 +239,6 @@ class AppFrame(wx.Frame):
         self.msgWin = wx.TextCtrl(self.panel3, -1, size=wx.DefaultSize,
                                   style = wx.TE_MULTILINE|#wx.TE_READONLY|
                                   wx.HSCROLL|wx.TE_RICH2|wx.TE_WORDWRAP )
-
         topsizer_M.Add(self.msgWin,
                      1,             # make vertically stretchable
                      wx.EXPAND |    # make horizontally stretchable
@@ -648,6 +647,7 @@ class AppFrame(wx.Frame):
                         break
             if indexInfo == None:
                 return
+
             selObj = self.canva._3dDisplay.Context.SelectedInteractive()
             self.canva._3dDisplay.Context.Erase(selObj)
             pnts = getPoints(sel_shape)
@@ -819,7 +819,13 @@ class AppFrame(wx.Frame):
         # self.lineWidth - компонент с выбранной толщиной линии
         # self.lineWidth.GetValue() - выбранная толщина линии от 0 до 10
         #
+        # self.bodyH - Высота тела
         #
+        # self.drillH - Глубина скважины
+        #
+        # self.drillName - Имя скважины
+        #
+
         panel = self.panel2     #.win
         dataBox = wx.BoxSizer(wx.HORIZONTAL)    # Общий sizer
         # Горизонты
@@ -935,6 +941,12 @@ class AppFrame(wx.Frame):
         par1Box.Add(self.sortCur, flag=wx.EXPAND, border = 1)
 
         par1Box.Add((10,40))
+        par1Box.Add(wx.StaticText(panel,-1,"Высота тела",size = (180,20)),
+                    flag=wx.EXPAND)
+        self.bodyH = wx.TextCtrl(panel, -1, "5",size=(150,30))
+        par1Box.Add(self.bodyH, flag=wx.EXPAND, border = 1)
+
+        par1Box.Add((10,40))
         par1Box.Add(wx.StaticText(panel,-1,"Система координат",size = (180,20)),
                     flag=wx.EXPAND)
         #[[id_coord_system, id_srid, description] , ... ]
@@ -955,6 +967,18 @@ class AppFrame(wx.Frame):
                                          choices=coordLst,
                                          style=wx.CB_READONLY)
         par1Box.Add(self.coordCur, flag=wx.EXPAND, border = 1)
+
+        par1Box.Add((10,40))
+        par1Box.Add(wx.StaticText(panel,-1,"Глубина сважины",size = (180,20)),
+                    flag=wx.EXPAND)
+        self.drillH = wx.TextCtrl(panel, -1, "16",size=(150,30))
+        par1Box.Add(self.drillH, flag=wx.EXPAND, border = 1)
+
+        par1Box.Add((10,40))
+        par1Box.Add(wx.StaticText(panel,-1,"Имя сважины",size = (180,20)),
+                    flag=wx.EXPAND)
+        self.drillName = wx.TextCtrl(panel, -1, "16",size=(150,30))
+        par1Box.Add(self.drillName, flag=wx.EXPAND, border = 1)
 
         dataBox.Add(par1Box,flag=wx.EXPAND)     # Включить в сайзер
         dataBox.Add((40,10))
