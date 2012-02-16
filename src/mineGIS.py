@@ -676,14 +676,20 @@ class AppFrame(wx.Frame):
             self.OnEdgeCancel(event)
 
     def OnErase(self,event):
+        """
+        Erase query
+        """
         needSave=False
         for element in self.canva.drawList:
             needSave = needSave or element[-1]
         if needSave:
-            if YesNo(self, u"Стереть без сохранения?", caption=u'Были изменены элементы карьера'):
-                pass
-        else:
-            pass
+            dlg = wx.MessageDialog(self, u"Сохранить изменения перед очисткой?", u'Были изменены элементы карьера', wx.YES | wx.NO | wx.CANCEL | wx.ICON_QUESTION)
+            result = dlg.ShowModal()
+            dlg.Destroy()
+            if result==wx.ID_YES:
+                SaveDB(self)
+            elif result==wx.ID_CANCEL:
+                return
         self.canva._3dDisplay.EraseAll()
         self.canva.drawList = []
 
@@ -1491,6 +1497,8 @@ class AppFrame(wx.Frame):
             if YesNo(self, u"Выйти без сохранения?", caption=u'Были изменены элементы карьера'):
                 self._mgr.UnInit()
                 self.Destroy()
+            else:
+                SaveDB(self)
         else:
             self._mgr.UnInit()
             self.Destroy()

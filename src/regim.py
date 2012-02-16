@@ -65,5 +65,5 @@ CMD_EdBrDelB    = 107
 POSTGR_DBN     =   u'postgres'
 POSTGR_USR     =   u'postgres'
 
-
+type_labels=['бровка','тело','скважина','изолиния',]
 

@@ -913,6 +913,38 @@ def SaveDB(self):
                         curs.execute(query)
                     element[ - 1] = False # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element
+
+                if element[0] == 1:     # Тело
+                    id = element[1]
+                    s1 = element[2]     # Объект
+                    if s1 == None:      # Удалять из БД
+                        query = "DELETE FROM body WHERE id_body=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                    else:               # Модифицировать в БД
+                        pnts = getPoints(s1.Shape())
+                        geom = makeLINESTRING(pnts)
+                        query = "UPDATE body SET geom=" + geom + " WHERE id_edge=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                    element[ - 1] = False # Снять флаг модификации
+                    self.canva.drawList[indexInfo] = element
+
+                if element[0] == 1:     # Тело
+                    id = element[1]
+                    s1 = element[2]     # Объект
+                    if s1 == None:      # Удалять из БД
+                        query = "DELETE FROM topograph WHERE id_topo=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                    else:               # Модифицировать в БД
+                        pnts = getPoints(s1.Shape())
+                        geom = makeLINESTRING(pnts)
+                        query = "UPDATE topograph SET geom=" + geom + " WHERE id_topo=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                    element[ - 1] = False # Снять флаг модификации
+                    self.canva.drawList[indexInfo] = element
         conn.commit()  
         curs.close()
         conn.close() 

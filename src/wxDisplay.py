@@ -329,6 +329,7 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay.StartRotation(self.dragStartPos.x,self.dragStartPos.y)
         
         self._3dDisplay.Select(self.dragStartPos.x, self.dragStartPos.y)
+
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
             sel_shape=self._3dDisplay.selected_shape
@@ -336,6 +337,21 @@ class GraphicsCanva3D(wx.Panel):
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
+            type=self.frame.getTypeByMenu()
+            indexInfo = None;
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        indexInfo = i
+                        break
+            if indexInfo<>None:
+                if not self.drawList[indexInfo][0]==type:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    self.EdCmd = 0; self.EdStep = 0
+                    # Восстановить старые привязки
+                    self.frame.canva.snap.SetSelection(0)
+                    return
             selColor = None
             if selObj.GetObject().HasColor():
                 selColor = self._3dDisplay.Context.Color(selObj)
@@ -347,13 +363,7 @@ class GraphicsCanva3D(wx.Panel):
                 if pnt == neaP1:
                      newPnts = newPnts + [resPnt]
             #print newPnts 
-            indexInfo = None; 
-            for i in range(len(self.drawList)):
-                s1 = self.drawList[i][2]
-                if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
-                        indexInfo = i
-                        break
+
             # get params sel object
             self._3dDisplay.Context.Erase(selObj)           # Удалить старый
             plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
@@ -370,7 +380,7 @@ class GraphicsCanva3D(wx.Panel):
                 oldInfo = self.drawList[indexInfo]
                 #print oldInfo
                 oldInfo[2] = newShape.GetObject()
-                oldInfo[5] = True
+                oldInfo[-1] = True
                 #print oldInfo
                 self.drawList[indexInfo] = oldInfo          # Обновить список
             self.frame.SetStatusText("Готово!", 2)
@@ -390,6 +400,21 @@ class GraphicsCanva3D(wx.Panel):
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
+            type=self.frame.getTypeByMenu()
+            indexInfo = None;
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        indexInfo = i
+                        break
+            if indexInfo<>None:
+                if not self.drawList[indexInfo][0]==type:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    self.EdCmd = 0; self.EdStep = 0
+                    # Восстановить старые привязки
+                    self.frame.canva.snap.SetSelection(0)
+                    return
             selColor = None
             if selObj.GetObject().HasColor():
                 selColor = self._3dDisplay.Context.Color(selObj)
@@ -414,13 +439,6 @@ class GraphicsCanva3D(wx.Panel):
 
             #print newPntsFirst
             #print newPntsSecond
-            indexInfo = None; 
-            for i in range(len(self.drawList)):
-                s1 = self.drawList[i][2]
-                if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
-                        indexInfo = i
-                        break
             # get params sel object
             self._3dDisplay.Context.Erase(selObj)           # Удалить старый
 
@@ -471,9 +489,7 @@ class GraphicsCanva3D(wx.Panel):
             sel_shape = self._3dDisplay.selected_shape
             if sel_shape:
                 selObj = self._3dDisplay.Context.SelectedInteractive()
-                #import OCC
-                self._3dDisplay.Context.Erase(selObj)
-                #self.MakeErase = False
+                type=self.frame.getTypeByMenu()
                 indexInfo = None; 
                 for i in range(len(self.drawList)):
                     s1 = self.drawList[i][2]
@@ -483,11 +499,17 @@ class GraphicsCanva3D(wx.Panel):
                             break
                 if indexInfo <> None:
                     oldInfo = self.drawList[indexInfo]
-                    oldInfo[2] = None
-                    oldInfo[5] = True
-                    self.drawList[indexInfo] = oldInfo
-                    
-                self.frame.SetStatusText("Удален", 2)
+                    if oldInfo[0]==type or type==-1:
+                        oldInfo[2] = None
+                        oldInfo[-1] = True
+                        self.drawList[indexInfo] = oldInfo
+                        self._3dDisplay.Context.Erase(selObj)
+                        self.frame.SetStatusText("Удален", 2)
+                    else:
+                        self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                else:
+                    self._3dDisplay.Context.Erase(selObj)
+                    self.frame.SetStatusText("Удален", 2)
                 self.EdCmd = 0; self.EdStep = 0
             pass        
             
