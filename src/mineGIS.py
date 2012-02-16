@@ -178,6 +178,9 @@ def YesNo(parent, question, caption='Yes or No?'):
 
 class AppFrame(wx.Frame):
     def __init__(self, parent):
+        """
+
+        """
         wx.Frame.__init__(self, parent, - 1, "pyOCC ГГИС %s" % VERSION,
                           style=wx.DEFAULT_FRAME_STYLE, size=MW_SIZE)
 
@@ -338,10 +341,12 @@ class AppFrame(wx.Frame):
                                         ['ways_normal',u'Закончить',self.NavigateMenu,None],
 
                 ['main',u'Корректировка',self.NavigateMenu,None,'edit'],
-                        ['edit',u'Прирезка',self.NavigateMenu,None,'cut'],
-                        ['edit',u'Отсечь',self.NavigateMenu,None,'merge'],
+                        ['edit',u'Прирезка',self.OnCut,None,'cut'],
+                        ['edit',u'Отсечь',self.OnMerge,None,'merge'],
                 ['',u'---',None,None,'main'],
                 ['',u'Debug',self.OnDebug,None,'main'],
+                ['',u'Обновить',self.OnRefresh,None],
+                ['',u'Очистить',self.OnErase,None],
                 ['',u'СохранитьБД',self.OnSaveDB,None],
                 ['',u'ПоказатьВсё',self._zoomall,None]
                 ]
@@ -669,6 +674,155 @@ class AppFrame(wx.Frame):
                 self.canva.tmpEdge = None
         else:
             self.OnEdgeCancel(event)
+
+    def OnErase(self,event):
+        needSave=False
+        for element in self.canva.drawList:
+            needSave = needSave or element[-1]
+        if needSave:
+            if YesNo(self, u"Стереть без сохранения?", caption=u'Были изменены элементы карьера'):
+                pass
+        else:
+            pass
+        self.canva._3dDisplay.EraseAll()
+        self.canva.drawList = []
+
+    def OnCut(self,event):
+        pass
+
+    def OnMerge(self,event):
+        temp_a=[]
+        id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
+        for i,v in enumerate(self.canva.drawList):
+            if v[0]==1:
+                if v[3]==id_hor:
+                    temp_a=temp_a+getPoints(v[2].Shape())
+        print temp_a
+        if len(temp_a)==1:
+            tmp=temp_a[0]
+            temp_a=[]
+            temp_a.append([tmp[0]-tmp[3]/2,tmp[1]-tmp[4]/2,0,0,0])
+            temp_a.append([tmp[0]-tmp[3]/2,tmp[1]+tmp[4]/2,0,0,0])
+            temp_a.append([tmp[0]+tmp[3]/2,tmp[1]+tmp[4]/2,0,0,0])
+            temp_a.append([tmp[0]+tmp[3]/2,tmp[1]-tmp[4]/2,0,0,0])
+        if len(temp_a)==2:
+            tmp=temp_a
+            temp_a=[]
+            if math.fabs(tmp[0][0]-tmp[1][0])>math.fabs(tmp[0][1]-tmp[1][1]):
+                print "1"
+                temp_a.append([tmp[0][0],tmp[0][1]-tmp[0][4]/2,0,0,0])
+                temp_a.append([tmp[0][0],tmp[0][1]+tmp[0][4]/2,0,0,0])
+                temp_a.append([tmp[1][0],tmp[1][1]+tmp[1][4]/2,0,0,0])
+                temp_a.append([tmp[1][0],tmp[1][1]-tmp[1][4]/2,0,0,0])
+            else:
+                #print "2"
+                temp_a.append([tmp[0][0]-tmp[0][3]/2,tmp[0][1],0,0,0])
+                temp_a.append([tmp[0][0]+tmp[0][3]/2,tmp[0][1],0,0,0])
+                temp_a.append([tmp[1][0]+tmp[1][3]/2,tmp[1][1],0,0,0])
+                temp_a.append([tmp[1][0]-tmp[1][3]/2,tmp[1][1],0,0,0])
+                #print temp_a
+        minx=0
+        miny=0
+        maxx=0
+        maxy=0
+        for i,v in enumerate(temp_a):
+            if i==0 or v[0]<minx:
+                minx=v[0]
+            if i==0 or v[1]<miny:
+                miny=v[1]
+            if i==0 or v[0]>maxx:
+                maxx=v[0]
+            if i==0 or v[1]>maxy:
+                maxy=v[1]
+        #print str(minx)+" "+str(maxx)
+        #print str(miny)+" "+str(maxy)
+        #print " "
+        tmpCx=minx+math.fabs(maxx-minx)/2;
+        tmpCy=miny+math.fabs(maxy-miny)/2;
+        #print str(tmpCx)+" "+str(tmpCy)
+        #self.drawpoint(tmpCx,tmpCy,h,'BLUE',5)
+
+        points=[]
+
+        break_flag=False
+        tmpx=0
+        tmpy=0
+
+        minx=int(minx)-10
+        miny=int(miny)-10
+        maxx=int(maxx)+10
+        maxy=int(maxy)+10
+        tmpCx=int(tmpCx)
+        tmpCy=int(tmpCy)
+
+
+#left top
+        for j in range(tmpCy,maxy+1):
+            break_flag=False
+            for i in range(minx,tmpCx+1):
+                for k,v in enumerate(temp_a):
+                    if int(v[0])==i and int(v[1])==j:
+                        #tmpx=v[0]-max(w,v[3]/2)
+                        #tmpy=v[1]+max(w,v[4]/2)
+                        break_flag=True
+                        #self.drawpoint(tmpx,tmpy,h)
+                        points.append([v[0],v[1],v[2]])
+                    if break_flag==True:
+                        break
+                    #if break_flag==True:
+                    #points.append([tmpx,tmpy,h])
+        #right top
+        for i in range(tmpCx+1,maxx+1):
+            break_flag=False
+            for j in range(maxy,tmpCy+1,-1):
+                for k,v in enumerate(temp_a):
+                    if int(v[0])==i and int(v[1])==j:
+                        #tmpx=v[0]+max(w,v[3]/2)
+                        #tmpy=v[1]+max(w,v[4]/2)
+                        break_flag=True
+                        #self.drawpoint(tmpx,tmpy,h)
+                        points.append([v[0],v[1],v[2]])
+                    if break_flag==True:
+                        break
+                    #if break_flag==True:
+                    #points.append([tmpx,tmpy,h])
+        #right bottom
+        for j in range(tmpCy+1,miny-1,-1):
+            break_flag=False
+            for i in range(maxx,tmpCx-1,-1):
+                for k,v in enumerate(temp_a):
+                    if int(v[0])==i and int(v[1])==j:
+                        #tmpx=v[0]+max(w,v[3]/2)
+                        #tmpy=v[1]-max(w,v[4]/2)
+                        break_flag=True
+                        #self.drawpoint(tmpx,tmpy,h)
+                        points.append([v[0],v[1],v[2]])
+                    if break_flag==True:
+                        break
+                    #if break_flag==True:
+                    #points.append([tmpx,tmpy,h])
+        #left bottom
+        for i in range(tmpCx-1,minx-1,-1):
+            break_flag=False
+            for j in range(miny,tmpCy):
+                for k,v in enumerate(temp_a):
+                    if int(v[0])==i and int(v[1])==j:
+                        #tmpx=v[0]-max(w,v[3]/2)
+                        #tmpy=v[1]-max(w,v[4]/2)
+                        break_flag=True
+                        #self.drawpoint(tmpx,tmpy,h)
+                        points.append([v[0],v[1],v[2]])
+                    if break_flag==True:
+                        break
+                    #if break_flag==True:
+                    #points.append([tmpx,tmpy,h])
+        plgn = BRepBuilderAPI_MakePolygon()
+        for pnt1 in points:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+        plgn.Close()
+        w = plgn.Wire()
+
+        self.canva._3dDisplay.DisplayColoredShape(w, "BLUE", False)
 
     def CreateRightToolbar(self):
         # Начало формирования палитры
@@ -1464,6 +1618,9 @@ class AppFrame(wx.Frame):
         pass
 
     def OnDebug(self,event):
+        """
+        Prints debug information into console
+        """
         print '---==========---'
         print 'self.canva.drawList:'
         print self.canva.drawList

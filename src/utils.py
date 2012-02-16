@@ -5,11 +5,14 @@
 Утилиты и функции для ГГИС: 
 LoadDlg, getPoints, parsGeometry, makeLINESTRING, distance2d
 """
+from OCC.BRepOffsetAPI import BRepOffsetAPI_MakeOffset
 
 import wx
 import wx.grid
 import psycopg2
 import OCC
+from OCC.BRepOffsetAPI import BRepOffsetAPI_MakeOffset
+from OCC.GeomAbs import GeomAbs_Arc
 #from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
 #from OCC.AIS import AIS_Shape
 #from OCC.BRepBuilderAPI import *
@@ -219,7 +222,7 @@ def getMNK(cloud, offset=[0,0] ):    #  [[x,y,z],...]
     D = matrix([[sz], [zx], [zy]])
     A = matrix([[nCloud, sx, sy], [sx, xx, xy], [sy, xy, yy] ])
     try:
-        res = linalg.solve(A, D); 
+        res = linalg.solve(A, D);
         res = [res[0,0],res[1,0],res[2,0]]
     except:
         res = []
@@ -331,6 +334,10 @@ class CoordsDlg(wx.Dialog):
             for j in range(3):
                 if not self.grid.GetCellValue(i,j)=='':
                     result[i][j]=float(self.grid.GetCellValue(i,j))
-        return result                 
-                
-                 
+        return result
+
+
+def make_offset(wire, d, h=0):
+    offset = BRepOffsetAPI_MakeOffset(wire,GeomAbs_Arc )
+    offset.Perform(d, h)
+    return offset.Shape()

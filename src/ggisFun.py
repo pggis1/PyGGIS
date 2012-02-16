@@ -587,15 +587,15 @@ def Refresh(self):
             curs.execute(query)
             clr = curs.fetchone()
             clrRed = clr[0]
-            clrBlue = clr[1]
-            clrGreen = clr[2]
+            clrGreen = clr[1]
+            clrBlue = clr[2]
                 
             query = "select red,green,blue from color where id_color=" + str(color_fill) + ";"
             curs.execute(query)
             clr = curs.fetchone()
             clrFillRed = clr[0]
-            clrFillBlue = clr[1]
-            clrFillGreen = clr[2]
+            clrFillGreen = clr[1]
+            clrFillBlue = clr[2]
                 
             plgn = BRepBuilderAPI_MakePolygon()
             for pnt in coordsPLine:
