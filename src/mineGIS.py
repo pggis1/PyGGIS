@@ -269,90 +269,90 @@ class AppFrame(wx.Frame):
 
         #Кнопочное меню
         self.buttonMenu=[
-                #['',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['add',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['add',u'---',None,None,'main'],
-                ['edge',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['edge',u'---',None,None,'main'],
-                ['body',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['body',u'---',None,None,'main'],
-                ['isoline',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['isoline',u'---',None,None,'main'],
-                ['drill',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['drill',u'---',None,None,'main'],
-                ['ways',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['ways',u'---',None,None,'main'],
-                ['edit',u'Главное меню',self.NavigateMenu,None,'main'],
-                ['edit',u'---',None,None,'main'],
-                ['main',u'Задание',self.NavigateMenu,None,'add'],
-                        ['add',u'Бровка',self.NavigateMenu,None,'edge'],
-                                ['edge',u'Начать',self.OnEdgePLine,None,'start_edge'],
-                                        ['start_edge',u'ОтменитьПосл',self.OnEdgeUndo,None,'edge'],
-                                        ['start_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
-                                        ['start_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
-                                        ['start_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
-                                ['edge',u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
-                                        ['continue_edge',u'ОтменитьПосл',self.NavigateMenu,None],
-                                        ['continue_edge',u'Закончить',self.OnEdgeEnd,None,'edge'],
-                                        ['continue_edge',u'Замкнуть',self.OnEdgeClose,None,'edge'],
-                                        ['continue_edge',u'Отмена',self.OnEdgeCancel,None,'edge'],
-                                ['edge',u'---'],
-                                ['edge',u'УдалитьБровку',self.OnEdBrDelB,None],
-                                ['edge',u'РазбитьБровку',self.OnEdBrBrkV,None],
-                                ['edge',u'ВставитьТочку',self.OnEdBrInsV,None],
-                                ['edge',u'УдалитьТочку',self.OnEdBrDelV,None],
-                                ['edge',u'ПеремесТочку',self.OnEdBrMoveV,None],
+                #['',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['add',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['add',wx.NewId(),u'---',None,None,'main'],
+                ['edge',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['edge',wx.NewId(),u'---',None,None,'main'],
+                ['body',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['body',wx.NewId(),u'---',None,None,'main'],
+                ['isoline',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['isoline',wx.NewId(),u'---',None,None,'main'],
+                ['drill',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['drill',wx.NewId(),u'---',None,None,'main'],
+                ['ways',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['ways',wx.NewId(),u'---',None,None,'main'],
+                ['edit',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['edit',wx.NewId(),u'---',None,None,'main'],
+                ['main',wx.NewId(),u'Задание',self.NavigateMenu,None,'add'],
+                        ['add',wx.NewId(),u'Бровка',self.NavigateMenu,None,'edge'],
+                                ['edge',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_edge'],
+                                        ['start_edge',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'edge'],
+                                        ['start_edge',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'edge'],
+                                        ['start_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
+                                        ['start_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
+                                ['edge',wx.NewId(),u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
+                                        ['continue_edge',wx.NewId(),u'ОтменитьПосл',self.NavigateMenu,None],
+                                        ['continue_edge',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'edge'],
+                                        ['continue_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
+                                        ['continue_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
+                                ['edge',wx.NewId(),u'---'],
+                                ['edge',wx.NewId(),u'УдалитьБровку',self.OnEdBrDelB,None],
+                                ['edge',wx.NewId(),u'РазбитьБровку',self.OnEdBrBrkV,None],
+                                ['edge',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None],
+                                ['edge',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None],
+                                ['edge',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None],
 
-                        ['add',u'Тело',self.NavigateMenu,None,'body'],
-                                ['body',u'Начать',self.OnEdgePLine,None,'start_body'],
-                                        ['start_body',u'ОтменитьПосл',self.OnEdgeUndo,None,'body'],
-                                        ['start_body',u'Закончить',self.OnEdgeEnd,None,'body'],
-                                        ['start_body',u'Замкнуть',self.OnEdgeClose,None,'body'],
-                                        ['start_body',u'Отмена',self.OnEdgeCancel,None,'body'],
-                                ['body',u'---'],
-                                ['body',u'УдалитьТело',self.OnEdBrDelB,None],
+                        ['add',wx.NewId(),u'Тело',self.NavigateMenu,None,'body'],
+                                ['body',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_body'],
+                                        ['start_body',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'body'],
+                                        ['start_body',wx.NewId(),u'Закончить',self.OnEdgeClose,None,'body'],
+                                        ['start_body',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'body'],
+                                ['body',wx.NewId(),u'---'],
+                                ['body',wx.NewId(),u'УдалитьТело',self.OnEdBrDelB,None],
 
-                        ['add',u'Рельеф',self.NavigateMenu,None,'isoline'],
-                                ['isoline',u'Начать',self.OnEdgePLine,None,'start_isoline'],
-                                        ['start_isoline',u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
-                                        ['start_isoline',u'Закончить',self.OnEdgeClose,None,'isoline'],
-                                        ['start_isoline',u'Отмена',self.OnEdgeCancel,None,'isoline'],
-                                ['isoline',u'---'],
-                                ['isoline',u'УдалитьИзолинию',self.OnEdBrDelB,None],
-                                ['isoline',u'ВставитьТочку',self.OnEdBrInsV,None],
-                                ['isoline',u'УдалитьТочку',self.OnEdBrDelV,None],
-                                ['isoline',u'ПеремесТочку',self.OnEdBrMoveV,None],
+                        ['add',wx.NewId(),u'Рельеф',self.NavigateMenu,None,'isoline'],
+                                ['isoline',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_isoline'],
+                                        ['start_isoline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
+                                        ['start_isoline',wx.NewId(),u'Закончить',self.OnEdgeClose,None,'isoline'],
+                                        ['start_isoline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'isoline'],
+                                ['isoline',wx.NewId(),u'---'],
+                                ['isoline',wx.NewId(),u'УдалитьИзолинию',self.OnEdBrDelB,None],
+                                ['isoline',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None],
+                                ['isoline',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None],
+                                ['isoline',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None],
 
-                        ['add',u'Скважина',self.NavigateMenu,None,'drill'],
-                                ['drill',u'Задать',self.OnDrillStart,None,'start_drill'],
-                                        ['start_drill',u'Создать',self.OnDrillAdd,None,'drill'],
-                                        ['start_drill',u'Отмена',self.OnEdgeCancel,None,'drill'],
-                                ['drill',u'УдалитьСкважину',self.OnEdBrDelB,None],
-                                ['drill',u'ПереместитьСкважину',self.NavigateMenu,None],
+                        ['add',wx.NewId(),u'Скважина',self.NavigateMenu,None,'drill'],
+                                ['drill',wx.NewId(),u'Задать',self.OnDrillStart,None,'start_drill'],
+                                        ['start_drill',wx.NewId(),u'Создать',self.OnDrillAdd,None,'drill'],
+                                        ['start_drill',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'drill'],
+                                ['drill',wx.NewId(),u'УдалитьСкважину',self.OnEdBrDelB,None],
+                                ['drill',wx.NewId(),u'ПереместитьСкважину',self.NavigateMenu,None],
 
-                        ['add',u'Съезды',self.NavigateMenu,None,'ways'],
-                                ['ways',u'Скользящий',self.OnEdgePLine,None,'ways_slide'],
-                                        ['ways_slide',u'ОтменитьПосл',self.OnEdgeUndo,None],
-                                        ['ways_slide',u'Закончить',self.OnEdgeEnd,None],
-                                ['ways',u'Стационарный',self.NavigateMenu,None,'ways_normal'],
-                                        ['ways_normal',u'ВыбратьБорт',self.NavigateMenu,None],
-                                        ['ways_normal',u'ПоЧасовой',self.NavigateMenu,None],
-                                        ['ways_normal',u'ПротивЧасовой',self.NavigateMenu,None],
-                                        ['ways_normal',u'Закончить',self.NavigateMenu,None],
+                        ['add',wx.NewId(),u'Съезды',self.NavigateMenu,None,'ways'],
+                                ['ways',wx.NewId(),u'Скользящий',self.OnEdgePLine,None,'ways_slide'],
+                                        ['ways_slide',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None],
+                                        ['ways_slide',wx.NewId(),u'Закончить',self.OnEdgeEnd,None],
+                                ['ways',wx.NewId(),u'Стационарный',self.NavigateMenu,None,'ways_normal'],
+                                        ['ways_normal',wx.NewId(),u'ВыбратьБорт',self.NavigateMenu,None],
+                                        ['ways_normal',wx.NewId(),u'ПоЧасовой',self.NavigateMenu,None],
+                                        ['ways_normal',wx.NewId(),u'ПротивЧасовой',self.NavigateMenu,None],
+                                        ['ways_normal',wx.NewId(),u'Закончить',self.NavigateMenu,None],
 
-                ['main',u'Корректировка',self.NavigateMenu,None,'edit'],
-                        ['edit',u'Прирезка',self.OnCut,None,'cut'],
-                        ['edit',u'Отсечь',self.OnMerge,None,'merge'],
-                ['',u'---',None,None,'main'],
-                ['',u'Debug',self.OnDebug,None,'main'],
-                ['',u'Обновить',self.OnRefresh,None],
-                ['',u'Очистить',self.OnErase,None],
-                ['',u'СохранитьБД',self.OnSaveDB,None],
-                ['',u'ПоказатьВсё',self._zoomall,None]
+                ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
+                        ['edit',wx.NewId(),u'Прирезка',self.OnCut,None,'cut'],
+                        ['edit',wx.NewId(),u'Отсечь',self.OnMerge,None,'merge'],
+                        ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
+                ['',wx.NewId(),u'---',None,None,'main'],
+                ['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
+                ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
+                ['',wx.NewId(),u'Очистить',self.OnErase,None],
+                ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
+                ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None]
                 ]
         self.menu_now='main'
         self.tb3 = self.CreateMenu()
-        self.NavigateMenu();
+        self.NavigateMenu()
         self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left())
 
         self._mgr.Update()
@@ -584,8 +584,8 @@ class AppFrame(wx.Frame):
     def NavigateMenu(self,event=None,menuname='main'):
         if(event<>None):
             for i,v in enumerate(self.buttonMenu):
-                if v[1]==event.EventObject.GetLabelText() and (v[0]==self.menu_now or v[0]==''):
-                    menuname=v[4]
+                if v[1]==event.EventObject.GetId() and (v[0]==self.menu_now or v[0]==''):
+                    menuname=v[5]
                     self.menu_now=menuname
                     break
         else:
@@ -596,12 +596,12 @@ class AppFrame(wx.Frame):
             self.tb3.AddSeparator()
         for i,v in enumerate(self.buttonMenu):
             if v[0]==menuname or v[0]=='':
-                if v[1]==u'---':
+                if v[2]==u'---':
                     self.tb3.AddSeparator()
                 else:
-                    self.buttonMenu[i][3]=wx.Button(self.tb3, -1, v[1],size=(130,30))
-                    self.tb3.AddControl(self.buttonMenu[i][3])
-                    self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][2], self.buttonMenu[i][3])
+                    self.buttonMenu[i][4]=wx.Button(self.tb3, v[1], v[2],size=(130,30))
+                    self.tb3.AddControl(self.buttonMenu[i][4])
+                    self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][3], self.buttonMenu[i][4])
         self.tb3.Fit()
 
     def getTypeByMenu(self):
@@ -609,9 +609,9 @@ class AppFrame(wx.Frame):
             return 0
         elif self.menu_now=='start_body' or self.menu_now=='body':
             return 1
-        elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
-            return 2
         elif self.menu_now=='start_drill' or self.menu_now=='drill':
+            return 2
+        elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
             return 3
         return -1
 
@@ -1599,9 +1599,14 @@ class AppFrame(wx.Frame):
     def OnEdBrDelV(self, event):
         """ Удалить вершину  """
         self.canva.SetTogglesToFalse(event)
-        self.canva.EdCmd   = CMD_EdBrDelV
-        self.canva.EdStep = 1
-        self.SetStatusText("", 0)
+
+        self.canva.snap.SetSelection(1)
+        if (self.canva.snap.GetCurrentSelection() == 1):
+            self.canva.EdCmd = CMD_EdBrDelV
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет End***", 0)
         pass
 
     def OnEdBrBrkV(self, event):

@@ -393,6 +393,64 @@ class GraphicsCanva3D(wx.Panel):
             # move vertex
             pass
 
+        # удалить точку
+        if (self.EdCmd == CMD_EdBrDelV) and (self.EdStep == 1):
+            # Получить цвет, тип линии, толщину и др. параметры линии
+            selObj = self._3dDisplay.Context.SelectedInteractive()
+            type=self.frame.getTypeByMenu()
+            indexInfo = None;
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        indexInfo = i
+                        break
+            if indexInfo<>None:
+                if not self.drawList[indexInfo][0]==type:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    self.EdCmd = 0; self.EdStep = 0
+                    # Восстановить старые привязки
+                    self.frame.canva.snap.SetSelection(0)
+                    return
+            selColor = None
+            if selObj.GetObject().HasColor():
+                selColor = self._3dDisplay.Context.Color(selObj)
+                #print("selColor=", selColor)
+            # добавить все точки, кроме resPnt
+            newPnts = []
+            cnt=0
+            for i in range(len(pnts)):
+                if pnts[i]==resPnt and cnt==0:
+                    cnt=1
+                else:
+                    newPnts = newPnts + [pnts[i]]
+                #print newPnts
+            sel_shape=self._3dDisplay.selected_shape
+                # get params sel object
+            self._3dDisplay.Context.Erase(selObj)           # Удалить старый
+            plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
+            for pnt1 in newPnts:
+                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                #if closeP:
+            #    plgn.Close()
+            w = plgn.Wire()
+            newShape = self._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+            # Установить цвет, тип,толщину и др.
+            if selColor:
+                self._3dDisplay.Context.SetColor(newShape,selColor,0)
+            if indexInfo <> None:
+                oldInfo = self.drawList[indexInfo]
+                #print oldInfo
+                oldInfo[2] = newShape.GetObject()
+                oldInfo[-1] = True
+                #print oldInfo
+                self.drawList[indexInfo] = oldInfo          # Обновить список
+            self.frame.SetStatusText("Готово!", 2)
+            self.EdCmd = 0; self.EdStep = 0
+            # Восстановить старые привязки
+            self.frame.canva.snap.SetSelection(0)
+            pass
+
         ### разорвать линию
         if (self.EdCmd == CMD_EdBrBrkV) and (self.EdStep == 1):
             sel_shape=self._3dDisplay.selected_shape
@@ -511,7 +569,7 @@ class GraphicsCanva3D(wx.Panel):
                     self._3dDisplay.Context.Erase(selObj)
                     self.frame.SetStatusText("Удален", 2)
                 self.EdCmd = 0; self.EdStep = 0
-            pass        
+            pass
             
     def OnLeftUp(self, evt):
         if self.WinZoom:

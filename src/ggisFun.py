@@ -257,6 +257,15 @@ def CEdit(self):
     if not sel_shape:
         self.SetStatusText("Выберите объект и повторите команду", 0)
         return
+    indexInfo = None;
+    for i in range(len(self.canva.drawList)):
+        s1 = self.canva.drawList[i][2]
+        if s1:
+            if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                indexInfo = i
+                break
+    if not self.canva.drawList[indexInfo][0] in (0,1,3):
+        return
     pnts=getPoints(sel_shape)
     dlg = CoordsDlg(self, - 1, "Диалог изменения координат",pnts)#,int(self.body_cnt_h.Value))
     dlg.CenterOnScreen()
@@ -268,14 +277,7 @@ def CEdit(self):
         if selObj.GetObject().HasColor():
             selColor = self.canva._3dDisplay.Context.Color(selObj)
         self.canva._3dDisplay.Context.Erase(selObj)
-            
-        indexInfo = None; 
-        for i in range(len(self.canva.drawList)):
-            s1 = self.canva.drawList[i][2]
-            if s1:
-                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
-                    indexInfo = i
-                    break
+
         # get params sel object
         self.canva._3dDisplay.Context.Erase(selObj)           # Удалить старый
         plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
@@ -930,7 +932,7 @@ def SaveDB(self):
                     element[ - 1] = False # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element
 
-                if element[0] == 1:     # Тело
+                if element[0] == 3:     # Изолиния
                     id = element[1]
                     s1 = element[2]     # Объект
                     if s1 == None:      # Удалять из БД
