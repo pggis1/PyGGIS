@@ -297,6 +297,8 @@ class AppFrame(wx.Frame):
                                         ['continue_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
                                         ['continue_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'---'],
+                                ['edge',wx.NewId(),u'ПостПлощ',self.OnEdgeOffset,None],
+                                ['edge',wx.NewId(),u'---'],
                                 ['edge',wx.NewId(),u'УдалитьБровку',self.OnEdBrDelB,None],
                                 ['edge',wx.NewId(),u'РазбитьБровку',self.OnEdBrBrkV,None],
                                 ['edge',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None],
@@ -330,17 +332,17 @@ class AppFrame(wx.Frame):
                                 ['drill',wx.NewId(),u'ПереместитьСкважину',self.NavigateMenu,None],
 
                         ['add',wx.NewId(),u'Съезды',self.NavigateMenu,None,'ways'],
-                                ['ways',wx.NewId(),u'Скользящий',self.OnEdgePLine,None,'ways_slide'],
-                                        ['ways_slide',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None],
-                                        ['ways_slide',wx.NewId(),u'Закончить',self.OnEdgeEnd,None],
-                                ['ways',wx.NewId(),u'Стационарный',self.NavigateMenu,None,'ways_normal'],
-                                        ['ways_normal',wx.NewId(),u'ВыбратьБорт',self.NavigateMenu,None],
-                                        ['ways_normal',wx.NewId(),u'ПоЧасовой',self.NavigateMenu,None],
-                                        ['ways_normal',wx.NewId(),u'ПротивЧасовой',self.NavigateMenu,None],
-                                        ['ways_normal',wx.NewId(),u'Закончить',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'ВыбратьБорт',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'Полилиния',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'ПоЧасовой',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'ПротивЧасовой',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'Закончить',self.NavigateMenu,None],
 
                 ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
-                        ['edit',wx.NewId(),u'Прирезка',self.OnCut,None,'cut'],
+                        ['edit',wx.NewId(),u'Прирезка',self.NavigateMenu,None,'cut'],
+                            ['cut',wx.NewId(),u'ВыбратьБров',self.NavigateMenu,None,'cut'],
+                            ['cut',wx.NewId(),u'ТочкиВрезки',self.NavigateMenu,None,'cut'],
+                            ['cut',wx.NewId(),u'ОпрПолилинию',self.NavigateMenu,None,'cut'],
                         ['edit',wx.NewId(),u'Отсечь',self.OnMerge,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
@@ -579,7 +581,7 @@ class AppFrame(wx.Frame):
         self.canva.tmpEdge = None
 
     def CreateMenu(self):
-        return wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, (300,500), wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
+        return wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
 
     def NavigateMenu(self,event=None,menuname='main'):
         if(event<>None):
@@ -592,8 +594,7 @@ class AppFrame(wx.Frame):
             self.menu_now=menuname
         self.tb3.ClearTools()
         self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
-        if not menuname=='main':
-            self.tb3.AddSeparator()
+        self.tb3.AddSeparator()
         for i,v in enumerate(self.buttonMenu):
             if v[0]==menuname or v[0]=='':
                 if v[2]==u'---':
@@ -638,6 +639,17 @@ class AppFrame(wx.Frame):
     def OnEdgeClose(self,event):
         Coord_yes(self,True,True)
         self.NavigateMenu(event)
+
+    def OnEdgeOffset(self,event):
+        sel_shape=self.canva._3dDisplay.selected_shape
+        if sel_shape:
+            pnts = getPoints(sel_shape)
+            plgn = BRepBuilderAPI_MakePolygon()
+            for pnt1 in pnts:
+                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            w = plgn.Wire()
+            shape=make_offset(w,-20)
+            self.canva._3dDisplay.DisplayColoredShape(shape, 'BLUE', False)
 
     def OnEdgeContinue(self,event):
         sel_shape=self.canva._3dDisplay.selected_shape
@@ -1577,9 +1589,14 @@ class AppFrame(wx.Frame):
     def OnEdBrMoveV(self, event):
         """ Перенести вершину бровки """
         self.canva.SetTogglesToFalse(event)
-        self.canva.EdCmd   = CMD_EdBrMoveV
-        self.canva.EdStep = 1
-        self.SetStatusText("", 0)
+        # сохранить старые привязки
+        self.canva.snap.SetSelection(1)
+        if (self.canva.snap.GetCurrentSelection() == 1):
+            self.canva.EdCmd = CMD_EdBrMoveV
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет End***", 0)
         pass
 
     def OnEdBrInsV(self, event):

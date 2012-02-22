@@ -123,6 +123,9 @@ class GraphicsCanva3D(wx.Panel):
         self.EdStep         = None
         self.EdCmd          = None
 
+        self.tempIndex      = None # Временный индекс
+        self.tempPointIndex = None # Временый индекс точки
+
         self.gumline_edge = None
         self.MakePoint = False
 
@@ -447,6 +450,44 @@ class GraphicsCanva3D(wx.Panel):
                 self.drawList[indexInfo] = oldInfo          # Обновить список
             self.frame.SetStatusText("Готово!", 2)
             self.EdCmd = 0; self.EdStep = 0
+            # Восстановить старые привязки
+            self.frame.canva.snap.SetSelection(0)
+            pass
+
+
+        #перемстить точку, шаг 2
+        if (self.EdCmd == CMD_EdBrMoveV) and (self.EdStep == 2):
+            self.frame.onCoord_yes(evt)
+            pass
+
+        #переместить точку, шаг 1
+        elif (self.EdCmd == CMD_EdBrMoveV) and (self.EdStep == 1):
+            # переместить точку
+            type=self.frame.getTypeByMenu()
+            indexInfo = None;
+            sel_shape=self._3dDisplay.selected_shape
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        indexInfo = i
+                        break
+            if indexInfo<>None:
+                if not self.drawList[indexInfo][0]==type:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    self.EdCmd = 0; self.EdStep = 0
+                    # Восстановить старые привязки
+                    self.frame.canva.snap.SetSelection(0)
+                    return
+                self.tempIndex=indexInfo
+            # найти точку
+            for i in range(len(pnts)):
+                if pnts[i]==resPnt:
+                    self.tempPointIndex = i
+                    break
+
+            self.frame.SetStatusText("Новое положение", 2)
+            self.EdCmd = CMD_EdBrMoveV; self.EdStep = 2
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
             pass

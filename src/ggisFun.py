@@ -415,6 +415,43 @@ def Coord_yes(self,drawP=False,closeP=False):
         return
     elif len(lst1) == 2:
         lst1 = lst1 + [Z]
+
+    if (self.canva.EdCmd == CMD_EdBrMoveV) and (self.canva.EdStep == 2):
+        if self.canva.drawList[self.canva.tempIndex][2].HasColor():
+            selColor = self.canva._3dDisplay.Context.Color(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+
+        # добавить resPnt к линии между neaP1 и neaP2
+        indexInfo = self.canva.tempIndex
+
+        newPnts = getPoints(self.canva.drawList[indexInfo][2].Shape())
+        newPnts[self.canva.tempPointIndex]=lst1
+
+        #
+        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())           # Удалить старый
+        plgn = BRepBuilderAPI_MakePolygon()             		  # Построить новый
+        for pnt1 in newPnts:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            #if closeP:
+        #    plgn.Close()
+        w = plgn.Wire()
+        newShape = self.canva._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+        # Установить цвет, тип,толщину и др.
+        if selColor:
+            self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
+        if indexInfo <> None:
+            oldInfo = self.canva.drawList[indexInfo]
+            #print oldInfo
+            oldInfo[2] = newShape.GetObject()
+            oldInfo[-1] = True
+            #print oldInfo
+            self.canva.drawList[indexInfo] = oldInfo          # Обновить список
+        self.SetStatusText("Готово!", 2)
+        self.canva.EdCmd = 0; self.canva.EdStep = 0
+        # Восстановить старые привязки
+        self.canva.snap.SetSelection(0)
+        return
+        pass
+
     self.canva.lstPnt = self.canva.lstPnt + [lst1]
     #print(self.canva.lstPnt)
     # Line
