@@ -526,6 +526,10 @@ def CancelOp(self):
     self.canva.MakePoint = False
     self.canva.GumLine = False
     self.canva.lstPnt = []
+    self.canva.EdCmd = None
+    self.canva.EdStep = None
+    self.tempIndex      = None
+    self.tempPointIndex = None
     self.SetStatusText("Отмена", 2)
     self._refreshui()
 

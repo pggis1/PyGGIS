@@ -299,11 +299,16 @@ class AppFrame(wx.Frame):
                                 ['edge',wx.NewId(),u'---'],
                                 ['edge',wx.NewId(),u'ПостПлощ',self.OnEdgeOffset,None],
                                 ['edge',wx.NewId(),u'---'],
-                                ['edge',wx.NewId(),u'УдалитьБровку',self.OnEdBrDelB,None],
-                                ['edge',wx.NewId(),u'РазбитьБровку',self.OnEdBrBrkV,None],
-                                ['edge',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None],
-                                ['edge',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None],
-                                ['edge',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None],
+                                ['edge',wx.NewId(),u'УдалитьБровку',self.OnEdBrDelB,None,'edge_OnEdBrDelB'],
+                                    ['edge_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                ['edge',wx.NewId(),u'РазбитьБровку',self.OnEdBrBrkV,None,'edge_OnEdBrBrkV'],
+                                    ['edge_OnEdBrBrkV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                ['edge',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None,'edge_OnEdBrInsV'],
+                                    ['edge_OnEdBrInsV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                ['edge',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None,'edge_OnEdBrDelV'],
+                                    ['edge_OnEdBrDelV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                ['edge',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None,'edge_OnEdBrMoveV'],
+                                    ['edge_OnEdBrMoveV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
 
                         ['add',wx.NewId(),u'Тело',self.NavigateMenu,None,'body'],
                                 ['body',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_body'],
@@ -311,7 +316,8 @@ class AppFrame(wx.Frame):
                                         ['start_body',wx.NewId(),u'Закончить',self.OnEdgeClose,None,'body'],
                                         ['start_body',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'body'],
                                 ['body',wx.NewId(),u'---'],
-                                ['body',wx.NewId(),u'УдалитьТело',self.OnEdBrDelB,None],
+                                ['body',wx.NewId(),u'УдалитьТело',self.OnEdBrDelB,None,'body_OnEdBrDelB'],
+                                    ['body_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'body'],
 
                         ['add',wx.NewId(),u'Рельеф',self.NavigateMenu,None,'isoline'],
                                 ['isoline',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_isoline'],
@@ -319,16 +325,21 @@ class AppFrame(wx.Frame):
                                         ['start_isoline',wx.NewId(),u'Закончить',self.OnEdgeClose,None,'isoline'],
                                         ['start_isoline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'isoline'],
                                 ['isoline',wx.NewId(),u'---'],
-                                ['isoline',wx.NewId(),u'УдалитьИзолинию',self.OnEdBrDelB,None],
-                                ['isoline',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None],
-                                ['isoline',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None],
-                                ['isoline',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None],
+                                ['isoline',wx.NewId(),u'УдалитьИзолинию',self.OnEdBrDelB,None,'isoline_OnEdBrDelB'],
+                                    ['isoline_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                ['isoline',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None,'isoline_OnEdBrInsV'],
+                                    ['isoline_OnEdBrInsV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                ['isoline',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None,'isoline_OnEdBrDelV'],
+                                    ['isoline_OnEdBrDelV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                ['isoline',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None,''],
+                                    ['isoline_OnEdBrMoveV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
 
                         ['add',wx.NewId(),u'Скважина',self.NavigateMenu,None,'drill'],
                                 ['drill',wx.NewId(),u'Задать',self.OnDrillStart,None,'start_drill'],
                                         ['start_drill',wx.NewId(),u'Создать',self.OnDrillAdd,None,'drill'],
                                         ['start_drill',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'drill'],
-                                ['drill',wx.NewId(),u'УдалитьСкважину',self.OnEdBrDelB,None],
+                                ['drill',wx.NewId(),u'УдалитьСкважину',self.OnEdBrDelB,None,'drill_OnEdBrDelB'],
+                                    ['drill_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'drill'],
                                 ['drill',wx.NewId(),u'ПереместитьСкважину',self.NavigateMenu,None],
 
                         ['add',wx.NewId(),u'Съезды',self.NavigateMenu,None,'ways'],
@@ -340,9 +351,14 @@ class AppFrame(wx.Frame):
 
                 ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Прирезка',self.NavigateMenu,None,'cut'],
-                            ['cut',wx.NewId(),u'ВыбратьБров',self.NavigateMenu,None,'cut'],
-                            ['cut',wx.NewId(),u'ТочкиВрезки',self.NavigateMenu,None,'cut'],
-                            ['cut',wx.NewId(),u'ОпрПолилинию',self.NavigateMenu,None,'cut'],
+                            ['cut',wx.NewId(),u'ВыбратьБров',self.OnEdBrSelB,None,'cut_OnEdBrSelB'],
+                                 ['cut_OnEdBrSelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'cut'],
+                            ['cut',wx.NewId(),u'ОпрПолилинию',self.NavigateMenu,None,'start_cut_pline'],
+                                ['start_cut_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'cut'],
+                                ['start_cut_pline',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'cut'],
+                                ['start_cut_pline',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'cut'],
+                                ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
+                            ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Отсечь',self.OnMerge,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
@@ -585,6 +601,8 @@ class AppFrame(wx.Frame):
 
     def NavigateMenu(self,event=None,menuname='main'):
         if(event<>None):
+            if not isinstance(event.EventObject,wx.Button):
+                return
             for i,v in enumerate(self.buttonMenu):
                 if v[1]==event.EventObject.GetId() and (v[0]==self.menu_now or v[0]==''):
                     menuname=v[5]
@@ -593,7 +611,10 @@ class AppFrame(wx.Frame):
         else:
             self.menu_now=menuname
         self.tb3.ClearTools()
-        self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
+        if(event<>None):
+            self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), event.EventObject.GetLabelText()+u': ', wx.DefaultPosition, wx.DefaultSize, 0))
+        else:
+            self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.tb3.AddSeparator()
         for i,v in enumerate(self.buttonMenu):
             if v[0]==menuname or v[0]=='':
@@ -615,6 +636,10 @@ class AppFrame(wx.Frame):
         elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
             return 3
         return -1
+
+    def OnEdCmdCancel(self,event):
+        CancelOp(self)
+        self.NavigateMenu(event)
 
     def OnDrillStart(self,event):
         Point(self)
@@ -1586,12 +1611,21 @@ class AppFrame(wx.Frame):
         Refresh(self)
 
 #=== Edit menu =========================================================
+    def OnEdBrSelB(selfself,event):
+        """ выбрать бровку """
+        self.canva.SetTogglesToFalse(event)
+        self.NavigateMenu(event)
+        self.canva.EdCmd = CMD_EdBrSelB
+        self.canva.EdStep = 1
+        self.SetStatusText("Какую?", 0)
+
     def OnEdBrMoveV(self, event):
         """ Перенести вершину бровки """
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(1)
         if (self.canva.snap.GetCurrentSelection() == 1):
+            self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrMoveV
             self.canva.EdStep = 1
             self.SetStatusText("Куда?", 0)
@@ -1605,6 +1639,7 @@ class AppFrame(wx.Frame):
         # сохранить старые привязки
         self.canva.snap.SetSelection(2)
         if (self.canva.snap.GetCurrentSelection() == 2):
+            self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrInsV
             self.canva.EdStep = 1
             self.SetStatusText("Куда?", 0)
@@ -1619,6 +1654,7 @@ class AppFrame(wx.Frame):
 
         self.canva.snap.SetSelection(1)
         if (self.canva.snap.GetCurrentSelection() == 1):
+            self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrDelV
             self.canva.EdStep = 1
             self.SetStatusText("Куда?", 0)
@@ -1632,6 +1668,7 @@ class AppFrame(wx.Frame):
         # сохранить старые привязки
         self.canva.snap.SetSelection(2)
         if (self.canva.snap.GetCurrentSelection() == 2):
+            self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrBrkV
             self.canva.EdStep = 1
             self.SetStatusText("Куда?", 0)
@@ -1642,6 +1679,7 @@ class AppFrame(wx.Frame):
     def OnEdBrDelB(self, event):
         """ Удалить линию  """
         self.canva.SetTogglesToFalse(event)
+        self.NavigateMenu(event)
         self.canva.EdCmd   = CMD_EdBrDelB
         self.canva.EdStep = 1
         self.SetStatusText("Укажите объект", 0)

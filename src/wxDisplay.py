@@ -333,6 +333,27 @@ class GraphicsCanva3D(wx.Panel):
         
         self._3dDisplay.Select(self.dragStartPos.x, self.dragStartPos.y)
 
+        ### Выбрать бровку
+        if (self.EdCmd == CMD_EdBrSelB) and (self.EdStep == 1):
+            sel_shape=self._3dDisplay.selected_shape
+            if not sel_shape:
+                return
+            type=0
+            indexInfo = None;
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        self.tempIndex = i
+                        break
+            if indexInfo<>None:
+                if not self.drawList[self.tempIndex][0]==type:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    self.EdCmd = 0; self.EdStep = 0
+                    # Восстановить старые привязки
+                    self.frame.canva.snap.SetSelection(0)
+                    return
+
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
             sel_shape=self._3dDisplay.selected_shape
