@@ -198,7 +198,7 @@ class GraphicsCanva3D(wx.Panel):
         """ Обработка левой кнопки мыши. 
         Здесь все, что требует указания на экране для выполнения функций ГГИС """
         
-        # Расчет позиции точки в мировх координатах
+        # Расчет позиции точки в мировых координатах
         
         self.startPt = evt.GetPosition()
         xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(self.startPt.x, self.startPt.y) #, Xw,Yw,Zw
@@ -349,10 +349,15 @@ class GraphicsCanva3D(wx.Panel):
             if indexInfo<>None:
                 if not self.drawList[self.tempIndex][0]==type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    self.EdCmd = 0; self.EdStep = 0
+                    if self.frame.getTypeByMenu()==-1:
+                        self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
+                for i,pnt in enumerate(pnts):
+                    if pnt == neaP1:
+                        self.tempPointIndex=i
+                    #print newPnts
 
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
@@ -372,7 +377,8 @@ class GraphicsCanva3D(wx.Panel):
             if indexInfo<>None:
                 if not self.drawList[indexInfo][0]==type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    self.EdCmd = 0; self.EdStep = 0
+                    if self.frame.getTypeByMenu()==-1:
+                        self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
@@ -408,7 +414,8 @@ class GraphicsCanva3D(wx.Panel):
                 #print oldInfo
                 self.drawList[indexInfo] = oldInfo          # Обновить список
             self.frame.SetStatusText("Готово!", 2)
-            self.EdCmd = 0; self.EdStep = 0
+            if self.frame.getTypeByMenu()==-1:
+                self.EdCmd = 0; self.EdStep = 0
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
             pass
@@ -432,7 +439,8 @@ class GraphicsCanva3D(wx.Panel):
             if indexInfo<>None:
                 if not self.drawList[indexInfo][0]==type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    self.EdCmd = 0; self.EdStep = 0
+                    if self.frame.getTypeByMenu()==-1:
+                        self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
@@ -470,7 +478,8 @@ class GraphicsCanva3D(wx.Panel):
                 #print oldInfo
                 self.drawList[indexInfo] = oldInfo          # Обновить список
             self.frame.SetStatusText("Готово!", 2)
-            self.EdCmd = 0; self.EdStep = 0
+            if self.frame.getTypeByMenu()==-1:
+                self.EdCmd = 0; self.EdStep = 0
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
             pass
@@ -496,7 +505,8 @@ class GraphicsCanva3D(wx.Panel):
             if indexInfo<>None:
                 if not self.drawList[indexInfo][0]==type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    self.EdCmd = 0; self.EdStep = 0
+                    if self.frame.getTypeByMenu()==-1:
+                        self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
@@ -531,7 +541,8 @@ class GraphicsCanva3D(wx.Panel):
             if indexInfo<>None:
                 if not self.drawList[indexInfo][0]==type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    self.EdCmd = 0; self.EdStep = 0
+                    if self.frame.getTypeByMenu()==-1:
+                        self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
@@ -597,7 +608,8 @@ class GraphicsCanva3D(wx.Panel):
                 self.drawList=self.drawList+[newInfo]
 
             self.frame.SetStatusText("Готово!", 2)
-            self.EdCmd = 0; self.EdStep = 0
+            if self.frame.getTypeByMenu()==-1:
+                self.EdCmd = 0; self.EdStep = 0
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
             pass
@@ -630,7 +642,8 @@ class GraphicsCanva3D(wx.Panel):
                 else:
                     self._3dDisplay.Context.Erase(selObj)
                     self.frame.SetStatusText("Удален", 2)
-                self.EdCmd = 0; self.EdStep = 0
+                if self.frame.getTypeByMenu()==-1:
+                    self.EdCmd = 0; self.EdStep = 0
             pass
             
     def OnLeftUp(self, evt):

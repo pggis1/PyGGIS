@@ -355,8 +355,7 @@ class AppFrame(wx.Frame):
                                  ['cut_OnEdBrSelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'cut'],
                             ['cut',wx.NewId(),u'ОпрПолилинию',self.NavigateMenu,None,'start_cut_pline'],
                                 ['start_cut_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'cut'],
-                                ['start_cut_pline',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'cut'],
-                                ['start_cut_pline',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'cut'],
+                                ['start_cut_pline',wx.NewId(),u'Закончить',self.OnCutPLineEnd,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                             ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Отсечь',self.OnMerge,None,'merge'],
@@ -611,10 +610,7 @@ class AppFrame(wx.Frame):
         else:
             self.menu_now=menuname
         self.tb3.ClearTools()
-        if(event<>None):
-            self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), event.EventObject.GetLabelText()+u': ', wx.DefaultPosition, wx.DefaultSize, 0))
-        else:
-            self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
+        self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.tb3.AddSeparator()
         for i,v in enumerate(self.buttonMenu):
             if v[0]==menuname or v[0]=='':
@@ -627,14 +623,9 @@ class AppFrame(wx.Frame):
         self.tb3.Fit()
 
     def getTypeByMenu(self):
-        if self.menu_now=='start_edge' or self.menu_now=='continue_edge' or self.menu_now=='edge':
-            return 0
-        elif self.menu_now=='start_body' or self.menu_now=='body':
-            return 1
-        elif self.menu_now=='start_drill' or self.menu_now=='drill':
-            return 2
-        elif self.menu_now=='start_isoline' or self.menu_now=='isoline':
-            return 3
+        for i,v in enumerate(menu_types):
+            if self.menu_now in menu_types[i]:
+                return i
         return -1
 
     def OnEdCmdCancel(self,event):
@@ -674,6 +665,11 @@ class AppFrame(wx.Frame):
                 plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
             w = plgn.Wire()
             shape=make_offset(w,-20)
+            """pnts_new = getPoints(shape)
+            plgn_new = BRepBuilderAPI_MakePolygon()
+            for i in range(len(pnts_new)-1):
+                plgn_new.Add(gp_Pnt(pnts_new[i][0], pnts_new[i][1], pnts_new[i][2]))
+            w_new = plgn_new.Wire()"""
             self.canva._3dDisplay.DisplayColoredShape(shape, 'BLUE', False)
 
     def OnEdgeContinue(self,event):
@@ -730,7 +726,8 @@ class AppFrame(wx.Frame):
         self.canva._3dDisplay.EraseAll()
         self.canva.drawList = []
 
-    def OnCut(self,event):
+    def OnCutPLineEnd(self,event):
+        CMD_EdBrCutE
         pass
 
     def OnMerge(self,event):
@@ -1611,13 +1608,18 @@ class AppFrame(wx.Frame):
         Refresh(self)
 
 #=== Edit menu =========================================================
+
     def OnEdBrSelB(selfself,event):
         """ выбрать бровку """
         self.canva.SetTogglesToFalse(event)
-        self.NavigateMenu(event)
-        self.canva.EdCmd = CMD_EdBrSelB
-        self.canva.EdStep = 1
-        self.SetStatusText("Какую?", 0)
+        self.canva.snap.SetSelection(2)
+        if (self.canva.snap.GetCurrentSelection() == 2):
+            self.NavigateMenu(event)
+            self.canva.EdCmd = CMD_EdBrSelB
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет Near ***", 0)
 
     def OnEdBrMoveV(self, event):
         """ Перенести вершину бровки """

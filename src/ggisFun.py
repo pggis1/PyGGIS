@@ -264,7 +264,7 @@ def CEdit(self):
             if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
                 indexInfo = i
                 break
-    if not self.canva.drawList[indexInfo][0] in (0,1,3):
+    if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
         return
     pnts=getPoints(sel_shape)
     dlg = CoordsDlg(self, - 1, "Диалог изменения координат",pnts)#,int(self.body_cnt_h.Value))
@@ -333,7 +333,8 @@ def Coord_yes(self,drawP=False,closeP=False):
                 w = plgn.Wire()
                 id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
                 #Quantity_Color(0.1,0.1,0.1)
-                if self.menu_now=='start_edge' or self.menu_now=='continue_edge':
+                type=self.getTypeByMenu()
+                if type==0:
                     edge_type=self.egde_typeList[self.edge_typeCur.GetCurrentSelection()]
                     if closeP:
                         geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
@@ -355,7 +356,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                             s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                             break
                     self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],False]]
-                elif self.menu_now=='start_body':
+                elif type==1:
                     sort=self.sortList[self.sortCur.GetCurrentSelection()]
                     bodyh=float(self.bodyH.GetValue())
                     if closeP:
@@ -380,7 +381,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                             s1=self.canva._3dDisplay.DisplayColoredShape(ShapeFused, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                             break                                                        #point,h_body
                     self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,bodyh,sort[0],sort[3],sort[6],False]]
-                elif self.menu_now=='start_isoline':
+                elif type==3:
                     coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
                     heigth=1
                     if closeP:
@@ -397,9 +398,10 @@ def Coord_yes(self,drawP=False,closeP=False):
                     conn.close()
                     s1=self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
                     self.canva.drawList = self.canva.drawList + [[3,id_topo,s1,heigth,coord_sys,False]]
-
+                elif self.menu_now=='start_cut_pline':
+                    self.SetStatusText("Готово", 2)
+                    return
                 self.SetStatusText("Готово", 2)
-                self.menu_now
                 CancelOp(self)                 
                 return
     coord1 = coordStr.split(',')

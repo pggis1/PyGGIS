@@ -52,8 +52,8 @@ MNU_EDIT        = "Редактирование"
 MNU_EdBrMoveV   =(u'Переместить', 'Перенести вершину объекта')
 MNU_EdBrInsV    =(u'Вставить точку', 'Вставить точку в объект')
 MNU_EdBrDelV    =(u'Удалить точку', 'Удалить точку на объекте')
-MNU_EdBrBrkV    =(u'Разорвать бровку', 'Разорвать объект в точке')
-MNU_EdBrDelB    =(u'Удалить бровку', 'Удалить объект')
+MNU_EdBrBrkV    =(u'Разорвать объект', 'Разорвать объект в точке')
+MNU_EdBrDelB    =(u'Удалить объект', 'Удалить объект')
 CMD_EdBrMoveV   = 101
 CMD_EdBrInsV    = 102
 CMD_EdBrDelV    = 103
@@ -62,9 +62,16 @@ CMD_EdBrInsV    = 105
 CMD_EdBrBrkV    = 106
 CMD_EdBrDelB    = 107
 CMD_EdBrSelB    = 108
+CMD_EdBrCutE    = 109
 #CMD_EdBr????    = 108
 POSTGR_DBN     =   u'postgres'
 POSTGR_USR     =   u'postgres'
 
 type_labels=['бровка','тело','скважина','изолиния',]
 
+menu_types=[
+    ['edge','start_edge','edge_OnEdBrDelB','edge_OnEdBrBrkV','edge_OnEdBrInsV','edge_OnEdBrDelV','edge_OnEdBrMoveV'],
+    ['body','start_body','body_OnEdBrDelB'],
+    ['drill','start_drill','drill_OnEdBrDelB'],
+    ['isoline','start_isoline','isoline_OnEdBrDelB','isoline_OnEdBrInsV','isoline_OnEdBrDelV','isoline_OnEdBrMoveV']
+]
