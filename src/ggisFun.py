@@ -448,7 +448,8 @@ def Coord_yes(self,drawP=False,closeP=False):
             #print oldInfo
             self.canva.drawList[indexInfo] = oldInfo          # Обновить список
         self.SetStatusText("Готово!", 2)
-        self.canva.EdCmd = 0; self.canva.EdStep = 0
+        if self.getTypeByMenu()==-1:
+            self.EdCmd = 0; self.EdStep = 0
         # Восстановить старые привязки
         self.canva.snap.SetSelection(0)
         return

@@ -617,7 +617,7 @@ class AppFrame(wx.Frame):
                 if v[2]==u'---':
                     self.tb3.AddSeparator()
                 else:
-                    self.buttonMenu[i][4]=wx.Button(self.tb3, v[1], v[2],size=(130,30))
+                    self.buttonMenu[i][4]=wx.Button(self.tb3, v[1], v[2],size=(150,30))
                     self.tb3.AddControl(self.buttonMenu[i][4])
                     self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][3], self.buttonMenu[i][4])
         self.tb3.Fit()
