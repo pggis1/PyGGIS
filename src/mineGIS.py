@@ -351,11 +351,13 @@ class AppFrame(wx.Frame):
 
                 ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Прирезка',self.NavigateMenu,None,'cut'],
-                            ['cut',wx.NewId(),u'ВыбратьБров',self.OnEdBrSelB,None,'cut_OnEdBrSelB'],
+                            ['cut',wx.NewId(),u'УстНачало',self.OnEdBrSelB,None,'cut_OnEdBrSelB'],
                                  ['cut_OnEdBrSelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'cut'],
-                            ['cut',wx.NewId(),u'ОпрПолилинию',self.NavigateMenu,None,'start_cut_pline'],
+                            ['cut',wx.NewId(),u'ОпрПолилинию',self.OnEdgePLine,None,'start_cut_pline'],
                                 ['start_cut_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'cut'],
-                                ['start_cut_pline',wx.NewId(),u'Закончить',self.OnCutPLineEnd,None,'cut'],
+                                ['start_cut_pline',wx.NewId(),u'Закончить',self.OnCutPLineEnd,None,'make_cut_query'],
+                                    ['make_cut_query',wx.NewId(),u'Применить',self.NavigateMenu,None,'cut'],
+                                    ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                             ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Отсечь',self.OnMerge,None,'merge'],
@@ -726,8 +728,30 @@ class AppFrame(wx.Frame):
         self.canva._3dDisplay.EraseAll()
         self.canva.drawList = []
 
+
+    def OnCutPLineYes(self,event):
+        pnts=getPoints(self.canva.tmpEdge.Shape())
+        PLine(self)
+        self.canva.lstPnt=pnts
+        Coord_yes(self,True)
+        self.canva._3dDisplay.Context.Erase(self.drawList[self.canva.tempIndex][2].GetHandle())
+        self.drawList[self.canva.tempIndex][2]=None
+        self.OnCancel(event)
+        print 'hello'
+        pass
+
     def OnCutPLineEnd(self,event):
-        CMD_EdBrCutE
+        """ Конец рисования полилинии прирезки """
+        self.canva.SetTogglesToFalse(event)
+        self.canva.snap.SetSelection(2)
+        if (self.canva.snap.GetCurrentSelection() == 2):
+            self.NavigateMenu(event)
+            self.canva.MakePLine=False
+            self.canva.EdCmd = CMD_EdBrCutE
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет Near ***", 0)
         pass
 
     def OnMerge(self,event):
@@ -1612,6 +1636,7 @@ class AppFrame(wx.Frame):
     def OnEdBrSelB(selfself,event):
         """ выбрать бровку """
         self.canva.SetTogglesToFalse(event)
+        # сохранить старые привязки
         self.canva.snap.SetSelection(2)
         if (self.canva.snap.GetCurrentSelection() == 2):
             self.NavigateMenu(event)
@@ -1620,6 +1645,8 @@ class AppFrame(wx.Frame):
             self.SetStatusText("Куда?", 0)
         else:
             self.SetStatusText("*** Нет Near ***", 0)
+            #self.SetStatusText("Включите Near", 3)
+        pass
 
     def OnEdBrMoveV(self, event):
         """ Перенести вершину бровки """

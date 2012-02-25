@@ -75,3 +75,7 @@ menu_types=[
     ['drill','start_drill','drill_OnEdBrDelB'],
     ['isoline','start_isoline','isoline_OnEdBrDelB','isoline_OnEdBrInsV','isoline_OnEdBrDelV','isoline_OnEdBrMoveV']
 ]
+
+menu_titles={
+    'main': 'Главное меню',
+}

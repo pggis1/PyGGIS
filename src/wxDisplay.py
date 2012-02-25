@@ -338,16 +338,15 @@ class GraphicsCanva3D(wx.Panel):
             sel_shape=self._3dDisplay.selected_shape
             if not sel_shape:
                 return
-            type=0
-            indexInfo = None;
+            self.tempIndex = None;
             for i in range(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
                     if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
                         self.tempIndex = i
                         break
-            if indexInfo<>None:
-                if not self.drawList[self.tempIndex][0]==type:
+            if self.tempIndex<>None:
+                if not self.drawList[self.tempIndex][0]==0:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
                     if self.frame.getTypeByMenu()==-1:
                         self.EdCmd = 0; self.EdStep = 0
@@ -358,6 +357,43 @@ class GraphicsCanva3D(wx.Panel):
                     if pnt == neaP1:
                         self.tempPointIndex=i
                     #print newPnts
+
+        ### Окончание прирезки
+        if (self.EdCmd == CMD_EdBrCutE) and (self.EdStep == 1):
+            sel_shape=self._3dDisplay.selected_shape
+            if not sel_shape:
+                return
+            type=0
+            if not self.drawList[self.tempIndex][0]==type:
+                self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                if self.frame.getTypeByMenu()==-1:
+                    self.EdCmd = 0; self.EdStep = 0
+                    # Восстановить старые привязки
+                self.frame.canva.snap.SetSelection(0)
+                return
+            endPointIndex=None
+            for i,pnt in enumerate(pnts):
+                if pnt == neaP2:
+                    endPointIndex=i
+            #self._3dDisplay.Context.Erase(selObj)
+            bPoints=getPoints(self.drawList[self.tempIndex][2].Shape())
+            newPnts=[]
+            #print "2 self.tempPointIndex: "+self.tempPointIndex
+            newPnts.append(bPoints[self.tempPointIndex])
+            for i in range(len(self.lstPnt)):
+                newPnts.append(self.lstPnt[i])
+            newPnts.append(resPnt)
+            for i in range(endPointIndex,len(bPoints)):
+                newPnts.append(bPoints[i])
+            for i in range(self.tempPointIndex):
+                newPnts.append(bPoints[i])
+            plgn = BRepBuilderAPI_MakePolygon()
+            for pnt1 in newPnts:
+                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            plgn.Close()
+            w = plgn.Wire()
+            self.tmpEdge = self._3dDisplay.DisplayColoredShape(w,'RED', False)
+            self.GumLine=False
 
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
