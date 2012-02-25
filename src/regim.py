@@ -77,5 +77,30 @@ menu_types=[
 ]
 
 menu_titles={
-    'main': 'Главное меню',
+    'main': u'Главное меню',
+    'add': u'Задание',
+    'edge': u'Бровки',
+    'start_edge': u'Создание Бровки',
+    'edge_OnEdBrDelB': u'Удалить Бровку',
+    'edge_OnEdBrBrkV': u'Разбить Бровку',
+    'edge_OnEdBrInsV': u'Вставить Точку',
+    'edge_OnEdBrDelV': u'Удалить Точку',
+    'edge_OnEdBrMoveV': u'Перем. Точку',
+    'body': u'Тела',
+    'start_body': u'Создание тела',
+    'body_OnEdBrDelB': u'Удалить Тело',
+    'isoline': u'Рельеф',
+    'isoline_OnEdBrDelB': u'Удалить Изолинию',
+    'isoline_OnEdBrInsV': u'Вставить Точку',
+    'isoline_OnEdBrDelV': u'Удалить Точку',
+    'isoline_OnEdBrMoveV': u'Перед. Точку',
+    'drill': u'Скважины',
+    'start_drill': u'Задать скважину',
+    'drill_OnEdBrDelB': u'Удалить Скважину',
+    'ways': u'Съезды',
+    'edit': u'Корректировка',
+    'cut': u'Прирезка',
+    'cut_OnEdBrSelB': u'Задание Начала',
+    'start_cut_pline': u'Задание Прирезки',
+    'make_cut_query': u'Подтверд. Прирезку'
 }

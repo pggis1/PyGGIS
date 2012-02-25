@@ -612,7 +612,7 @@ class AppFrame(wx.Frame):
         else:
             self.menu_now=menuname
         self.tb3.ClearTools()
-        self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menuname+': ', wx.DefaultPosition, wx.DefaultSize, 0))
+        self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menu_titles[menuname], wx.DefaultPosition, wx.DefaultSize, 0))
         self.tb3.AddSeparator()
         for i,v in enumerate(self.buttonMenu):
             if v[0]==menuname or v[0]=='':
@@ -736,6 +736,7 @@ class AppFrame(wx.Frame):
         Coord_yes(self,True)
         self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
         self.canva.drawList[self.canva.tempIndex][2]=None
+        self.canva.drawList[self.canva.tempIndex][-1]=True
         self.OnCancel(event)
         self.NavigateMenu(event)
         pass
