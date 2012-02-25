@@ -356,7 +356,7 @@ class AppFrame(wx.Frame):
                             ['cut',wx.NewId(),u'ОпрПолилинию',self.OnEdgePLine,None,'start_cut_pline'],
                                 ['start_cut_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Закончить',self.OnCutPLineEnd,None,'make_cut_query'],
-                                    ['make_cut_query',wx.NewId(),u'Применить',self.NavigateMenu,None,'cut'],
+                                    ['make_cut_query',wx.NewId(),u'Применить',self.OnCutPLineYes,None,'cut'],
                                     ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                             ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
@@ -730,14 +730,14 @@ class AppFrame(wx.Frame):
 
 
     def OnCutPLineYes(self,event):
-        pnts=getPoints(self.canva.tmpEdge.Shape())
+        pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
         PLine(self)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
-        self.canva._3dDisplay.Context.Erase(self.drawList[self.canva.tempIndex][2].GetHandle())
-        self.drawList[self.canva.tempIndex][2]=None
+        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+        self.canva.drawList[self.canva.tempIndex][2]=None
         self.OnCancel(event)
-        print 'hello'
+        self.NavigateMenu(event)
         pass
 
     def OnCutPLineEnd(self,event):

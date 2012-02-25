@@ -323,8 +323,9 @@ def Coord_yes(self,drawP=False,closeP=False):
             if drawP:
                 #if (self.canva._3dDisplay.Context.HasOpenedContext()):
                 #    self.canva._3dDisplay.Context.CloseLocalContext()
-                self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
-                self.canva.tmpEdge = None
+                if self.canva.tmpEdge<>None:
+                    self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+                    self.canva.tmpEdge = None
                 plgn = BRepBuilderAPI_MakePolygon()
                 for pnt1 in self.canva.lstPnt:
                     plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))

@@ -392,8 +392,16 @@ class GraphicsCanva3D(wx.Panel):
                 plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
             plgn.Close()
             w = plgn.Wire()
+            if self.tmpEdge:
+                self._3dDisplay.Context.Erase(self.tmpEdge)
+                self.tmpEdge = None
+            if self.gumline_edge:
+                self._3dDisplay.Context.Erase(self.gumline_edge)
+                self.gumline_edge=None
             self.tmpEdge = self._3dDisplay.DisplayColoredShape(w,'RED', False)
             self.GumLine=False
+            self.EdCmd = None
+            self.EdStep = None
 
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):

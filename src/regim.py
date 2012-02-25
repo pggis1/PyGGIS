@@ -70,7 +70,7 @@ POSTGR_USR     =   u'postgres'
 type_labels=['бровка','тело','скважина','изолиния',]
 
 menu_types=[
-    ['edge','start_edge','edge_OnEdBrDelB','edge_OnEdBrBrkV','edge_OnEdBrInsV','edge_OnEdBrDelV','edge_OnEdBrMoveV'],
+    ['edge','start_edge','edge_OnEdBrDelB','edge_OnEdBrBrkV','edge_OnEdBrInsV','edge_OnEdBrDelV','edge_OnEdBrMoveV','make_cut_query'],
     ['body','start_body','body_OnEdBrDelB'],
     ['drill','start_drill','drill_OnEdBrDelB'],
     ['isoline','start_isoline','isoline_OnEdBrDelB','isoline_OnEdBrInsV','isoline_OnEdBrDelV','isoline_OnEdBrMoveV']
