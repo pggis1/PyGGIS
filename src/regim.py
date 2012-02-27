@@ -102,5 +102,5 @@ menu_titles={
     'cut': u'Прирезка',
     'cut_OnEdBrSelB': u'Задание Начала',
     'start_cut_pline': u'Задание Прирезки',
-    'make_cut_query': u'Подтверд. Прирезку'
+    'make_cut_query': u'ПодтвердПрирезку'
 }

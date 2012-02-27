@@ -300,15 +300,15 @@ class AppFrame(wx.Frame):
                                 ['edge',wx.NewId(),u'ПостПлощ',self.OnEdgeOffset,None],
                                 ['edge',wx.NewId(),u'---'],
                                 ['edge',wx.NewId(),u'УдалитьБровку',self.OnEdBrDelB,None,'edge_OnEdBrDelB'],
-                                    ['edge_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                    ['edge_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'РазбитьБровку',self.OnEdBrBrkV,None,'edge_OnEdBrBrkV'],
-                                    ['edge_OnEdBrBrkV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                    ['edge_OnEdBrBrkV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None,'edge_OnEdBrInsV'],
-                                    ['edge_OnEdBrInsV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                    ['edge_OnEdBrInsV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None,'edge_OnEdBrDelV'],
-                                    ['edge_OnEdBrDelV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                    ['edge_OnEdBrDelV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None,'edge_OnEdBrMoveV'],
-                                    ['edge_OnEdBrMoveV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'edge'],
+                                    ['edge_OnEdBrMoveV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
 
                         ['add',wx.NewId(),u'Тело',self.NavigateMenu,None,'body'],
                                 ['body',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_body'],
@@ -317,29 +317,29 @@ class AppFrame(wx.Frame):
                                         ['start_body',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'body'],
                                 ['body',wx.NewId(),u'---'],
                                 ['body',wx.NewId(),u'УдалитьТело',self.OnEdBrDelB,None,'body_OnEdBrDelB'],
-                                    ['body_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'body'],
+                                    ['body_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'body'],
 
                         ['add',wx.NewId(),u'Рельеф',self.NavigateMenu,None,'isoline'],
-                                ['isoline',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_isoline'],
+                                ['isoline',wx.NewId(),u'Начать',self.OnCutPLine,None,'start_isoline'],
                                         ['start_isoline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
                                         ['start_isoline',wx.NewId(),u'Закончить',self.OnEdgeClose,None,'isoline'],
                                         ['start_isoline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'isoline'],
                                 ['isoline',wx.NewId(),u'---'],
                                 ['isoline',wx.NewId(),u'УдалитьИзолинию',self.OnEdBrDelB,None,'isoline_OnEdBrDelB'],
-                                    ['isoline_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                    ['isoline_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'isoline'],
                                 ['isoline',wx.NewId(),u'ВставитьТочку',self.OnEdBrInsV,None,'isoline_OnEdBrInsV'],
-                                    ['isoline_OnEdBrInsV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                    ['isoline_OnEdBrInsV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'isoline'],
                                 ['isoline',wx.NewId(),u'УдалитьТочку',self.OnEdBrDelV,None,'isoline_OnEdBrDelV'],
-                                    ['isoline_OnEdBrDelV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                    ['isoline_OnEdBrDelV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'isoline'],
                                 ['isoline',wx.NewId(),u'ПеремесТочку',self.OnEdBrMoveV,None,''],
-                                    ['isoline_OnEdBrMoveV',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'isoline'],
+                                    ['isoline_OnEdBrMoveV',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'isoline'],
 
                         ['add',wx.NewId(),u'Скважина',self.NavigateMenu,None,'drill'],
                                 ['drill',wx.NewId(),u'Задать',self.OnDrillStart,None,'start_drill'],
                                         ['start_drill',wx.NewId(),u'Создать',self.OnDrillAdd,None,'drill'],
                                         ['start_drill',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'drill'],
                                 ['drill',wx.NewId(),u'УдалитьСкважину',self.OnEdBrDelB,None,'drill_OnEdBrDelB'],
-                                    ['drill_OnEdBrDelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'drill'],
+                                    ['drill_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'drill'],
                                 ['drill',wx.NewId(),u'ПереместитьСкважину',self.NavigateMenu,None],
 
                         ['add',wx.NewId(),u'Съезды',self.NavigateMenu,None,'ways'],
@@ -352,15 +352,15 @@ class AppFrame(wx.Frame):
                 ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Прирезка',self.NavigateMenu,None,'cut'],
                             ['cut',wx.NewId(),u'УстНачало',self.OnEdBrSelB,None,'cut_OnEdBrSelB'],
-                                 ['cut_OnEdBrSelB',wx.NewId(),u'Отмена',self.OnEdCmdCancel,None,'cut'],
-                            ['cut',wx.NewId(),u'ОпрПолилинию',self.OnEdgePLine,None,'start_cut_pline'],
+                                 ['cut_OnEdBrSelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'cut'],
+                            ['cut',wx.NewId(),u'ОпрПолилинию',self.OnCutPLine,None,'start_cut_pline'],
                                 ['start_cut_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Закончить',self.OnCutPLineEnd,None,'make_cut_query'],
                                     ['make_cut_query',wx.NewId(),u'Применить',self.OnCutPLineYes,None,'cut'],
                                     ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                             ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
-                        ['edit',wx.NewId(),u'Отсечь',self.OnMerge,None,'merge'],
+                        ['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
                 ['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
@@ -728,9 +728,18 @@ class AppFrame(wx.Frame):
         self.canva._3dDisplay.EraseAll()
         self.canva.drawList = []
 
+    def OnCutPLine(self,event):
+        self.canva.snap.SetSelection(0)
+        self.OnPLine(event)
+        resPnt=self.canva.tempPoint
+        self.canva.coord.SetValue("%.1f,%.1f"%(resPnt[0],resPnt[1]))
+        self.canva.coordZ.SetValue("%.1f"%(resPnt[2]))
+        Coord_yes(self)
+        self.NavigateMenu(event)
 
     def OnCutPLineYes(self,event):
         pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
+        """
         PLine(self)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
@@ -738,6 +747,26 @@ class AppFrame(wx.Frame):
         self.canva.drawList[self.canva.tempIndex][2]=None
         self.canva.drawList[self.canva.tempIndex][-1]=True
         self.OnCancel(event)
+        """
+        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+        self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+        for i,v in enumerate(self.egde_typeList):
+            if v[0]==self.canva.drawList[self.canva.tempIndex][4]:
+                edge_type=self.egde_typeList[i]
+                break
+        plgn = BRepBuilderAPI_MakePolygon()
+        for pnt1 in pnts:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+        w = plgn.Wire()
+        for i in range(len(self.colorList)):
+            if self.colorList[i][0]==edge_type[3]:
+                r=int(str(self.colorList[i][2]))/255.0
+                g=int(str(self.colorList[i][3]))/255.0
+                b=int(str(self.colorList[i][4]))/255.0
+                s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                break
+        self.canva.drawList[self.canva.tempIndex][2]=s1.GetObject()
+        self.canva.drawList[self.canva.tempIndex][-1]=True
         self.NavigateMenu(event)
         pass
 
@@ -754,140 +783,6 @@ class AppFrame(wx.Frame):
         else:
             self.SetStatusText("*** Нет Near ***", 0)
         pass
-
-    def OnMerge(self,event):
-        temp_a=[]
-        id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
-        for i,v in enumerate(self.canva.drawList):
-            if v[0]==1:
-                if v[3]==id_hor:
-                    temp_a=temp_a+getPoints(v[2].Shape())
-        print temp_a
-        if len(temp_a)==1:
-            tmp=temp_a[0]
-            temp_a=[]
-            temp_a.append([tmp[0]-tmp[3]/2,tmp[1]-tmp[4]/2,0,0,0])
-            temp_a.append([tmp[0]-tmp[3]/2,tmp[1]+tmp[4]/2,0,0,0])
-            temp_a.append([tmp[0]+tmp[3]/2,tmp[1]+tmp[4]/2,0,0,0])
-            temp_a.append([tmp[0]+tmp[3]/2,tmp[1]-tmp[4]/2,0,0,0])
-        if len(temp_a)==2:
-            tmp=temp_a
-            temp_a=[]
-            if math.fabs(tmp[0][0]-tmp[1][0])>math.fabs(tmp[0][1]-tmp[1][1]):
-                print "1"
-                temp_a.append([tmp[0][0],tmp[0][1]-tmp[0][4]/2,0,0,0])
-                temp_a.append([tmp[0][0],tmp[0][1]+tmp[0][4]/2,0,0,0])
-                temp_a.append([tmp[1][0],tmp[1][1]+tmp[1][4]/2,0,0,0])
-                temp_a.append([tmp[1][0],tmp[1][1]-tmp[1][4]/2,0,0,0])
-            else:
-                #print "2"
-                temp_a.append([tmp[0][0]-tmp[0][3]/2,tmp[0][1],0,0,0])
-                temp_a.append([tmp[0][0]+tmp[0][3]/2,tmp[0][1],0,0,0])
-                temp_a.append([tmp[1][0]+tmp[1][3]/2,tmp[1][1],0,0,0])
-                temp_a.append([tmp[1][0]-tmp[1][3]/2,tmp[1][1],0,0,0])
-                #print temp_a
-        minx=0
-        miny=0
-        maxx=0
-        maxy=0
-        for i,v in enumerate(temp_a):
-            if i==0 or v[0]<minx:
-                minx=v[0]
-            if i==0 or v[1]<miny:
-                miny=v[1]
-            if i==0 or v[0]>maxx:
-                maxx=v[0]
-            if i==0 or v[1]>maxy:
-                maxy=v[1]
-        #print str(minx)+" "+str(maxx)
-        #print str(miny)+" "+str(maxy)
-        #print " "
-        tmpCx=minx+math.fabs(maxx-minx)/2;
-        tmpCy=miny+math.fabs(maxy-miny)/2;
-        #print str(tmpCx)+" "+str(tmpCy)
-        #self.drawpoint(tmpCx,tmpCy,h,'BLUE',5)
-
-        points=[]
-
-        break_flag=False
-        tmpx=0
-        tmpy=0
-
-        minx=int(minx)-10
-        miny=int(miny)-10
-        maxx=int(maxx)+10
-        maxy=int(maxy)+10
-        tmpCx=int(tmpCx)
-        tmpCy=int(tmpCy)
-
-
-#left top
-        for j in range(tmpCy,maxy+1):
-            break_flag=False
-            for i in range(minx,tmpCx+1):
-                for k,v in enumerate(temp_a):
-                    if int(v[0])==i and int(v[1])==j:
-                        #tmpx=v[0]-max(w,v[3]/2)
-                        #tmpy=v[1]+max(w,v[4]/2)
-                        break_flag=True
-                        #self.drawpoint(tmpx,tmpy,h)
-                        points.append([v[0],v[1],v[2]])
-                    if break_flag==True:
-                        break
-                    #if break_flag==True:
-                    #points.append([tmpx,tmpy,h])
-        #right top
-        for i in range(tmpCx+1,maxx+1):
-            break_flag=False
-            for j in range(maxy,tmpCy+1,-1):
-                for k,v in enumerate(temp_a):
-                    if int(v[0])==i and int(v[1])==j:
-                        #tmpx=v[0]+max(w,v[3]/2)
-                        #tmpy=v[1]+max(w,v[4]/2)
-                        break_flag=True
-                        #self.drawpoint(tmpx,tmpy,h)
-                        points.append([v[0],v[1],v[2]])
-                    if break_flag==True:
-                        break
-                    #if break_flag==True:
-                    #points.append([tmpx,tmpy,h])
-        #right bottom
-        for j in range(tmpCy+1,miny-1,-1):
-            break_flag=False
-            for i in range(maxx,tmpCx-1,-1):
-                for k,v in enumerate(temp_a):
-                    if int(v[0])==i and int(v[1])==j:
-                        #tmpx=v[0]+max(w,v[3]/2)
-                        #tmpy=v[1]-max(w,v[4]/2)
-                        break_flag=True
-                        #self.drawpoint(tmpx,tmpy,h)
-                        points.append([v[0],v[1],v[2]])
-                    if break_flag==True:
-                        break
-                    #if break_flag==True:
-                    #points.append([tmpx,tmpy,h])
-        #left bottom
-        for i in range(tmpCx-1,minx-1,-1):
-            break_flag=False
-            for j in range(miny,tmpCy):
-                for k,v in enumerate(temp_a):
-                    if int(v[0])==i and int(v[1])==j:
-                        #tmpx=v[0]-max(w,v[3]/2)
-                        #tmpy=v[1]-max(w,v[4]/2)
-                        break_flag=True
-                        #self.drawpoint(tmpx,tmpy,h)
-                        points.append([v[0],v[1],v[2]])
-                    if break_flag==True:
-                        break
-                    #if break_flag==True:
-                    #points.append([tmpx,tmpy,h])
-        plgn = BRepBuilderAPI_MakePolygon()
-        for pnt1 in points:
-            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
-        plgn.Close()
-        w = plgn.Wire()
-
-        self.canva._3dDisplay.DisplayColoredShape(w, "BLUE", False)
 
     def CreateRightToolbar(self):
         # Начало формирования палитры

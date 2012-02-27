@@ -125,6 +125,7 @@ class GraphicsCanva3D(wx.Panel):
 
         self.tempIndex      = None # Временный индекс
         self.tempPointIndex = None # Временый индекс точки
+        self.tempPoint      = None # Временная точка
 
         self.gumline_edge = None
         self.MakePoint = False
@@ -356,6 +357,7 @@ class GraphicsCanva3D(wx.Panel):
                 for i,pnt in enumerate(pnts):
                     if pnt == neaP1:
                         self.tempPointIndex=i
+                        self.tempPoint=[xt,yt,zt]
                     #print newPnts
 
         ### Окончание прирезки
@@ -464,12 +466,11 @@ class GraphicsCanva3D(wx.Panel):
             self.frame.canva.snap.SetSelection(0)
             pass
 
-        if (self.EdCmd == CMD_EdBrMoveV) and (self.EdStep == 1):
-            # move vertex
-            pass
-
         # удалить точку
         if (self.EdCmd == CMD_EdBrDelV) and (self.EdStep == 1):
+            sel_shape=self._3dDisplay.selected_shape
+            if not sel_shape:
+                return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
             type=self.frame.getTypeByMenu()

@@ -191,7 +191,6 @@ def distance2d(p1,p2):
 def distance3d(p1,p2):
     return sqrt((p1[0]-p2[0])*(p1[0]-p2[0]) + (p1[1]-p2[1])*(p1[1]-p2[1]) + (p1[2]-p2[2])*(p1[2]-p2[2]))
 
-
 def getMNK(cloud, offset=[0,0] ):    #  [[x,y,z],...]
     """ Поиск линейной аппроксимации облака точек cloud = [[x,y,z], ...]
     z = b0 + b1*x + b2*y
@@ -341,3 +340,8 @@ def make_offset(wire, d, h=0):
     offset = BRepOffsetAPI_MakeOffset(wire,GeomAbs_Arc )
     offset.Perform(d, h)
     return offset.Shape()
+
+def polar(point, angle, dist):
+    point[0]=sin(angle) * dist + point[0]
+    point[1]=cos(angle) * dist + point[1]
+    return point

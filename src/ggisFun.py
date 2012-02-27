@@ -1504,4 +1504,3 @@ def Etalon(self):
             self.canva._3dDisplay.DisplayColoredShape(edgeUp.Wire(), 'GREEN', False)
             
         #print "Создали бровки за ", time.time() - startTime, "сек. Число точек = ", Cnt
-        
