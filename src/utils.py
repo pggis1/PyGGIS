@@ -15,8 +15,8 @@ from OCC.BRepOffsetAPI import BRepOffsetAPI_MakeOffset
 from OCC.GeomAbs import GeomAbs_Arc
 #from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
 #from OCC.AIS import AIS_Shape
-#from OCC.BRepBuilderAPI import *
-#from OCC.gp import *
+from OCC.BRepBuilderAPI import *
+from OCC.gp import *
 from regim import *
 #import OCC.KBE
 #from OCC.KBE.TypesLookup import ShapeToTopology
@@ -336,12 +336,65 @@ class CoordsDlg(wx.Dialog):
         return result
 
 
-def make_offset(wire, d, h=0):
+"""def make_offset(wire, d, h=0):
     offset = BRepOffsetAPI_MakeOffset(wire,GeomAbs_Arc )
     offset.Perform(d, h)
-    return offset.Shape()
+    return offset.Shape()"""
 
-def polar(point, angle, dist):
-    point[0]=sin(angle) * dist + point[0]
-    point[1]=cos(angle) * dist + point[1]
-    return point
+def make_offset(shape,offset,height=0):
+    offset*=-1
+    pnts=getPoints(shape)
+    pnts_new=[]
+    Close=False
+    if pnts[0]==pnts[-1]:
+        Close=True
+        pnts.pop()
+    triangles=getTriangles(pnts)
+    for i,v in enumerate(triangles):
+        a=measure_angle(v[0],v[1],v[2])
+        if v[2][0]>=v[1][0]:
+            #b=measure_angle([v[0][0]+20,v[0][1],v[0][2]],v[0],v[1])
+            b=measure_angle([v[1][0],v[1][1]+20,v[1][2]],v[1],v[2])
+        else:
+            b=measure_angle([v[1][0],v[1][1]-20,v[1][2]],v[1],v[2])+math.pi
+        tmp=b+a/2
+        #print '-=-=-=-=-'
+        #print math.degrees(a)
+        #print math.degrees(b)
+        #print math.degrees(tmp)
+        pnts_new.append(polar(pnts[i],tmp,offset,height))
+    plgn = BRepBuilderAPI_MakePolygon()
+    for pnt1 in pnts_new:
+        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+    if Close:
+        plgn.Close()
+    return plgn.Wire()
+
+def getTriangles(pnts):
+    l=len(pnts)
+    triangles=[]
+    triangles.append([pnts[-1],pnts[0],pnts[1]])
+    for i in range(l-2):
+        tmp= [pnts[i],pnts[i+1],pnts[i+2]]
+        triangles.append(tmp)
+    triangles.append([pnts[-2],pnts[-1],pnts[0]])
+    return triangles
+
+def polar(point, angle, dist, height=0):
+    #if angle>math.pi:
+        #angle=angle-math.pi
+    return [sin(angle) * dist + point[0],cos(angle) * dist + point[1],point[2]+height]
+
+def measure_angle(p1,p2,p3):
+    l1=distance2d(p1,p2)
+    #print 'distance between ',p1,' and ',p2,' is ',l1
+    l2=distance2d(p2,p3)
+    #print 'distance between ',p2,' and ',p3,' is ',l2
+    l3=distance2d(p1,p3)
+    #print 'distance between ',p1,' and ',p3,' is ',l3
+    #print "-===================-"
+    #print l1, l2, l3
+    tmp1=((l1*l1+l2*l2)-l3*l3)
+    tmp2=(2*l1*l2)
+    #print tmp1,tmp2,tmp1/tmp2
+    return math.acos(tmp1/tmp2)
