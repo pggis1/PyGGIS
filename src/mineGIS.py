@@ -363,8 +363,6 @@ class AppFrame(wx.Frame):
                         ['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
-
-                ['',wx.NewId(),u'Подобие',self.OnSame,None],
                 ['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
@@ -661,20 +659,15 @@ class AppFrame(wx.Frame):
         self.NavigateMenu(event)
 
     def OnEdgeOffset(self,event):
-        sel_shape=self.canva._3dDisplay.selected_shape
-        if sel_shape:
-            pnts = getPoints(sel_shape)
-            plgn = BRepBuilderAPI_MakePolygon()
-            for pnt1 in pnts:
-                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
-            w = plgn.Wire()
-            shape=make_offset(w,-20)
-            """pnts_new = getPoints(shape)
-            plgn_new = BRepBuilderAPI_MakePolygon()
-            for i in range(len(pnts_new)-1):
-                plgn_new.Add(gp_Pnt(pnts_new[i][0], pnts_new[i][1], pnts_new[i][2]))
-            w_new = plgn_new.Wire()"""
-            self.canva._3dDisplay.DisplayColoredShape(shape, 'BLUE', False)
+        s1=self.canva._3dDisplay.selected_shape
+        w=make_offset(s1,-20)
+        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.9,0.9,0.5,0), False)
+        """x=100
+        for i in range(10):
+            w=make_offset(s1,x,x)
+            s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.9,0.5,0.5,0), False).GetObject().Shape()
+            w=make_offset(s1,x*2,0)
+            s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.5,0.5,0.9,0), False).GetObject().Shape()"""
 
     def OnEdgeContinue(self,event):
         sel_shape=self.canva._3dDisplay.selected_shape
@@ -1611,11 +1604,6 @@ class AppFrame(wx.Frame):
         self.canva.EdStep = 1
         self.SetStatusText("Укажите объект", 0)
         pass
-
-    def OnSame(self,event):
-        s1=self.canva._3dDisplay.selected_shape
-        w=make_offset(s1,20)
-        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.9,0.5,0.9,0), False).GetObject().Shape()
 
     def OnDebug(self,event):
         """
