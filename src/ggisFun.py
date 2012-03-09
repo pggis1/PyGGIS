@@ -332,6 +332,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                 if closeP:
                     plgn.Close()
                 w = plgn.Wire()
+                #w=Interpolate(self.canva.lstPnt)
                 id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
                 #Quantity_Color(0.1,0.1,0.1)
                 type=self.getTypeByMenu()
@@ -398,7 +399,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                     curs.close()
                     conn.close()
                     s1=self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
-                    self.canva.drawList = self.canva.drawList + [[3,id_topo,s1,heigth,coord_sys,False]]
+                    self.canva.drawList = self.canva.drawList + [[3,id_topo,s1.GetObject(),heigth,coord_sys,False]]
                 elif self.menu_now=='start_cut_pline':
                     self.SetStatusText("Готово", 2)
                     return
@@ -487,8 +488,11 @@ def Coord_yes(self,drawP=False,closeP=False):
         y=self.canva.lstPnt[-1][1]
         z=self.canva.lstPnt[-1][2]
         dept=float(self.drillH.GetValue())
+        if dept<0:
+            z-=dept
+            dept*=-1
         self.canva.lstPnt=self.canva.lstPnt[:-1]
-        skv = BRepPrim_Cylinder(gp_Pnt(x,y,z), 0.1, dept)
+        skv = BRepPrim_Cylinder(gp_Pnt(x,y,z-dept), 0.1, dept)
         skv = skv.Shell()
         if drawP:
             id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
@@ -506,7 +510,7 @@ def Coord_yes(self,drawP=False,closeP=False):
             curs.close()
             conn.close()
             s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
-            self.canva.drawList = self.canva.drawList + [[2,id_drill,s1,id_hor,coord_sys,type_drill,x,y,z,dept,name,False]]
+            self.canva.drawList = self.canva.drawList + [[2,id_drill,s1.GetObject(),id_hor,coord_sys,type_drill,x,y,z,dept,name,False]]
             CancelOp(self)
             return
         if self.canva.tmpEdge:
@@ -989,6 +993,26 @@ def SaveDB(self):
                         geom = makeLINESTRING(pnts)
                         query = "UPDATE topograph SET geom=" + geom + " WHERE id_topo=" + str(id) + ";"
                         #print query
+                        curs.execute(query)
+                    element[ - 1] = False # Снять флаг модификации
+                    self.canva.drawList[indexInfo] = element
+                if element[0] == 2:     # Скважина
+                    id = element[1]
+                    s1 = element[2]     # Объект
+                    if s1 == None:      # Удалять из БД
+                        query = "DELETE FROM dril_pars WHERE id_drill=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                        query = "DELETE FROM drills WHERE id_drill_fld=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                    else:               # Модифицировать в БД
+                        pnts = getPoints(s1.Shape())
+                        geom = makeLINESTRING(pnts)
+                        query = "UPDATE drills SET coord_x=" + str(element[6]) + ",coord_y=" + str(element[7]) + ",coord_z=" + str(element[8]) + " WHERE id_drill_fld=" + str(id) + ";"
+                        #print query
+                        curs.execute(query)
+                        query = "UPDATE dril_pars SET value=" + str(element[9]) + " where id_drill="+str(id)
                         curs.execute(query)
                     element[ - 1] = False # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element

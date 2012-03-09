@@ -90,6 +90,7 @@ menu_titles={
     'start_body': u'Создание тела',
     'body_OnEdBrDelB': u'Удалить Тело',
     'isoline': u'Рельеф',
+    'start_isoline': u'Создание изолинии',
     'isoline_OnEdBrDelB': u'Удалить Изолинию',
     'isoline_OnEdBrInsV': u'Вставить Точку',
     'isoline_OnEdBrDelV': u'Удалить Точку',

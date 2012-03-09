@@ -291,7 +291,7 @@ class AppFrame(wx.Frame):
                                         ['start_edge',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'edge'],
                                         ['start_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
                                         ['start_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
-                                ['edge',wx.NewId(),u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
+                                #['edge',wx.NewId(),u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
                                         ['continue_edge',wx.NewId(),u'ОтменитьПосл',self.NavigateMenu,None],
                                         ['continue_edge',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'edge'],
                                         ['continue_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
@@ -320,7 +320,7 @@ class AppFrame(wx.Frame):
                                     ['body_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'body'],
 
                         ['add',wx.NewId(),u'Рельеф',self.NavigateMenu,None,'isoline'],
-                                ['isoline',wx.NewId(),u'Начать',self.OnCutPLine,None,'start_isoline'],
+                                ['isoline',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_isoline'],
                                         ['start_isoline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'isoline'],
                                         ['start_isoline',wx.NewId(),u'Закончить',self.OnEdgeClose,None,'isoline'],
                                         ['start_isoline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'isoline'],
@@ -360,7 +360,7 @@ class AppFrame(wx.Frame):
                                     ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                             ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
-                        ['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
+                        #['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
                 ['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
@@ -660,8 +660,14 @@ class AppFrame(wx.Frame):
 
     def OnEdgeOffset(self,event):
         s1=self.canva._3dDisplay.selected_shape
-        w=make_offset(s1,-20)
-        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.9,0.9,0.5,0), False)
+        if not s1:
+            return
+        w=make_offset(s1,int(self.ploshWidth.GetValue()))
+        pnts=getPoints(w)
+        self.OnPLine(event)
+        self.canva.lstPnt=pnts
+        Coord_yes(self,True)
+        #s1=self.canva._3dDisplay.DisplayColoredShape(s1, OCC.Quantity.Quantity_Color(0.9,0.9,0.5,0), False)
         """x=100
         for i in range(10):
             w=make_offset(s1,x,x)
@@ -934,6 +940,8 @@ class AppFrame(wx.Frame):
         #
         # self.drillName - Имя скважины
         #
+        # self.ploshWidth - Ширина площадок
+        #
 
         panel = self.panel2     #.win
         dataBox = wx.BoxSizer(wx.HORIZONTAL)    # Общий sizer
@@ -968,6 +976,7 @@ class AppFrame(wx.Frame):
                                  size=(150, 30),
                                  choices=self.horList,
                                  style=wx.CB_READONLY)
+        self.gorCur.SetSelection(0)
         horBox.Add(self.gorCur,flag=wx.EXPAND)
         dataBox.Add(horBox, flag=wx.EXPAND)     # Включить в сайзер
         dataBox.Add((40,10))
@@ -1026,6 +1035,7 @@ class AppFrame(wx.Frame):
                                          size=(150, 30),
                                          choices=typeLst,
                                          style=wx.CB_READONLY)
+        self.edge_typeCur.SetSelection(0)
         par1Box.Add(self.edge_typeCur, flag=wx.EXPAND, border = 1)
         par1Box.Add((10,40))
         par1Box.Add(wx.StaticText(panel,-1,"Сорт РТ",size = (130,20)),
@@ -1047,6 +1057,7 @@ class AppFrame(wx.Frame):
                                          size=(150, 30),
                                          choices=sortLst,
                                          style=wx.CB_READONLY)
+        self.sortCur.SetSelection(0)
         par1Box.Add(self.sortCur, flag=wx.EXPAND, border = 1)
 
         par1Box.Add((10,40))
@@ -1075,6 +1086,7 @@ class AppFrame(wx.Frame):
                                          size=(150, 30),
                                          choices=coordLst,
                                          style=wx.CB_READONLY)
+        self.coordCur.SetSelection(0)
         par1Box.Add(self.coordCur, flag=wx.EXPAND, border = 1)
 
         par1Box.Add((10,40))
@@ -1085,9 +1097,15 @@ class AppFrame(wx.Frame):
 
         par1Box.Add((10,40))
         par1Box.Add(wx.StaticText(panel,-1,"Имя сважины",size = (180,20)),
-                    flag=wx.EXPAND)
-        self.drillName = wx.TextCtrl(panel, -1, "16",size=(150,30))
+            flag=wx.EXPAND)
+        self.drillName = wx.TextCtrl(panel, -1, "Скважина",size=(150,30))
         par1Box.Add(self.drillName, flag=wx.EXPAND, border = 1)
+
+        par1Box.Add((10,40))
+        par1Box.Add(wx.StaticText(panel,-1,"Ширина площадок",size = (180,20)),
+        flag=wx.EXPAND)
+        self.ploshWidth = wx.TextCtrl(panel, -1, "16",size=(150,30))
+        par1Box.Add(self.ploshWidth, flag=wx.EXPAND, border = 1)
 
         dataBox.Add(par1Box,flag=wx.EXPAND)     # Включить в сайзер
         dataBox.Add((40,10))
@@ -1111,6 +1129,7 @@ class AppFrame(wx.Frame):
                                          size=(150, 30),
                                          choices=lineLst,
                                          style=wx.CB_READONLY)
+        self.line_typeCur.SetSelection(0)
         par2Box.Add(self.line_typeCur, flag=wx.EXPAND, border = 1)
         par2Box.Add((10,40))
         par2Box.Add(wx.StaticText(panel,-1,"Цвет линии",size = (130,20)),
@@ -1132,6 +1151,7 @@ class AppFrame(wx.Frame):
                                          size=(150, 30),
                                          choices=colorLst,
                                          style=wx.CB_READONLY)
+        self.colorCur.SetSelection(0)
         par2Box.Add(self.colorCur, flag=wx.EXPAND, border = 1)
         par2Box.Add((10,40))
         par2Box.Add(wx.StaticText(panel,-1,"Толщина линии",size = (130,20)),
@@ -1609,6 +1629,14 @@ class AppFrame(wx.Frame):
         """
         Prints debug information into console
         """
+        plgn = BRepBuilderAPI_MakePolygon()
+        plgn.Add(gp_Pnt(0, 0, 0))
+        plgn.Add(gp_Pnt(0, 5, 0))
+        plgn.Add(gp_Pnt(5, 5, 0))
+        plgn.Add(gp_Pnt(5, 0, 0))
+        plgn.Close()
+        w = plgn.Wire()
+        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
         print '---==========---'
         print 'self.canva.drawList:'
         print self.canva.drawList

@@ -26,6 +26,9 @@ from math import *
 from scipy import *
 from scipy import linalg
 
+from OCC.TColgp import *
+from OCC.GeomAPI import *
+
 def GetRowsTbl(tableName, where=""):
     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
     curs = conn.cursor()
@@ -357,17 +360,24 @@ def make_offset(shape,offset,height=0):
             b=measure_angle([v[1][0],v[1][1]+20,v[1][2]],v[1],v[2])
         else:
             b=measure_angle([v[1][0],v[1][1]-20,v[1][2]],v[1],v[2])+math.pi
-        tmp=b+a/2
         #print '-=-=-=-=-'
         #print math.degrees(a)
         #print math.degrees(b)
         #print math.degrees(tmp)
-        pnts_new.append(polar(pnts[i],tmp,offset,height))
+        if offset<0:
+            #print 'a=',math.degrees(a),', b=', math.degrees(b)
+            pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
+            pnts_new.append(polar(pnts[i],b+a/2,offset,height))
+            pnts_new.append(polar(pnts[i],b+math.pi/2,offset,height))
+        else:
+            pnts_new.append(polar(pnts[i],b+a/2,offset,height))
+        #pnts_new.append(polar(pnts[i],b+a/2,offset,height))
     plgn = BRepBuilderAPI_MakePolygon()
     for pnt1 in pnts_new:
         plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
     if Close:
         plgn.Close()
+    #print dir(plgn)
     return plgn.Wire()
 
 def getTriangles(pnts):
@@ -398,3 +408,17 @@ def measure_angle(p1,p2,p3):
     tmp2=(2*l1*l2)
     #print tmp1,tmp2,tmp1/tmp2
     return math.acos(tmp1/tmp2)
+
+def Interpolate(pnts):
+    print pnts
+    array  = TColgp_HArray1OfPnt (1,len(pnts))
+    for i,v in enumerate(pnts):
+        print v
+        array.SetValue(i+1,gp_Pnt (v[0],v[1],v[2]))
+    print array.Length()
+    anInterpolation = GeomAPI_Interpolate(array.GetHandle(),True,1)
+    anInterpolation.Perform()
+    cu=anInterpolation.Curve()
+    spline = BRepBuilderAPI_MakeEdge(cu)
+    spline.Build()
+    return spline.Shape()
