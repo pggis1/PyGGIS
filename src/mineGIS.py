@@ -284,6 +284,8 @@ class AppFrame(wx.Frame):
                 ['ways',wx.NewId(),u'---',None,None,'main'],
                 ['edit',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
                 ['edit',wx.NewId(),u'---',None,None,'main'],
+                ['cut',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
+                ['cut',wx.NewId(),u'---',None,None,'main'],
                 ['main',wx.NewId(),u'Задание',self.NavigateMenu,None,'add'],
                         ['add',wx.NewId(),u'Бровка',self.NavigateMenu,None,'edge'],
                                 ['edge',wx.NewId(),u'Начать',self.OnEdgePLine,None,'start_edge'],
@@ -340,14 +342,17 @@ class AppFrame(wx.Frame):
                                         ['start_drill',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'drill'],
                                 ['drill',wx.NewId(),u'УдалитьСкважину',self.OnEdBrDelB,None,'drill_OnEdBrDelB'],
                                     ['drill_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'drill'],
-                                ['drill',wx.NewId(),u'ПереместитьСкважину',self.NavigateMenu,None],
+                                ['drill',wx.NewId(),u'ПереместитьСкважину',self.OnEdBrMoveP,None,'drill_OnEdBrMoveP'],
+                                    ['drill_OnEdBrMoveP',wx.NewId(),u'Применить',self.OnDrillMoveOk,None,'drill'],
+                                    ['drill_OnEdBrMoveP',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'drill'],
 
                         ['add',wx.NewId(),u'Съезды',self.NavigateMenu,None,'ways'],
-                                ['ways',wx.NewId(),u'ВыбратьБорт',self.NavigateMenu,None],
-                                ['ways',wx.NewId(),u'Полилиния',self.NavigateMenu,None],
-                                ['ways',wx.NewId(),u'ПоЧасовой',self.NavigateMenu,None],
-                                ['ways',wx.NewId(),u'ПротивЧасовой',self.NavigateMenu,None],
-                                ['ways',wx.NewId(),u'Закончить',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'Установить Начало',self.OnEdBrSelB,None,'ways_OnEdBrSelB'],
+                                    ['ways_OnEdBrSelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'ways'],
+                                #['ways',wx.NewId(),u'Полилиния',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'ПоЧасовой',self.OnWayCreate,None],
+                                ['ways',wx.NewId(),u'ПротивЧасовой',self.OnWayCreate,None],
+                                #['ways',wx.NewId(),u'Закончить',self.NavigateMenu,None],
 
                 ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
                         ['edit',wx.NewId(),u'Прирезка',self.NavigateMenu,None,'cut'],
@@ -359,11 +364,11 @@ class AppFrame(wx.Frame):
                                     ['make_cut_query',wx.NewId(),u'Применить',self.OnCutPLineYes,None,'cut'],
                                     ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
-                            ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
+                            #['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
                         #['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
-                ['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
+                #['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
@@ -658,6 +663,66 @@ class AppFrame(wx.Frame):
         Coord_yes(self,True,True)
         self.NavigateMenu(event)
 
+    def OnWayCreate(self,event):
+        pnts=getPoints(self.canva.drawList[self.canva.tempIndex][2].Shape())
+        print pnts
+        print self.canva.tempPointIndex
+        width=int(self.wayWidth.Value)
+        l=int(self.wayLen.Value)
+        angle=int(self.wayAngle.Value)
+
+
+        newPnts=[]
+        for i in range(self.canva.tempPointIndex,len(pnts)):
+            newPnts.append(pnts[i])
+        for i in range(self.canva.tempPointIndex):
+            newPnts.append(pnts[i])
+
+
+        plgn = BRepBuilderAPI_MakePolygon()
+
+        i=0
+        while l>0:
+            try:
+                pnt1=newPnts[i]
+                i+=1
+                d=distance2d(pnt1,newPnts[i])
+                l-=d
+                print d
+                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]*0+10))
+            except IndexError:
+                break
+
+        self.canva._3dDisplay.DisplayColoredShape(plgn.Wire(), OCC.Quantity.Quantity_Color(0.5,0.7,0.5,0), False)
+
+        pass
+
+    def OnDrillMoveOk(self,event):
+        x=self.canva.worldPt[0]
+        y=self.canva.worldPt[1]
+        z=self.canva.worldPt[2]
+
+        dept=self.canva.drawList[self.canva.tempIndex][9]
+
+        skv = BRepPrim_Cylinder(gp_Pnt(x,y,z-dept), 0.1, dept)
+        skv = skv.Shell()
+        s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
+
+        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+
+        oldInfo = self.canva.drawList[self.canva.tempIndex]
+        #print oldInfo
+        oldInfo[2] = s1.GetObject()
+        oldInfo[6] = x
+        oldInfo[7] = y
+        oldInfo[8] = z
+        oldInfo[-1] = True
+        #print oldInfo
+        self.canva.drawList[self.canva.tempIndex] = oldInfo
+
+        self.OnCancel(event)
+        self.NavigateMenu(event)
+
     def OnEdgeOffset(self,event):
         s1=self.canva._3dDisplay.selected_shape
         if not s1:
@@ -942,6 +1007,12 @@ class AppFrame(wx.Frame):
         #
         # self.ploshWidth - Ширина площадок
         #
+        # self.wayWidth - Ширина съездов
+        #
+        # self.wayAngle - Угол съездов
+        #
+        # self.wayLen - Длинна съездов
+        #
 
         panel = self.panel2     #.win
         dataBox = wx.BoxSizer(wx.HORIZONTAL)    # Общий sizer
@@ -1165,6 +1236,20 @@ class AppFrame(wx.Frame):
 
         par2Box.Add(self.lineWidth, flag=wx.EXPAND)
 
+        par2Box.Add((10,40))
+        par2Box.Add(wx.StaticText(panel,-1,"Ширина съезда",size = (180,20)),flag=wx.EXPAND)
+        self.wayWidth = wx.TextCtrl(panel, -1, "16",size=(150,30))
+        par2Box.Add(self.wayWidth, flag=wx.EXPAND, border = 1)
+
+        par2Box.Add((10,40))
+        par2Box.Add(wx.StaticText(panel,-1,"Длинна съезда",size = (180,20)),flag=wx.EXPAND)
+        self.wayLen = wx.TextCtrl(panel, -1, "300",size=(150,30))
+        par2Box.Add(self.wayLen, flag=wx.EXPAND, border = 1)
+
+        par2Box.Add((10,40))
+        par2Box.Add(wx.StaticText(panel,-1,"Уклон съезда",size = (180,20)),flag=wx.EXPAND)
+        self.wayAngle = wx.TextCtrl(panel, -1, "40",size=(150,30))
+        par2Box.Add(self.wayAngle, flag=wx.EXPAND, border = 1)
 
         dataBox.Add(par2Box,flag=wx.EXPAND)     # Включить в сайзер
         #dataBox.Add((40,10))
@@ -1544,6 +1629,7 @@ class AppFrame(wx.Frame):
 
 #=== Edit menu =========================================================
 
+
     def OnEdBrSelB(selfself,event):
         """ выбрать бровку """
         self.canva.SetTogglesToFalse(event)
@@ -1555,8 +1641,20 @@ class AppFrame(wx.Frame):
             self.canva.EdStep = 1
             self.SetStatusText("Куда?", 0)
         else:
-            self.SetStatusText("*** Нет Near ***", 0)
-            #self.SetStatusText("Включите Near", 3)
+            self.SetStatusText("*** Нет Near***", 0)
+        pass
+
+    def OnEdBrMoveP(self,event):
+        self.canva.SetTogglesToFalse(event)
+        # сохранить старые привязки
+        self.canva.snap.SetSelection(1)
+        if (self.canva.snap.GetCurrentSelection() == 1):
+            self.NavigateMenu(event)
+            self.canva.EdCmd = CMD_EdBrMoveP
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет End***", 0)
         pass
 
     def OnEdBrMoveV(self, event):

@@ -57,6 +57,7 @@ from OCC.Utils.Topology import Topo
 from OCC.gp import *
 from regim import *
 from utils import *
+from ggisFun import Point
 #from OCC.BRep.BRep_Tool import Curve
 from OCC.Visual3d import Visual3d_Layer
 from OCC.Aspect import *
@@ -357,8 +358,11 @@ class GraphicsCanva3D(wx.Panel):
                 for i,pnt in enumerate(pnts):
                     if pnt == neaP1:
                         self.tempPointIndex=i
-                        self.tempPoint=[xt,yt,zt]
-                    #print newPnts
+                        self.tempPoint=neaP1
+                        self.coordZ.SetValue("%.1f"%(neaP1[2]))
+                    elif pnt == neaP2:
+                        continue
+                        #self.tempPoint[1]=neaP2
 
         ### Окончание прирезки
         if (self.EdCmd == CMD_EdBrCutE) and (self.EdStep == 1):
@@ -380,15 +384,28 @@ class GraphicsCanva3D(wx.Panel):
             #self._3dDisplay.Context.Erase(selObj)
             bPoints=getPoints(self.drawList[self.tempIndex][2].Shape())
             newPnts=[]
-            #print "2 self.tempPointIndex: "+self.tempPointIndex
-            newPnts.append(bPoints[self.tempPointIndex])
-            for i in range(len(self.lstPnt)):
-                newPnts.append(self.lstPnt[i])
-            newPnts.append(resPnt)
-            for i in range(endPointIndex,len(bPoints)):
-                newPnts.append(bPoints[i])
-            for i in range(self.tempPointIndex):
-                newPnts.append(bPoints[i])
+            print "self.tempPointIndex: ",self.tempPointIndex
+            print "bPoints: ",bPoints
+            print "resPnt: ",resPnt
+            print "self.lstPnt: ",self.lstPnt
+            print "endPointIndex: ",endPointIndex
+            if endPointIndex>self.tempPointIndex:
+                newPnts.append(bPoints[self.tempPointIndex])
+                for i in range(len(self.lstPnt)):
+                    newPnts.append(self.lstPnt[i])
+                newPnts.append(resPnt)
+                for i in range(endPointIndex,len(bPoints)):
+                    newPnts.append(bPoints[i])
+                for i in range(self.tempPointIndex):
+                    newPnts.append(bPoints[i])
+            else:
+                newPnts.append(bPoints[self.tempPointIndex])
+                for i in range(len(self.lstPnt)):
+                    newPnts.append(self.lstPnt[i])
+                newPnts.append(resPnt)
+                for i in range(endPointIndex,self.tempPointIndex):
+                    newPnts.append(bPoints[i])
+
             plgn = BRepBuilderAPI_MakePolygon()
             for pnt1 in newPnts:
                 plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
@@ -530,9 +547,32 @@ class GraphicsCanva3D(wx.Panel):
             pass
 
 
-        #перемстить точку, шаг 2
-        if (self.EdCmd == CMD_EdBrMoveV) and (self.EdStep == 2):
-            self.frame.onCoord_yes(evt)
+        #переместить скважину, шаг 1
+        elif (self.EdCmd == CMD_EdBrMoveP) and (self.EdStep == 1):
+            # переместить точку
+            type=self.frame.getTypeByMenu()
+            indexInfo = None;
+            sel_shape=self._3dDisplay.selected_shape
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        indexInfo = i
+                        break
+            if indexInfo<>None:
+                if not self.drawList[indexInfo][0]==type:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    self.EdCmd = 0; self.EdStep = 0
+                    self.frame.canva.snap.SetSelection(0)
+                    return
+                self.tempIndex=indexInfo
+                # найти точку
+            self.EdCmd = 0; self.EdStep = 0
+            self.frame.SetStatusText("Новое положение", 2)
+            #self.EdCmd = CMD_EdBrMoveV; self.EdStep = 2
+            Point(self.frame)
+            # Восстановить старые привязки
+            self.frame.canva.snap.SetSelection(0)
             pass
 
         #переместить точку, шаг 1

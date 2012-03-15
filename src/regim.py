@@ -63,6 +63,7 @@ CMD_EdBrBrkV    = 106
 CMD_EdBrDelB    = 107
 CMD_EdBrSelB    = 108
 CMD_EdBrCutE    = 109
+CMD_EdBrMoveP   = 110
 #CMD_EdBr????    = 108
 POSTGR_DBN     =   u'postgres'
 POSTGR_USR     =   u'postgres'
@@ -72,7 +73,7 @@ type_labels=['бровка','тело','скважина','изолиния',]
 menu_types=[
     ['edge','start_edge','edge_OnEdBrDelB','edge_OnEdBrBrkV','edge_OnEdBrInsV','edge_OnEdBrDelV','edge_OnEdBrMoveV','make_cut_query'],
     ['body','start_body','body_OnEdBrDelB'],
-    ['drill','start_drill','drill_OnEdBrDelB'],
+    ['drill','start_drill','drill_OnEdBrDelB','drill_OnEdBrMoveP'],
     ['isoline','start_isoline','isoline_OnEdBrDelB','isoline_OnEdBrInsV','isoline_OnEdBrDelV','isoline_OnEdBrMoveV']
 ]
 
@@ -97,8 +98,10 @@ menu_titles={
     'isoline_OnEdBrMoveV': u'Перед. Точку',
     'drill': u'Скважины',
     'start_drill': u'Задать скважину',
+    'drill_OnEdBrMoveP': u"Перемест.скважину",
     'drill_OnEdBrDelB': u'Удалить Скважину',
     'ways': u'Съезды',
+    'ways_OnEdBrSelB': u'Задание Начала',
     'edit': u'Корректировка',
     'cut': u'Прирезка',
     'cut_OnEdBrSelB': u'Задание Начала',

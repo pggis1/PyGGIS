@@ -475,7 +475,7 @@ def Coord_yes(self,drawP=False,closeP=False):
         #if not (self.canva._3dDisplay.Context.HasOpenedContext()):
         #    self.canva._3dDisplay.Context.OpenLocalContext()    #False
             #self.canva.isLocalContext = True
-        if self.canva.tmpEdge: 
+        if self.canva.tmpEdge:
             self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
             self.canva.tmpEdge = None
         plgn = BRepBuilderAPI_MakePolygon()
