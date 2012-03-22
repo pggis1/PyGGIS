@@ -344,7 +344,7 @@ class CoordsDlg(wx.Dialog):
     offset.Perform(d, h)
     return offset.Shape()"""
 
-def make_offset(shape,offset,height=0):
+def make_offset(shape,offset,height=0,round=True,close=True):
     offset*=-1
     pnts=getPoints(shape)
     pnts_new=[]
@@ -352,7 +352,7 @@ def make_offset(shape,offset,height=0):
     if pnts[0]==pnts[-1]:
         Close=True
         pnts.pop()
-    triangles=getTriangles(pnts)
+    triangles=getTriangles(pnts,close)
     for i,v in enumerate(triangles):
         a=measure_angle(v[0],v[1],v[2])
         if v[2][0]>=v[1][0]:
@@ -364,11 +364,22 @@ def make_offset(shape,offset,height=0):
         #print math.degrees(a)
         #print math.degrees(b)
         #print math.degrees(tmp)
-        if offset<0:
+        if offset<0 and round:
             #print 'a=',math.degrees(a),', b=', math.degrees(b)
             pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
             pnts_new.append(polar(pnts[i],b+a/2,offset,height))
             pnts_new.append(polar(pnts[i],b+math.pi/2,offset,height))
+        elif not round and (i==0 or i==len(triangles)-1):
+            if i==0:
+                if offset<0:
+                    pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
+                else:
+                    pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
+            else:
+                if offset<0:
+                    pnts_new.append(polar(pnts[i],b-math.pi/2,offset,height))
+                else:
+                    pnts_new.append(polar(pnts[i],b+math.pi*2,offset,height))
         else:
             pnts_new.append(polar(pnts[i],b+a/2,offset,height))
         #pnts_new.append(polar(pnts[i],b+a/2,offset,height))
@@ -380,14 +391,20 @@ def make_offset(shape,offset,height=0):
     #print dir(plgn)
     return plgn.Wire()
 
-def getTriangles(pnts):
+def getTriangles(pnts,close):
     l=len(pnts)
     triangles=[]
-    triangles.append([pnts[-1],pnts[0],pnts[1]])
+    if close:
+        triangles.append([pnts[-1],pnts[0],pnts[1]])
+    else:
+        triangles.append([continueLine(pnts[0],1),pnts[0],pnts[1]])
     for i in range(l-2):
         tmp= [pnts[i],pnts[i+1],pnts[i+2]]
         triangles.append(tmp)
-    triangles.append([pnts[-2],pnts[-1],pnts[0]])
+    if close:
+        triangles.append([pnts[-2],pnts[-1],pnts[0]])
+    else:
+        triangles.append([continueLine(pnts[-1],1),pnts[-1],pnts[0]])
     return triangles
 
 def polar(point, angle, dist, height=0):
@@ -422,3 +439,22 @@ def Interpolate(pnts):
     spline = BRepBuilderAPI_MakeEdge(cu)
     spline.Build()
     return spline.Shape()
+
+def continueLine(pnt,l):
+    newpnt=[0,0,0]
+    if pnt[0]<0:
+        newpnt[0]=pnt[0]-l
+    else:
+        newpnt[0]=pnt[0]+l
+    if pnt[1]<0:
+        newpnt[1]=pnt[1]-l
+    else:
+        newpnt[1]=pnt[1]+l
+    newpnt[2]=pnt[2]
+    return newpnt
+
+def length(pnts):
+    l=0
+    for i in range(len(pnts)-1):
+        l+=distance3d(pnts[i],pnts[i+1])
+    return l

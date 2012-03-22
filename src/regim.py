@@ -71,7 +71,7 @@ POSTGR_USR     =   u'postgres'
 type_labels=['бровка','тело','скважина','изолиния',]
 
 menu_types=[
-    ['edge','start_edge','edge_OnEdBrDelB','edge_OnEdBrBrkV','edge_OnEdBrInsV','edge_OnEdBrDelV','edge_OnEdBrMoveV','make_cut_query'],
+    ['edge','start_edge','edge_OnEdBrDelB','edge_OnEdBrBrkV','edge_OnEdBrInsV','edge_OnEdBrDelV','edge_OnEdBrMoveV','make_cut_query','start_way_pline','cut_levels'],
     ['body','start_body','body_OnEdBrDelB'],
     ['drill','start_drill','drill_OnEdBrDelB','drill_OnEdBrMoveP'],
     ['isoline','start_isoline','isoline_OnEdBrDelB','isoline_OnEdBrInsV','isoline_OnEdBrDelV','isoline_OnEdBrMoveV']
@@ -101,10 +101,13 @@ menu_titles={
     'drill_OnEdBrMoveP': u"Перемест.скважину",
     'drill_OnEdBrDelB': u'Удалить Скважину',
     'ways': u'Съезды',
-    'ways_OnEdBrSelB': u'Задание Начала',
+    'start_way_pline': u'Задание съезда',
     'edit': u'Корректировка',
     'cut': u'Прирезка',
-    'cut_OnEdBrSelB': u'Задание Начала',
     'start_cut_pline': u'Задание Прирезки',
-    'make_cut_query': u'ПодтвердПрирезку'
+    'make_cut_query': u'ПодтвердПрирезку',
+    'cut_OnEdBrSelB': u'Задание Начала',
+
+    'cut_levels': u'Поуровневая прирезка',
+    'start_cut_levels_pline': u'Задание Прирезки',
 }

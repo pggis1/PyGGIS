@@ -307,7 +307,7 @@ def Coord_yes(self,drawP=False,closeP=False):
     Z = float(self.canva.coordZ.GetValue())
     coordStr = self.canva.coord.GetValue()
     #print(coordStr)
-    if self.canva.MakePLine:            
+    if self.canva.MakePLine:
         # PolyLine
         #drawP = False
         #closeP = False

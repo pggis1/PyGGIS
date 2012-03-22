@@ -347,15 +347,13 @@ class AppFrame(wx.Frame):
                                     ['drill_OnEdBrMoveP',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'drill'],
 
                         ['add',wx.NewId(),u'Съезды',self.NavigateMenu,None,'ways'],
-                                ['ways',wx.NewId(),u'Установить Начало',self.OnEdBrSelB,None,'ways_OnEdBrSelB'],
-                                    ['ways_OnEdBrSelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'ways'],
-                                #['ways',wx.NewId(),u'Полилиния',self.NavigateMenu,None],
-                                ['ways',wx.NewId(),u'ПоЧасовой',self.OnWayCreate,None],
-                                ['ways',wx.NewId(),u'ПротивЧасовой',self.OnWayCreate,None],
-                                #['ways',wx.NewId(),u'Закончить',self.NavigateMenu,None],
+                                ['ways',wx.NewId(),u'ОпрПолилинию',self.OnEdgePLine,None,'start_way_pline'],
+                                    ['start_way_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'ways'],
+                                    ['start_way_pline',wx.NewId(),u'Закончить',self.OnWayPLineYes,None,'ways'],
+                                    ['start_way_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'ways'],
 
                 ['main',wx.NewId(),u'Корректировка',self.NavigateMenu,None,'edit'],
-                        ['edit',wx.NewId(),u'Прирезка',self.NavigateMenu,None,'cut'],
+                        ['edit',wx.NewId(),u'Еденичная прирезка',self.NavigateMenu,None,'cut'],
                             ['cut',wx.NewId(),u'УстНачало',self.OnEdBrSelB,None,'cut_OnEdBrSelB'],
                                  ['cut_OnEdBrSelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'cut'],
                             ['cut',wx.NewId(),u'ОпрПолилинию',self.OnCutPLine,None,'start_cut_pline'],
@@ -364,11 +362,22 @@ class AppFrame(wx.Frame):
                                     ['make_cut_query',wx.NewId(),u'Применить',self.OnCutPLineYes,None,'cut'],
                                     ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
+
+                        ['edit',wx.NewId(),u'Поуровневая прирезка',self.OnCutNavigateMenu,None,'cut_levels'],
+                            ['cut_levels',wx.NewId(),u'ОпрПолилинию1',self.OnCutPLine1,None,'start_cut_levels_pline'],
+                            ['cut_levels',wx.NewId(),u'ОпрПолилинию2',self.OnCutPLine2,None,'start_cut_levels_pline'],
+                            ['cut_levels',wx.NewId(),u'ОпрПолилинию3',self.OnCutPLine3,None,'start_cut_levels_pline'],
+                                ['start_cut_levels_pline',wx.NewId(),u'ОтменитьПосл',self.OnEdgeUndo,None,'cut_levels'],
+                                ['start_cut_levels_pline',wx.NewId(),u'Закончить',self.OnCutPLineYes,None,'cut_levels'],
+                                ['start_cut_levels_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut_levels'],
+                            ['cut_levels',wx.NewId(),u'Построить',self.OnCutPLineYesMany,None,'edit'],
+
                             #['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
                         #['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
-                #['',wx.NewId(),u'Debug',self.OnDebug,None,'main'],
+                ['',wx.NewId(),u'Debug',self.OnDebug,None],
+                ['',wx.NewId(),u'Длинна',self.OnLenth,None],
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
@@ -663,6 +672,38 @@ class AppFrame(wx.Frame):
         Coord_yes(self,True,True)
         self.NavigateMenu(event)
 
+    def OnWayPLineYes(self,event):
+        s1=self.canva.tmpEdge.GetObject().Shape()
+
+        pnts=getPoints(s1)
+        plgn = BRepBuilderAPI_MakePolygon()
+        hall=0
+        plgn.Add(gp_Pnt(pnts[0][0], pnts[0][1], pnts[0][2]))
+        for i in range(1,len(pnts)):
+            l=distance3d(pnts[-1],pnts[i])
+            h=l*math.sin(math.radians(float(self.wayAngle.Value)))
+            hall+=h
+            plgn.Add(gp_Pnt(pnts[i][0], pnts[i][1], pnts[i][2]-hall))
+        #plgn.Add(gp_Pnt(pnts[-1][0], pnts[-1][1], pnts[-1][2]-h))
+        s1=plgn.Wire()
+
+        w1=make_offset(s1,int(self.wayWidth.GetValue())/2,round=False,close=False)
+        pnts=getPoints(w1)
+        self.OnPLine(event)
+        self.canva.lstPnt=pnts
+        Coord_yes(self,True)
+
+        w2=make_offset(s1,int(self.wayWidth.GetValue())/-2,round=False,close=False)
+        pnts=getPoints(w2)
+        self.OnPLine(event)
+        self.canva.lstPnt=pnts
+        Coord_yes(self,True)
+
+        self.OnCancel(event)
+
+        self.NavigateMenu(event)
+        pass
+
     def OnWayCreate(self,event):
         pnts=getPoints(self.canva.drawList[self.canva.tempIndex][2].Shape())
         print pnts
@@ -794,17 +835,35 @@ class AppFrame(wx.Frame):
         self.canva._3dDisplay.EraseAll()
         self.canva.drawList = []
 
-    def OnCutPLine(self,event):
-        self.canva.snap.SetSelection(0)
-        self.OnPLine(event)
-        resPnt=self.canva.tempPoint
-        self.canva.coord.SetValue("%.1f,%.1f"%(resPnt[0],resPnt[1]))
-        self.canva.coordZ.SetValue("%.1f"%(resPnt[2]))
-        Coord_yes(self)
+    def OnCutNavigateMenu(self,event):
+        self.CutPlines=[[],[],[]]
         self.NavigateMenu(event)
 
-    def OnCutPLineYes(self,event):
-        pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
+    def OnCutPLine1(self,event):
+        self.OnCutPLine(event,0)
+        pass
+    def OnCutPLine2(self,event):
+        self.OnCutPLine(event,1)
+        pass
+    def OnCutPLine3(self,event):
+        self.OnCutPLine(event,2)
+        pass
+
+    def OnCutPLine(self,event,num=None):
+        self.canva.snap.SetSelection(0)
+        self.cutPlineId=num
+        self.OnPLine(event)
+        if self.canva.tempPoint:
+            resPnt=self.canva.tempPoint
+            self.canva.coord.SetValue("%.1f,%.1f"%(resPnt[0],resPnt[1]))
+            self.canva.coordZ.SetValue("%.1f"%(resPnt[2]))
+            Coord_yes(self)
+        self.NavigateMenu(event)
+
+    def OnCutPLineYesMany(self,event):
+        self.OnCutPLineYes(event,True)
+
+    def OnCutPLineYes(self,event,force=False):
         """
         PLine(self)
         self.canva.lstPnt=pnts
@@ -814,26 +873,46 @@ class AppFrame(wx.Frame):
         self.canva.drawList[self.canva.tempIndex][-1]=True
         self.OnCancel(event)
         """
-        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
-        self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
-        for i,v in enumerate(self.egde_typeList):
-            if v[0]==self.canva.drawList[self.canva.tempIndex][4]:
-                edge_type=self.egde_typeList[i]
-                break
-        plgn = BRepBuilderAPI_MakePolygon()
-        for pnt1 in pnts:
-            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
-        w = plgn.Wire()
-        for i in range(len(self.colorList)):
-            if self.colorList[i][0]==edge_type[3]:
-                r=int(str(self.colorList[i][2]))/255.0
-                g=int(str(self.colorList[i][3]))/255.0
-                b=int(str(self.colorList[i][4]))/255.0
-                s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
-                break
-        self.canva.drawList[self.canva.tempIndex][2]=s1.GetObject()
-        self.canva.drawList[self.canva.tempIndex][-1]=True
+        if self.cutPlineId==None:
+            pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
+            self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+            self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+            for i,v in enumerate(self.egde_typeList):
+                if v[0]==self.canva.drawList[self.canva.tempIndex][4]:
+                    edge_type=self.egde_typeList[i]
+                    break
+            plgn = BRepBuilderAPI_MakePolygon()
+            for pnt1 in pnts:
+                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            w = plgn.Wire()
+            for i in range(len(self.colorList)):
+                if self.colorList[i][0]==edge_type[3]:
+                    r=int(str(self.colorList[i][2]))/255.0
+                    g=int(str(self.colorList[i][3]))/255.0
+                    b=int(str(self.colorList[i][4]))/255.0
+                    s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                    break
+            self.canva.drawList[self.canva.tempIndex][2]=s1.GetObject()
+            self.canva.drawList[self.canva.tempIndex][-1]=True
+        elif force:
+            plgn = BRepBuilderAPI_MakePolygon()
+            for pnt1 in self.CutPlines[0]:
+                plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+            w = plgn.Wire()
+            for i in range(min(len(self.CutPlines[1]),len(self.CutPlines[2]))):
+                d=min(distance2d(self.CutPlines[0][0],self.CutPlines[1][i]),distance2d(self.CutPlines[0][0],self.CutPlines[2][i]))
+                wt=make_offset(w,d,round=True,close=False)
+                pnts=getPoints(wt)[2:-2]
+                pnts[0]=self.CutPlines[1][i]
+                pnts[-1]=self.CutPlines[2][i]
+                self.OnPLine(event)
+                self.canva.lstPnt=pnts
+                Coord_yes(self,drawP=True)
+                self.OnCancel(event)
+        else:
+            self.CutPlines[self.cutPlineId]=getPoints(self.canva.tmpEdge.GetObject().Shape())
         self.NavigateMenu(event)
+        self.OnCancel(event)
         pass
 
     def OnCutPLineEnd(self,event):
@@ -1241,14 +1320,14 @@ class AppFrame(wx.Frame):
         self.wayWidth = wx.TextCtrl(panel, -1, "16",size=(150,30))
         par2Box.Add(self.wayWidth, flag=wx.EXPAND, border = 1)
 
-        par2Box.Add((10,40))
+        '''par2Box.Add((10,40))
         par2Box.Add(wx.StaticText(panel,-1,"Длинна съезда",size = (180,20)),flag=wx.EXPAND)
         self.wayLen = wx.TextCtrl(panel, -1, "300",size=(150,30))
-        par2Box.Add(self.wayLen, flag=wx.EXPAND, border = 1)
+        par2Box.Add(self.wayLen, flag=wx.EXPAND, border = 1)'''
 
         par2Box.Add((10,40))
         par2Box.Add(wx.StaticText(panel,-1,"Уклон съезда",size = (180,20)),flag=wx.EXPAND)
-        self.wayAngle = wx.TextCtrl(panel, -1, "40",size=(150,30))
+        self.wayAngle = wx.TextCtrl(panel, -1, "20",size=(150,30))
         par2Box.Add(self.wayAngle, flag=wx.EXPAND, border = 1)
 
         dataBox.Add(par2Box,flag=wx.EXPAND)     # Включить в сайзер
@@ -1723,18 +1802,35 @@ class AppFrame(wx.Frame):
         self.SetStatusText("Укажите объект", 0)
         pass
 
+    def OnLenth(self,event):
+        sel_shape = self.canva._3dDisplay.selected_shape
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        indexInfo = None;
+        for i in range(len(self.canva.drawList)):
+            s1 = self.canva.drawList[i][2]
+            if s1:
+                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    indexInfo = i
+                    break
+        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+            return
+        pnts=getPoints(sel_shape)
+        self.msgWin.AppendText(u"Длинна каркаса: "+str(length(pnts)+"\n"))
+
     def OnDebug(self,event):
         """
         Prints debug information into console
         """
-        plgn = BRepBuilderAPI_MakePolygon()
+        '''plgn = BRepBuilderAPI_MakePolygon()
         plgn.Add(gp_Pnt(0, 0, 0))
         plgn.Add(gp_Pnt(0, 5, 0))
         plgn.Add(gp_Pnt(5, 5, 0))
         plgn.Add(gp_Pnt(5, 0, 0))
         plgn.Close()
         w = plgn.Wire()
-        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
+        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)'''
         print '---==========---'
         print 'self.canva.drawList:'
         print self.canva.drawList
