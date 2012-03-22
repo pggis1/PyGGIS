@@ -294,13 +294,15 @@ class AppFrame(wx.Frame):
                                         ['start_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
                                         ['start_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
                                 #['edge',wx.NewId(),u'Продолжить',self.OnEdgeContinue,None,'continue_edge'],
-                                        ['continue_edge',wx.NewId(),u'ОтменитьПосл',self.NavigateMenu,None],
-                                        ['continue_edge',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'edge'],
-                                        ['continue_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
-                                        ['continue_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
+                                #        ['continue_edge',wx.NewId(),u'ОтменитьПосл',self.NavigateMenu,None],
+                                #        ['continue_edge',wx.NewId(),u'Закончить',self.OnEdgeEnd,None,'edge'],
+                                #        ['continue_edge',wx.NewId(),u'Замкнуть',self.OnEdgeClose,None,'edge'],
+                                #        ['continue_edge',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'---'],
                                 ['edge',wx.NewId(),u'ПостПлощ',self.OnEdgeOffset,None],
                                 ['edge',wx.NewId(),u'---'],
+                                ['edge',wx.NewId(),u'ОбъеденитьБровки',self.OnEdBrMerge,None,'edge_OnEdBrMerge'],
+                                    ['edge_OnEdBrMerge',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'УдалитьБровку',self.OnEdBrDelB,None,'edge_OnEdBrDelB'],
                                     ['edge_OnEdBrDelB',wx.NewId(),u'Назад',self.OnEdCmdCancel,None,'edge'],
                                 ['edge',wx.NewId(),u'РазбитьБровку',self.OnEdBrBrkV,None,'edge_OnEdBrBrkV'],
@@ -409,9 +411,9 @@ class AppFrame(wx.Frame):
         menuBar = wx.MenuBar()
         FileMenu = wx.Menu()
 
-        file_id = wx.NewId()
+        '''file_id = wx.NewId()
         FileMenu.Append(file_id, MNU_OPEN[0], MNU_OPEN[1])
-        self.Bind(wx.EVT_MENU, self.OnOpen, id=file_id)
+        self.Bind(wx.EVT_MENU, self.OnOpen, id=file_id)'''
 
         load_id = wx.NewId()
         FileMenu.Append(load_id, MNU_CLOAD[0], MNU_CLOAD[1])
@@ -478,7 +480,7 @@ class AppFrame(wx.Frame):
         menuBar.Append(viewmenu, MNU_VIEW)
 
         # Selection menu
-        selection_menu = wx.Menu()
+        '''selection_menu = wx.Menu()
         s_vertex = wx.NewId()
         selection_menu.Append(s_vertex, MNU_VERTEX[0], MNU_VERTEX[1])
         self.Bind(wx.EVT_MENU, self.OnSelectionVertex, id=s_vertex)
@@ -491,12 +493,12 @@ class AppFrame(wx.Frame):
         s_neutral = wx.NewId()
         selection_menu.Append(s_neutral, MNU_NEUTRAL[0], MNU_NEUTRAL[1])
         self.Bind(wx.EVT_MENU, self.OnSelectionNeutral, id=s_neutral)
-        menuBar.Append(selection_menu, MNU_SELECTION)
+        menuBar.Append(selection_menu, MNU_SELECTION)'''
 
         # DisplayMode menu
         displaymode_menu = wx.Menu()
         d_wireframe = wx.NewId()
-        displaymode_menu.Append(d_wireframe, MNU_WARE[0], MNU_WARE[1])
+        '''displaymode_menu.Append(d_wireframe, MNU_WARE[0], MNU_WARE[1])
         self.Bind(wx.EVT_MENU, self.OnDisplayModeWireframe, id=d_wireframe)
         d_shaded = wx.NewId()
         displaymode_menu.Append(d_shaded, MNU_SHADED[0], MNU_SHADED[1])
@@ -508,7 +510,7 @@ class AppFrame(wx.Frame):
         d_ehlr = wx.NewId()
         displaymode_menu.Append(d_ehlr, MNU_EXHLR[0], MNU_EXHLR[1])
         self.Bind(wx.EVT_MENU, self.OnDisplayModeEHLR, id=d_ehlr)
-        displaymode_menu.AppendSeparator()
+        displaymode_menu.AppendSeparator()'''
         d_aon = wx.NewId()
         displaymode_menu.Append(d_aon, MNU_AALIASon[0], MNU_AALIASon[1])
         self.Bind(wx.EVT_MENU, self.OnAntialiasingOn, id=d_aon)
@@ -1005,7 +1007,7 @@ class AppFrame(wx.Frame):
         # Coord input cyx
         tb.AddSeparator()
         # Ввод координат
-        tb.AddControl(wx.StaticText(tb, wx.NewId(), 'Point', wx.DefaultPosition, wx.DefaultSize, 0))
+        tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Точка: ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.coordXYZ = wx.NewId()
         self.canva.coord = wx.TextCtrl(tb, self.coordXYZ, "x,y[,z]", wx.DefaultPosition, (190, 30), 0)
         tb.AddControl(self.canva.coord)
@@ -1021,11 +1023,11 @@ class AppFrame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.onCoord_yes, id=self.put_coordOk)
         # Объектные привязки
         tb.AddSeparator()
-        tb.AddControl(wx.StaticText(tb, wx.NewId(), 'Snap', wx.DefaultPosition, wx.DefaultSize, 0))
+        tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Привязки: ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.snapId = wx.NewId()
-        self.canva.snap = wx.ComboBox(tb, self.snapId, 'None',
+        self.canva.snap = wx.ComboBox(tb, self.snapId, u'Без привязки',
                                       wx.DefaultPosition, wx.DefaultSize,
-                                      ['None', 'End', 'Near', 'Center', 'Tangent'],
+                                      [u'Без привязки', u'Конец', u'Близкая', u'Центр', u'Тангенциальная'],
                                       wx.CB_SIMPLE)
         tb.AddControl(self.canva.snap)
         # Конец формирования палитры
@@ -1708,6 +1710,19 @@ class AppFrame(wx.Frame):
 
 #=== Edit menu =========================================================
 
+    def OnEdBrMerge(self, event):
+        """ Разбить линию в точке  """
+        self.canva.SetTogglesToFalse(event)
+        # сохранить старые привязки
+        self.canva.snap.SetSelection(2)
+        if (self.canva.snap.GetCurrentSelection() == 2):
+            self.NavigateMenu(event)
+            self.canva.EdCmd = CMD_EdBrMerge
+            self.canva.EdStep = 1
+            self.SetStatusText("Куда?", 0)
+        else:
+            self.SetStatusText("*** Нет Near ***", 0)
+        pass
 
     def OnEdBrSelB(selfself,event):
         """ выбрать бровку """

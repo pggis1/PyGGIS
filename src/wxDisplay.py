@@ -335,6 +335,65 @@ class GraphicsCanva3D(wx.Panel):
         
         self._3dDisplay.Select(self.dragStartPos.x, self.dragStartPos.y)
 
+        if (self.EdCmd == CMD_EdBrMerge) and (self.EdStep == 1):
+            sel_shape=self._3dDisplay.selected_shape
+            if not sel_shape:
+                return
+            self.tempIndex = None;
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        self.tempIndex = i
+                        break
+            if self.tempIndex<>None:
+                if not self.drawList[self.tempIndex][0]==0:
+                    self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
+                    if self.frame.getTypeByMenu()==-1:
+                        self.EdCmd = 0; self.EdStep = 0
+                        # Восстановить старые привязки
+                    self.frame.canva.snap.SetSelection(0)
+                    return
+                else:
+                    self.EdStep = 2
+
+        elif (self.EdCmd == CMD_EdBrMerge) and (self.EdStep == 2):
+            sel_shape=self._3dDisplay.selected_shape
+            if not sel_shape:
+                return
+            ItemIndex = None;
+            for i in range(len(self.drawList)):
+                s1 = self.drawList[i][2]
+                if s1:
+                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                        ItemIndex = i
+                        break
+            if ItemIndex<>None:
+                pnts1=getPoints(self.drawList[self.tempIndex][2].Shape())
+                pnts2=getPoints(self.drawList[ItemIndex][2].Shape())
+                plgn = BRepBuilderAPI_MakePolygon()
+                for pnt1 in pnts1:
+                    plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                for pnt1 in pnts2:
+                    plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                w = plgn.Wire()
+                self._3dDisplay.Context.Erase(self.drawList[self.tempIndex][2].GetHandle())
+                self._3dDisplay.Context.Erase(self.drawList[ItemIndex][2].GetHandle())
+                for i,v in enumerate(self.frame.egde_typeList):
+                    if v[0]==self.drawList[self.tempIndex][4]:
+                        edge_type=self.frame.egde_typeList[i]
+                        break
+                for i in range(len(self.frame.colorList)):
+                    if self.frame.colorList[i][0]==edge_type[3]:
+                        r=int(str(self.frame.colorList[i][2]))/255.0
+                        g=int(str(self.frame.colorList[i][3]))/255.0
+                        b=int(str(self.frame.colorList[i][4]))/255.0
+                        s1=self._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                        break
+                self.drawList[self.tempIndex][2]=s1.GetObject()
+                self.drawList[self.tempIndex][-1]=True
+                self.drawList[ItemIndex][2]=None
+                self.drawList[ItemIndex][-1]=True
         ### Выбрать бровку
         if (self.EdCmd == CMD_EdBrSelB) and (self.EdStep == 1):
             sel_shape=self._3dDisplay.selected_shape
