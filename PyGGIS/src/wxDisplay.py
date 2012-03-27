@@ -376,6 +376,40 @@ class GraphicsCanva3D(wx.Panel):
                     plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
                 for pnt1 in pnts2:
                     plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                """p1=pnts1[0]
+                p2=pnts2[0]
+                p3=pnts1[-1]
+                p4=pnts2[-1]
+                d1=distance3d(p1,p2)
+                d2=distance3d(p1,p4)
+                d3=distance3d(p3,p2)
+                d4=distance3d(p3,p4)
+                min_dist=min(min(d1,d2),min(d3,d4))
+
+                if min_dist==d1:
+                    for pnt1 in pnts1:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                    for i in range(0,-1*len(pnts2)):
+                        plgn.Add(gp_Pnt(pnts2[i][0], pnts2[i][1], pnts2[i][2]))
+
+                if min_dist==d2:
+                    for pnt1 in pnts1:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                    for pnt1 in pnts2:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+
+                if min_dist==d3:
+                    for pnt1 in pnts1:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                    for pnt1 in pnts2:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+
+                if min_dist==d4:
+                    for pnt1 in pnts1:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+                    for pnt1 in pnts2:
+                        plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))"""
+
                 w = plgn.Wire()
                 self._3dDisplay.Context.Erase(self.drawList[self.tempIndex][2].GetHandle())
                 self._3dDisplay.Context.Erase(self.drawList[ItemIndex][2].GetHandle())
