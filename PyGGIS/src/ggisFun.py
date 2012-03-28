@@ -311,7 +311,7 @@ def Coord_yes(self,drawP=False,closeP=False):
         # PolyLine
         #drawP = False
         #closeP = False
-        if (len(self.canva.lstPnt) > 2): #Close or End
+        #if (len(self.canva.lstPnt) > 1): #Close or End
             """if (coordStr.upper().find('C') <>- 1):   #Close
                 #print('Close pline')
                 drawP = True
@@ -404,7 +404,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                     self.SetStatusText("Готово", 2)
                     return
                 self.SetStatusText("Готово", 2)
-                CancelOp(self)                 
+                CancelOp(self)
                 return
     coord1 = coordStr.split(',')
     lst1 = []

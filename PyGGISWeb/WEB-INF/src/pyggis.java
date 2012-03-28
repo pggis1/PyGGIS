@@ -66,6 +66,7 @@ public class pyggis extends HttpServlet {
            		"<body>");
          if (emptyEnum) {
         	 writer.println(
+        			"<a href='?page=horiz'>Горизонты</a><br />" +
               		"<a href='?page=edge'>Бровки</a><br />" +
               		"<a href='?page=body'>Тела</a><br />" +
               		"<a href='?page=isoline'>Изолинии</a><br />" +
@@ -84,7 +85,41 @@ public class pyggis extends HttpServlet {
         	 String page = request.getParameter("page");
         	 System.out.println(page);
         	 if (page != null) {
-	        	 if (page.compareTo("edge") == 0) {
+        		 if (page.compareTo("horiz") == 0) {
+	        		 Connection conn = this.Connect();
+	        		 try {
+	        		 Statement st = conn.createStatement();
+	
+	        		 ResultSet rs = st.executeQuery(
+	        		 "select * from horizons;"
+	        		 );
+	        		 writer.println(
+	        				"<table><td>" +
+	                   		"<table border='1'>" +
+	                   		"<tr><td>id_hor</td><td>point</td><td>h_ledge</td><td>description</td></tr>"
+	        				 );
+	        		 while (rs.next())
+	        		 {
+	        			 writer.println(
+	        					 "<tr><td><a href='?page=edit_horiz&id=" + rs.getString(1) + "'>" + rs.getString(1)  + "</a></td><td>" 
+	        			 + rs.getString(2) + "</td><td>" 
+	        			 + rs.getString(3) + "</td><td>"
+	        			 + rs.getString(4) + "</td></tr>");
+	        		 }
+	        		 writer.println(
+	                    		"</table></td><td></td>" +
+	                    		//"<iframe style='border: 0px solid #FFFFFF;' width='542px' height='420px' src='body.html#" + rs.getString(1) + "'></iframe>" +
+	                    		"</table><br/>" +
+	        				    "<a href='/pyggis/index'>Назад</a>"
+	         				 );
+	        		 rs.close();
+	        		 st.close();
+	        		 } catch (Exception e) {
+	        			 writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+	        		 }
+	        	 }
+        		 
+        		 if (page.compareTo("edge") == 0) {
 	        		 Connection conn = this.Connect();
 	        		 try {
 	        		 Statement st = conn.createStatement();
@@ -93,6 +128,7 @@ public class pyggis extends HttpServlet {
 	        		 "select id_edge,hor,edge_type from edge;"
 	        		 );
 	        		 writer.println(
+	        				"<table><td>" +
 	                   		"<table border='1'>" +
 	                   		"<tr><td>id_edge</td><td>hor</td><td>edge_type</td></tr>"
 	        				 );
@@ -104,8 +140,10 @@ public class pyggis extends HttpServlet {
 	        			 + rs.getString(3) + "</td></tr>");
 	        		 }
 	        		 writer.println(
-	                    		"</table><br/>"
-	        				    + "<a href='/pyggis/index'>Назад</a>"
+	                    		"</table></td><td></td>" +
+	                    		//"<iframe style='border: 0px solid #FFFFFF;' width='542px' height='420px' src='body.html#" + rs.getString(1) + "'></iframe>" +
+	                    		"</table><br/>" +
+	        				    "<a href='/pyggis/index'>Назад</a>"
 	         				 );
 	        		 rs.close();
 	        		 st.close();
@@ -385,6 +423,39 @@ public class pyggis extends HttpServlet {
         					 + "<input type='submit' name='add' value='Save'></form>"
         					 + "<a href='/pyggis/index?page=color'>Назад</a>"
         					 + "</body></html>");
+	        	 }
+	        	 
+	        	 if (page.compareTo("edit_horiz") == 0) {
+	        		 String id = request.getParameter("id");
+	        		 Connection conn = this.Connect();
+	         		 try {
+	         		 Statement st = conn.createStatement();
+	
+	         		 ResultSet rs = st.executeQuery(
+	         		 "select * from horizons where id_hor = " + id + ""
+	         		 );
+	         		 while (rs.next()) {
+	         			 writer.println("<form name='f_horiz' method='POST'>" +
+	         					 "id_hor = " + rs.getString(1) + "<br/><br/>"
+	         					 + "point<br/>"
+	         					 + "<input type='text' value='" + rs.getString(2) + "'><br/><br/>"
+	         					 + "h_ledge<br/>"
+	         					 + "<input type='text' value='" + rs.getString(3) + "'><br/><br/>"
+	         					 + "description<br/>"
+	         					 + "<input type='text' value='" + rs.getString(4) + "'><br/><br/>"
+	         					 + "<input type='hidden' name='type' value='edit_horiz'>"
+	         					 + "<input type='submit' name='edit' value='Save'></form>"
+	         					 + "<form name='fd_edge' method='POST'>"
+	        					 + "<input type='hidden' name='type' value='del_horiz'>"
+	        					 + "<input type='submit' name='del' value='Delete'></br></form>"
+	        					 + "<a href='/pyggis/index?page=horiz'>Назад</a>"
+	         					 );
+	         		 }
+	         		 rs.close();
+	         		 st.close();
+	         		 } catch (Exception e) {
+	         			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+	         		 }
 	        	 }
 	        	 
 	        	 if (page.compareTo("edit_edge") == 0) {
@@ -674,6 +745,147 @@ public class pyggis extends HttpServlet {
     	    	 response.setContentType("text/html;charset=UTF-8");
     	    	 
     	         PrintWriter writer = response.getWriter();
+    	         if (request.getParameter("type").compareTo("edit_horiz") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=horiz'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="update horizons set point=" + request.getParameter("i1")
+             				 + ",h_ledge=" + request.getParameter("i2")
+             				 + ",description='" + request.getParameter("i3") + "' "
+             				 + "where id_hor = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>");
+            	 }
+    	         
+    	         if (request.getParameter("type").compareTo("edit_edge") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=edge'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="update edge set hor=" + request.getParameter("i1")
+             				 + ",edge_type=" + request.getParameter("i2") + " "
+             				 + "where id_edge = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>");
+            	 }
+    	         
+    	         if (request.getParameter("type").compareTo("edit_body") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=body'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="update body set id_hor=" + request.getParameter("i1")
+             				 + ",h_body=" + request.getParameter("i2")
+             				 + ",id_sort=" + request.getParameter("i3") + " "
+             				 + "where id_body = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>");
+            	 }
+    	         
+    	         if (request.getParameter("type").compareTo("edit_topo") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=isoline'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="update topograph set height=" + request.getParameter("i1")
+             				 + ",coord_sys=" + request.getParameter("i2") + " "
+             				 + "where id_topo = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>");
+            	 }
+    	         
+    	         if (request.getParameter("type").compareTo("edit_drill") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=drill'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="update drills set horiz=" + request.getParameter("i1")
+             				 + ",coord_system=" + request.getParameter("i2")
+             				 + ",cords=" + request.getParameter("i3")
+             				 + ",type_drill=" + request.getParameter("i4") + " "
+             				 + "where id_drill_fld = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>");
+            	 }
+    	         
+    	         if (request.getParameter("type").compareTo("edit_sort") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=sort'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="update sorts set name='" + request.getParameter("i1")
+             				 + "',norm_weight=" + request.getParameter("i2")
+             				 + ",color=" + request.getParameter("i3")
+             				 + ",line_type=" + request.getParameter("i4")
+             				 + ",thickness=" + request.getParameter("i5")
+             				 + ",color_fill=" + request.getParameter("i6")
+             				 + ",description='" + request.getParameter("i7") + "' "
+             				 + "where id_drill_fld = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>");
+            	 }
+    	         
     	         if (request.getParameter("type").compareTo("edit_edge_type") == 0) {
     	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=edge_type'></head><body>");
     	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
@@ -720,6 +932,27 @@ public class pyggis extends HttpServlet {
              		 }
              		writer.println("</body></html>");
             	 }
+    	         
+    	         if (request.getParameter("type").compareTo("del_horiz") == 0) {
+    	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=horiz'></head><body>");
+    	        	 //response.addHeader("Location", "http://localhost:8080/pyggis/pyggis?page=edge_type");
+    	        	 String id = request.getParameter("id");
+    	        	 writer.println(id);
+            		 Connection conn = this.Connect();
+             		 try {
+             		 Statement st = conn.createStatement();
+             		 String query="delete from horiz where id_hor = "+id+";";
+             		 //writer.println(query);
+             		 ResultSet rs = st.executeQuery(
+             				 query
+             				 );
+             		 rs.close();
+            		 st.close();
+             		 } catch (Exception e) {
+             			writer.println("Could not execute query"+e.getMessage()+" "+e.toString());
+             		 }
+             		 writer.println("</body></html>"); 
+    	         }
     	         
     	         if (request.getParameter("type").compareTo("del_edge") == 0) {
     	        	 writer.println("<html><head><meta http-equiv='refresh' content='0; url=http://localhost:8080/pyggis/index?page=edge'></head><body>");
