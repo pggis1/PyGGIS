@@ -16,7 +16,7 @@ from utils import *
 from liblas import *
 import os, time
 from math import *
-from inpLAS import *
+#from inpLAS import *
 from random import random
 
 from OCC.Quantity import Quantity_Color

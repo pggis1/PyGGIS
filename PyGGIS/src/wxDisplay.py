@@ -138,7 +138,7 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        #self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
+        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgLGray.bmp"))
         self._3dDisplay.DisplayTriedron()
         ##self._3dDisplay.SetModeShaded()
         self._3dDisplay.SetModeWireFrame()
@@ -209,6 +209,11 @@ class GraphicsCanva3D(wx.Panel):
         # Обслуживание привязок
         snap = self.frame.canva.snap.GetCurrentSelection()
         if snap == 0:       # нет привязки
+            gridSize=self.frame.stepXY.GetValue()
+            if gridSize>0:
+                resPnt[0]=getGrided(resPnt[0],gridSize)
+                resPnt[1]=getGrided(resPnt[1],gridSize)
+                resPnt[2]=getGrided(resPnt[2],gridSize)
             pass
         elif snap == 1:     # end
             self._3dDisplay.Select(self.startPt.x, self.startPt.y)
