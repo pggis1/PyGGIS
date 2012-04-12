@@ -205,51 +205,36 @@ class AppFrame(wx.Frame):
 
         self.panel1 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Геометрия карьера
         nb.AddPage(self.panel1, 'К')
-        #self.panel1.AddChild(self.panelRight)
         topsizer_K = wx.BoxSizer( wx.HORIZONTAL );
+        topsizer_K_left = wx.BoxSizer( wx.VERTICAL );
         topsizer_K_right = wx.BoxSizer( wx.VERTICAL );
-        self.panel1.win = wx.Window(self.panel1, -1,
-            size = wx.DefaultSize
-            #size = self.GetSize()
-            #size=(400,-1)
-        )
-        #self.panelRight = wx.Panel(self.panel1.win, -1)  # Геометрия карьера
-        #self.panel1.AddChild(topsizer_K_right)
-        topsizer_K.Add(self.panel1.win,
-            1,             # make vertically stretchable
-            wx.EXPAND |    # make horizontally stretchable
-            wx.ALL,        # and make border all around
-            0 )            # set border width to 2
-        self.panel1.win_top = wx.Window(self.panel1, -1,
-            #size = wx.DefaultSize
-            #size = self.GetSize()
-            size=(400,-1)
-            )    # size = wx.DefaultSize,
-        topsizer_K_right.Add(self.panel1.win_top,
-            1,             # make vertically stretchable
-            wx.EXPAND |    # make horizontally stretchable
-            wx.ALL,        # and make border all around
-            0 )            # set border width to 2
-        self.panel1.win_front = wx.Window(self.panel1, -1,
-            #size = wx.DefaultSize
-            #size = self.GetSize()
-            size=(400,-1)
-            )
-        topsizer_K_right.Add(self.panel1.win_front,
-            1,             # make vertically stretchable
-            wx.EXPAND|    # make horizontally stretchable
-            wx.ALL,         # and make border all around
-            0 )            # set border width to 2
-        topsizer_K.Add(topsizer_K_right,
-            0,             # make vertically stretchable
-            wx.EXPAND|    # make horizontally stretchable
-            wx.ALL,        # and make border all around
-            0 )            # set border width to 2
-        self.panel1.SetSizer( topsizer_K )    # use the sizer for layout
-        self.canva = GraphicsCanva3D(self.panel1.win)      #panel1.win
-        self.canva_top = GraphicsCanva3D(self.panel1.win_top)
-        self.canva_front = GraphicsCanva3D(self.panel1.win_front)
-        self._mgr.AddPane(self.canva, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
+
+
+        self.panel1.win = wx.Panel(self.panel1, -1, size = wx.DefaultSize,style=wx.SIMPLE_BORDER)
+        #self.panel1.win_top = wx.Window(self.panel1, -1, size = wx.DefaultSize,style=wx.SIMPLE_BORDER)
+        #self.panel1.win_front = wx.Window(self.panel1, -1, size = wx.DefaultSize,style=wx.SIMPLE_BORDER)
+
+        self.canva = GraphicsCanva3D(self.panel1.win,True)      #panel1.win
+        self.canva_top = GraphicsCanva3D(self.panel1.win)
+        self.canva_front = GraphicsCanva3D(self.panel1.win)
+
+        projText=wx.StaticText(self.panel1.win, -1, u'Проэкция', wx.DefaultPosition, wx.DefaultSize, 0)
+        topText=wx.StaticText(self.panel1.win, -1, u'Сверху', wx.DefaultPosition, wx.DefaultSize, 0)
+        leftText=wx.StaticText(self.panel1.win, -1, u'Спереди', wx.DefaultPosition, wx.DefaultSize, 0)
+
+        topsizer_K_left.Add(self.canva, 1, wx.EXPAND|wx.ALL, 0)
+        topsizer_K_left.Add(projText, 0, wx.ALL, 2)
+
+        topsizer_K_right.Add(topText, 0, wx.ALL, 1)
+        topsizer_K_right.Add(self.canva_top, 1, wx.EXPAND|wx.ALL, 0)
+        topsizer_K_right.Add(leftText, 0, wx.ALL, 1)
+        topsizer_K_right.Add(self.canva_front, 1, wx.EXPAND|wx.ALL, 0)
+
+        topsizer_K.Add(topsizer_K_left, 70, wx.EXPAND|wx.ALL, 1)
+        topsizer_K.Add(topsizer_K_right, 30, wx.EXPAND|wx.ALL, 1)
+
+        self.panel1.win.SetSizer(topsizer_K)
+        self._mgr.AddPane(self.panel1.win, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
 
         self.panel2 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Панель для настройки параметров
         nb.AddPage(self.panel2, 'О')
@@ -481,7 +466,7 @@ class AppFrame(wx.Frame):
         # View menu
         viewmenu = wx.Menu()
         restoreperspectiveID = wx.NewId()
-        viewmenu.Append(restoreperspectiveID, u'Восстановить', u'Восстановить стандартное положение панелей.')
+        viewmenu.Append(restoreperspectiveID, u'Восстановить\tAlt+r', u'Восстановить стандартное положение панелей.')
         self.Bind(wx.EVT_MENU, self.OnRestoreDefaultPerspective, id=restoreperspectiveID)
         viewmenu.AppendSeparator()
         v_Top = wx.NewId()
@@ -1907,19 +1892,30 @@ class AppFrame(wx.Frame):
         """
         Prints debug information into console
         """
+        '''
         for i in range (21):
             edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0,i*5,0),gp_Pnt(100,i*5,0)).Edge()
             self.canva.DisplayCustomShape(edge,'BLACK',False,0,1,False)
             edge = BRepBuilderAPI_MakeEdge(gp_Pnt(i*5,0,0),gp_Pnt(i*5,100,0)).Edge()
             self.canva.DisplayCustomShape(edge,'BLACK',False,0,1,False)
-        '''plgn = BRepBuilderAPI_MakePolygon()
+        '''
+        plgn = BRepBuilderAPI_MakePolygon()
         plgn.Add(gp_Pnt(0, 0, 0))
         plgn.Add(gp_Pnt(0, 5, 0))
         plgn.Add(gp_Pnt(5, 5, 0))
         plgn.Add(gp_Pnt(5, 0, 0))
         plgn.Close()
         w = plgn.Wire()
-        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)'''
+        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
+        self.canva.SetTogglesToFalse(event)
+        self.canva.ZoomAll()
+        s1=self.canva_top._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
+        self.canva_top.SetTogglesToFalse(event)
+        self.canva_top.ZoomAll()
+        s1=self.canva_front._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
+        self.canva_front.SetTogglesToFalse(event)
+        self.canva_front.ZoomAll()
+        self._refreshui()
         print '---==========---'
         print 'self.canva.drawList:'
         print self.canva.drawList

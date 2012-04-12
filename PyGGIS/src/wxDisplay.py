@@ -82,9 +82,9 @@ if THISPATH.endswith("zip"):
 # --------------------------------------------------
 
 class GraphicsCanva3D(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
- 
+    def __init__(self, parent, main=False):
+        wx.Panel.__init__(self, parent, style=wx.SUNKEN_BORDER)
+
         wx.EVT_SIZE(self, self.OnSize)
         wx.EVT_IDLE(self, self.OnIdle)
         wx.EVT_MOVE(self, self.OnMove)
@@ -134,12 +134,14 @@ class GraphicsCanva3D(wx.Panel):
         if sys.platform=='win32':
             self.Init3dViewer()
 
-    def Init3dViewer(self,Triedron=True):
+        self.main = main
+
+    def Init3dViewer(self):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgLGray.bmp"))
-        if Triedron:
+        #self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
+        if self.main:
             self._3dDisplay.DisplayTriedron()
             self._3dDisplay.Context.SetTrihedronSize(10.0)
         ##self._3dDisplay.SetModeShaded()
@@ -884,6 +886,8 @@ class GraphicsCanva3D(wx.Panel):
         #self.MakePLine = False
         
     def OnMiddleDown(self, event):
+        if not self.main:
+            return
         self.dragStartPos = event.GetPosition()
         self._3dDisplay.StartRotation(self.dragStartPos.x,self.dragStartPos.y) 
         self.CentreDisplayToggle = True
@@ -1042,8 +1046,8 @@ class GraphicsCanva3D(wx.Panel):
             # Dyna Zoom
             self._dynazoom(event)
             
-        elif (event.Dragging() and event.MiddleIsDown()) or \
-                (event.Dragging() and event.RightIsDown() and event.ShiftDown()):
+        elif ((event.Dragging() and event.MiddleIsDown()) or \
+                (event.Dragging() and event.RightIsDown() and event.ShiftDown())) and self.main:
             # Rotate
             self._dynarotate(event)
             
