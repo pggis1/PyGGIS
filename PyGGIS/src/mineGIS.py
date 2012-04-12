@@ -209,9 +209,10 @@ class AppFrame(wx.Frame):
         topsizer_K = wx.BoxSizer( wx.HORIZONTAL );
         topsizer_K_right = wx.BoxSizer( wx.VERTICAL );
         self.panel1.win = wx.Window(self.panel1, -1,
-            #size = wx.DefaultSize,
-            size = self.GetSize(),
-            style = wx.SIMPLE_BORDER)    # size = wx.DefaultSize,
+            size = wx.DefaultSize
+            #size = self.GetSize()
+            #size=(400,-1)
+        )
         #self.panelRight = wx.Panel(self.panel1.win, -1)  # Геометрия карьера
         #self.panel1.AddChild(topsizer_K_right)
         topsizer_K.Add(self.panel1.win,
@@ -220,8 +221,9 @@ class AppFrame(wx.Frame):
             wx.ALL,        # and make border all around
             0 )            # set border width to 2
         self.panel1.win_top = wx.Window(self.panel1, -1,
-            size = wx.DefaultSize
+            #size = wx.DefaultSize
             #size = self.GetSize()
+            size=(400,-1)
             )    # size = wx.DefaultSize,
         topsizer_K_right.Add(self.panel1.win_top,
             1,             # make vertically stretchable
@@ -229,18 +231,19 @@ class AppFrame(wx.Frame):
             wx.ALL,        # and make border all around
             0 )            # set border width to 2
         self.panel1.win_front = wx.Window(self.panel1, -1,
-            size = wx.DefaultSize,
-            #size = self.GetSize(),
-            )    # size = wx.DefaultSize,
+            #size = wx.DefaultSize
+            #size = self.GetSize()
+            size=(400,-1)
+            )
         topsizer_K_right.Add(self.panel1.win_front,
             1,             # make vertically stretchable
-            wx.EXPAND    # make horizontally stretchable
-            ,        # and make border all around
+            wx.EXPAND|    # make horizontally stretchable
+            wx.ALL,         # and make border all around
             0 )            # set border width to 2
         topsizer_K.Add(topsizer_K_right,
             0,             # make vertically stretchable
-            wx.EXPAND    # make horizontally stretchable
-            ,        # and make border all around
+            wx.EXPAND|    # make horizontally stretchable
+            wx.ALL,        # and make border all around
             0 )            # set border width to 2
         self.panel1.SetSizer( topsizer_K )    # use the sizer for layout
         self.canva = GraphicsCanva3D(self.panel1.win)      #panel1.win

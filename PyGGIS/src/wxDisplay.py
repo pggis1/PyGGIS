@@ -134,15 +134,16 @@ class GraphicsCanva3D(wx.Panel):
         if sys.platform=='win32':
             self.Init3dViewer()
 
-    def Init3dViewer(self):
+    def Init3dViewer(self,Triedron=True):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
         self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgLGray.bmp"))
-        self._3dDisplay.DisplayTriedron()
+        if Triedron:
+            self._3dDisplay.DisplayTriedron()
+            self._3dDisplay.Context.SetTrihedronSize(10.0)
         ##self._3dDisplay.SetModeShaded()
         self._3dDisplay.SetModeWireFrame()
-        self._3dDisplay.Context.SetTrihedronSize(10.0)
 
     def OnKeyDown(self,evt):
         key_code = evt.GetKeyCode()
@@ -158,9 +159,11 @@ class GraphicsCanva3D(wx.Panel):
     def OnSize(self, event):
         if self._inited:
             self._3dDisplay.OnResize()
+            self._3dDisplay.Repaint()
 
     def OnMaximize(self, event):
         if self._inited:
+            self._3dDisplay.OnResize()
             self._3dDisplay.Repaint()
         
     def OnMove(self, event):
