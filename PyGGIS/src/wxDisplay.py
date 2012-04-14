@@ -83,7 +83,8 @@ if THISPATH.endswith("zip"):
 
 class GraphicsCanva3D(wx.Panel):
     def __init__(self, parent, main=False):
-        wx.Panel.__init__(self, parent, style=wx.SUNKEN_BORDER)
+        #wx.Panel.__init__(self, parent, style=wx.SUNKEN_BORDER)
+        wx.Panel.__init__(self, parent)
 
         wx.EVT_SIZE(self, self.OnSize)
         wx.EVT_IDLE(self, self.OnIdle)
@@ -195,6 +196,9 @@ class GraphicsCanva3D(wx.Panel):
         
     def ZoomAll(self):
         self._3dDisplay.FitAll()#Zoom_FitAll()
+        if self.main:
+            self.frame.canva_top._3dDisplay.FitAll()
+            self.frame.canva_front._3dDisplay.FitAll()
 
     def Repaint(self, evt):
         #pass
@@ -421,8 +425,8 @@ class GraphicsCanva3D(wx.Panel):
                         plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))"""
 
                 w = plgn.Wire()
-                self._3dDisplay.Context.Erase(self.drawList[self.tempIndex][2].GetHandle())
-                self._3dDisplay.Context.Erase(self.drawList[ItemIndex][2].GetHandle())
+                self.Erase(self.drawList[self.tempIndex][2].GetHandle())
+                self.Erase(self.drawList[ItemIndex][2].GetHandle())
                 for i,v in enumerate(self.frame.egde_typeList):
                     if v[0]==self.drawList[self.tempIndex][4]:
                         edge_type=self.frame.egde_typeList[i]
@@ -432,7 +436,7 @@ class GraphicsCanva3D(wx.Panel):
                         r=int(str(self.frame.colorList[i][2]))/255.0
                         g=int(str(self.frame.colorList[i][3]))/255.0
                         b=int(str(self.frame.colorList[i][4]))/255.0
-                        s1=self._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                        s1=self.DisplayShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                         break
                 self.drawList[self.tempIndex][2]=s1.GetObject()
                 self.drawList[self.tempIndex][-1]=True
@@ -484,7 +488,7 @@ class GraphicsCanva3D(wx.Panel):
             for i,pnt in enumerate(pnts):
                 if pnt == neaP2:
                     endPointIndex=i
-            #self._3dDisplay.Context.Erase(selObj)
+            #self.Erase(selObj)
             bPoints=getPoints(self.drawList[self.tempIndex][2].Shape())
             newPnts=[]
             print "self.tempPointIndex: ",self.tempPointIndex
@@ -515,12 +519,12 @@ class GraphicsCanva3D(wx.Panel):
             plgn.Close()
             w = plgn.Wire()
             if self.tmpEdge:
-                self._3dDisplay.Context.Erase(self.tmpEdge)
+                self.Erase(self.tmpEdge)
                 self.tmpEdge = None
             if self.gumline_edge:
-                self._3dDisplay.Context.Erase(self.gumline_edge)
+                self.Erase(self.gumline_edge)
                 self.gumline_edge=None
-            self.tmpEdge = self._3dDisplay.DisplayColoredShape(w,'RED', False)
+            self.tmpEdge = self.DisplayShape(w,'RED', False)
             self.GumLine=False
             self.EdCmd = None
             self.EdStep = None
@@ -561,14 +565,15 @@ class GraphicsCanva3D(wx.Panel):
             #print newPnts 
 
             # get params sel object
-            self._3dDisplay.Context.Erase(selObj)           # Удалить старый
+            self.Erase(self.drawList[indexInfo][2].GetHandle())
+            self.Erase(selObj)           # Удалить старый
             plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
             for pnt1 in newPnts:
                 plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
             #if closeP:
             #    plgn.Close()
             w = plgn.Wire()
-            newShape = self._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+            newShape = self.DisplayShape(w,'YELLOW', False)        #,'WHITE'
             # Установить цвет, тип,толщину и др.
             if selColor:
                 self._3dDisplay.Context.SetColor(newShape,selColor,0)
@@ -624,14 +629,15 @@ class GraphicsCanva3D(wx.Panel):
                 #print newPnts
             sel_shape=self._3dDisplay.selected_shape
                 # get params sel object
-            self._3dDisplay.Context.Erase(selObj)           # Удалить старый
+            self.Erase(self.drawList[indexInfo][2].GetHandle())
+            self.Erase(selObj)           # Удалить старый
             plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
             for pnt1 in newPnts:
                 plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
                 #if closeP:
             #    plgn.Close()
             w = plgn.Wire()
-            newShape = self._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+            newShape = self.DisplayShape(w,'YELLOW', False)        #,'WHITE'
             # Установить цвет, тип,толщину и др.
             if selColor:
                 self._3dDisplay.Context.SetColor(newShape,selColor,0)
@@ -759,7 +765,8 @@ class GraphicsCanva3D(wx.Panel):
             #print newPntsFirst
             #print newPntsSecond
             # get params sel object
-            self._3dDisplay.Context.Erase(selObj)           # Удалить старый
+            self.Erase(self.drawList[indexInfo][2].GetHandle())
+            self.Erase(selObj)           # Удалить старый
 
             plgn1 = BRepBuilderAPI_MakePolygon()             # Построить первую половину
             for pnt1 in newPntsFirst:
@@ -767,7 +774,7 @@ class GraphicsCanva3D(wx.Panel):
             #if closeP:
             #    plgn.Close()
             w1 = plgn1.Wire()
-            newShape1 = self._3dDisplay.DisplayColoredShape(w1,'YELLOW', False)
+            newShape1 = self.DisplayShape(w1,'YELLOW', False)
 
             plgn2 = BRepBuilderAPI_MakePolygon()             # Построить вторую половину
             for pnt1 in newPntsSecond:
@@ -775,7 +782,7 @@ class GraphicsCanva3D(wx.Panel):
             #if closeP:
             #    plgn.Close()
             w2 = plgn2.Wire()
-            newShape2 = self._3dDisplay.DisplayColoredShape(w2,'YELLOW', False)
+            newShape2 = self.DisplayShape(w2,'YELLOW', False)
 
             # Установить цвет, тип,толщину и др.
             if selColor:
@@ -820,15 +827,17 @@ class GraphicsCanva3D(wx.Panel):
                 if indexInfo <> None:
                     oldInfo = self.drawList[indexInfo]
                     if oldInfo[0]==type or type==-1:
+                        self.Erase(oldInfo[2].GetHandle())
                         oldInfo[2] = None
                         oldInfo[-1] = True
                         self.drawList[indexInfo] = oldInfo
-                        self._3dDisplay.Context.Erase(selObj)
+                        self.Erase(selObj)
                         self.frame.SetStatusText("Удален", 2)
                     else:
                         self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
                 else:
-                    self._3dDisplay.Context.Erase(selObj)
+                    self.Erase(self.drawList[indexInfo][2].GetHandle())
+                    self.Erase(selObj)
                     self.frame.SetStatusText("Удален", 2)
                 if self.frame.getTypeByMenu()==-1:
                     self.EdCmd = 0; self.EdStep = 0
@@ -882,7 +891,11 @@ class GraphicsCanva3D(wx.Panel):
         self.WinZoom = False
         self.DynaPan = False
         self.DynaRotate = False
-        #self.MakeLine = False
+        if self.main:
+            self.frame.canva_top.SetTogglesToFalse(event)
+            self.frame.canva_front.SetTogglesToFalse(event)
+
+#self.MakeLine = False
         #self.MakePLine = False
         
     def OnMiddleDown(self, event):
@@ -942,6 +955,8 @@ class GraphicsCanva3D(wx.Panel):
         self.dragStartPos.y = pt.y
 
     def _dynarotate(self, event):
+        if not self.main:
+            return
         self.SetDynaCursor(os.path.join(THISPATH, "icons", "rotate_cur.bmp"))
         pt = event.GetPosition()
         dx = pt.x - self.dragStartPos.x
@@ -992,13 +1007,13 @@ class GraphicsCanva3D(wx.Panel):
                 Z = float(self.coordZ.GetValue())
                 edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], Z+0*resPnt[2])).Edge()
                 if self.gumline_edge:
-                    self._3dDisplay.Context.Erase(self.gumline_edge)
+                    self.Erase(self.gumline_edge)
                 shape=OCC.AIS.AIS_Shape(edge)
                 shape.UnsetSelectionMode()
                 self.gumline_edge = shape.GetHandle()
                 self._3dDisplay.Context.SetColor(self.gumline_edge,OCC.Quantity.Quantity_NOC_BLACK,0)
                 self._3dDisplay.Context.Display(self.gumline_edge, False)
-                #self.gumline_edge=self.DisplayCustomShape(edge, color='BLACK', update=False, line_type = 1, line_thickness = 1,toggle=False)
+                #self.gumline_edge=self.DisplayShape(edge, color='BLACK', update=False, line_type = 1, line_thickness = 1,toggle=False)
 
                 #view_mgr = display.View.View().GetObject().ViewManager()
                 #layer = Visual3d_Layer(view_mgr, Aspect_TOL_UNDERLAY, False)
@@ -1059,10 +1074,30 @@ class GraphicsCanva3D(wx.Panel):
         """Save the current canvas view to an image file."""
         self._3dDisplay.ExportToImage(filename)
 
+    def Erase(self,shape):
+        self._3dDisplay.Context.Erase(shape)
+        print shape
+        if self.main:
+            try:
+                print shape.canva_top
+                self.frame.canva_top._3dDisplay.Context.Erase(shape.canva_top)
+            except AttributeError:
+                self.frame.canva_top._3dDisplay.Context.Erase(shape)
+            try:
+                print shape.canva_front
+                self.frame.canva_top._3dDisplay.Context.Erase(shape.canva_front)
+            except AttributeError:
+                self.frame.canva_top._3dDisplay.Context.Erase(shape)
 
-    def DisplayCustomShape(self, shapes, color='YELLOW', update=True, line_type = 0, line_thickness = 1,toggle=True, ):
+    def EraseAll(self):
+        self._3dDisplay.EraseAll()
+        if self.main:
+            self.frame.canva_top._3dDisplay.EraseAll()
+            self.frame.canva_front._3dDisplay.EraseAll()
+
+    def DisplayShape(self, shapes, color='YELLOW', update=True, line_type = 0, line_thickness = 1,toggle=True, ):
         ais_shapes = []
-
+        color_to_send=color
         if isinstance(color, str):
             dict_color = {'WHITE':OCC.Quantity.Quantity_NOC_WHITE,
                           'BLUE':OCC.Quantity.Quantity_NOC_BLUE1,
@@ -1104,29 +1139,38 @@ class GraphicsCanva3D(wx.Panel):
             shape_to_display.SetAttributes(Drawer.GetHandle())
  
             shape_to_display=shape_to_display.GetHandle()
+            self._3dDisplay.Context.SetColor(shape_to_display,color,0)
             ais_shapes.append(shape_to_display)
             if update:
                 self._3dDisplay.Context.Display(shape_to_display, True)
                 self._3dDisplay.FitAll()
             else:
-                self._3dDisplay.Context.Display(shape_to_display, False)  
+                self._3dDisplay.Context.Display(shape_to_display, False)
         if SOLO:
+            if self.main:
+                s1=self.frame.canva_top.DisplayShape( shapes[0], color_to_send, update, line_type , line_thickness ,toggle )
+                s2=self.frame.canva_front.DisplayShape( shapes[0], color_to_send, update, line_type , line_thickness ,toggle )
+                ais_shapes[0].canva_top=s1
+                ais_shapes[0].canva_front=s2
+                #print ais_shapes[0],s1,s2
             return ais_shapes[0]
         else:
+            if self.main:
+                for i,shape in inumerate(shapes):
+                    s1=self.frame.canva_top.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
+                    s2=self.frame.canva_front.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
+                    ais_shapes[i].canva_top=s1
+                    ais_shapes[i].canva_front=s2
             return ais_shapes
 
-if __name__=="__main__":
-    from OCC.BRepPrimAPI import *
-    class AppFrame(wx.Frame):
-        def __init__(self, parent):
-            wx.Frame.__init__(self, parent, -1, "wxDisplay3d sample", style=wx.DEFAULT_FRAME_STYLE,size = (640,480))
-            self.canva = GraphicsCanva3D(self)
-            #S = BRepPrimAPI_MakeTorus(400,100)
-            #shape = S.Shape()
-            #self.canva._3dDisplay.DisplayShape(S.Shape())
-    app = wx.PySimpleApp()
-    wx.InitAllImageHandlers()
-    frame = AppFrame(None)
-    frame.Show(True)
-    app.SetTopWindow(frame)
-    app.MainLoop()            
+class 3DShape(OCC.AIS.AIS_Shape):
+    def __init__(self,shape):
+        OCC.AIS.AIS_Shape.__init__(self,shape)
+        self.canva_top=0
+        self.canva_frame=0
+
+class Handle_3DShape(OCC.AIS.Handle_AIS_Shape):
+    def __init__(self)
+        OCC.AIS.Handle_AIS_Shape.__init__(self)
+        self.canva_top=0
+        self.canva_frame=0

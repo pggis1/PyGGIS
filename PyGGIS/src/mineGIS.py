@@ -205,33 +205,35 @@ class AppFrame(wx.Frame):
 
         self.panel1 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Геометрия карьера
         nb.AddPage(self.panel1, 'К')
+
+        self.panel1.win = wx.Panel(self.panel1, -1, size = wx.DefaultSize)
+
         topsizer_K = wx.BoxSizer( wx.HORIZONTAL );
-        topsizer_K_left = wx.BoxSizer( wx.VERTICAL );
+        #topsizer_K_left = wx.BoxSizer( wx.VERTICAL );
+        topsizer_K_left = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Проекция" ), wx.VERTICAL )
         topsizer_K_right = wx.BoxSizer( wx.VERTICAL );
-
-
-        self.panel1.win = wx.Panel(self.panel1, -1, size = wx.DefaultSize,style=wx.SIMPLE_BORDER)
-        #self.panel1.win_top = wx.Window(self.panel1, -1, size = wx.DefaultSize,style=wx.SIMPLE_BORDER)
-        #self.panel1.win_front = wx.Window(self.panel1, -1, size = wx.DefaultSize,style=wx.SIMPLE_BORDER)
-
-        self.canva = GraphicsCanva3D(self.panel1.win,True)      #panel1.win
+        topsizer_K_right_top = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Сверху" ), wx.VERTICAL )
+        topsizer_K_right_front = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Спереди" ), wx.VERTICAL )
+        self.canva = GraphicsCanva3D(self.panel1.win,True)
         self.canva_top = GraphicsCanva3D(self.panel1.win)
         self.canva_front = GraphicsCanva3D(self.panel1.win)
 
-        projText=wx.StaticText(self.panel1.win, -1, u'Проэкция', wx.DefaultPosition, wx.DefaultSize, 0)
-        topText=wx.StaticText(self.panel1.win, -1, u'Сверху', wx.DefaultPosition, wx.DefaultSize, 0)
-        leftText=wx.StaticText(self.panel1.win, -1, u'Спереди', wx.DefaultPosition, wx.DefaultSize, 0)
+        #projText=wx.StaticText(self.panel1.win, -1, u'Проекция', wx.DefaultPosition, wx.DefaultSize, 0)
+        #topText=wx.StaticText(self.panel1.win, -1, u'Сверху', wx.DefaultPosition, wx.DefaultSize, 0)
+        #leftText=wx.StaticText(self.panel1.win, -1, u'Спереди', wx.DefaultPosition, wx.DefaultSize, 0)
 
+        #topsizer_K_left.Add(projText, 0, wx.ALL, 1)
         topsizer_K_left.Add(self.canva, 1, wx.EXPAND|wx.ALL, 0)
-        topsizer_K_left.Add(projText, 0, wx.ALL, 2)
 
-        topsizer_K_right.Add(topText, 0, wx.ALL, 1)
-        topsizer_K_right.Add(self.canva_top, 1, wx.EXPAND|wx.ALL, 0)
-        topsizer_K_right.Add(leftText, 0, wx.ALL, 1)
-        topsizer_K_right.Add(self.canva_front, 1, wx.EXPAND|wx.ALL, 0)
+        #topsizer_K_right.Add(topText, 0, wx.ALL, 1)
+        topsizer_K_right_top.Add(self.canva_top, 1, wx.EXPAND|wx.ALL, 0)
+        #topsizer_K_right.Add(leftText, 0, wx.ALL, 1)
+        topsizer_K_right_front.Add(self.canva_front, 1, wx.EXPAND|wx.ALL, 0)
 
-        topsizer_K.Add(topsizer_K_left, 70, wx.EXPAND|wx.ALL, 1)
-        topsizer_K.Add(topsizer_K_right, 30, wx.EXPAND|wx.ALL, 1)
+        topsizer_K_right.Add(topsizer_K_right_top, 1, wx.EXPAND|wx.ALL, 0)
+        topsizer_K_right.Add(topsizer_K_right_front, 1, wx.EXPAND|wx.ALL, 0)
+        topsizer_K.Add(topsizer_K_left, 60, wx.EXPAND|wx.ALL, 1)
+        topsizer_K.Add(topsizer_K_right, 40, wx.EXPAND|wx.ALL, 1)
 
         self.panel1.win.SetSizer(topsizer_K)
         self._mgr.AddPane(self.panel1.win, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
@@ -405,7 +407,7 @@ class AppFrame(wx.Frame):
         self.menu_now='main'
         self.tb3 = self.CreateMenu()
         self.NavigateMenu()
-        self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left())
+        self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left().LeftDockable())
 
         self._mgr.Update()
         #self._mgr.GetPane("Help").MinSize((-1,-1)) # now make it so that the help pane can be resized
@@ -772,7 +774,7 @@ class AppFrame(wx.Frame):
         skv = skv.Shell()
         s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
 
-        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+        self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
 
         oldInfo = self.canva.drawList[self.canva.tempIndex]
         #print oldInfo
@@ -819,7 +821,7 @@ class AppFrame(wx.Frame):
                 return
 
             selObj = self.canva._3dDisplay.Context.SelectedInteractive()
-            self.canva._3dDisplay.Context.Erase(selObj)
+            self.canva.Erase(selObj)
             pnts = getPoints(sel_shape)
             self.canva.lstPnt=pnts
             self.OnPLine(event)
@@ -835,7 +837,7 @@ class AppFrame(wx.Frame):
             self.canva.lstPnt=[]
             Coord_yes(self)
             if self.canva.tmpEdge:
-                self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+                self.canva.Erase(self.canva.tmpEdge)
                 self.canva.tmpEdge = None
         else:
             self.OnEdgeCancel(event)
@@ -855,7 +857,7 @@ class AppFrame(wx.Frame):
                 SaveDB(self)
             elif result==wx.ID_CANCEL:
                 return
-        self.canva._3dDisplay.EraseAll()
+        self.canva.EraseAll()
         self.canva.drawList = []
 
     def OnCutNavigateMenu(self,event):
@@ -891,15 +893,15 @@ class AppFrame(wx.Frame):
         PLine(self)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
-        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+        self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
         self.canva.drawList[self.canva.tempIndex][2]=None
         self.canva.drawList[self.canva.tempIndex][-1]=True
         self.OnCancel(event)
         """
         if self.cutPlineId==None:
             pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
-            self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
-            self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+            self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+            self.canva.Erase(self.canva.tmpEdge)
             for i,v in enumerate(self.egde_typeList):
                 if v[0]==self.canva.drawList[self.canva.tempIndex][4]:
                     edge_type=self.egde_typeList[i]
@@ -1424,7 +1426,7 @@ class AppFrame(wx.Frame):
             self._createpythonshell()
 
     def _clearall(self, event):
-        self.canva._3dDisplay.EraseAll()
+        self.canva.EraseAll()
 
     def _refreshui(self):
         setpointer = True
@@ -1628,8 +1630,8 @@ class AppFrame(wx.Frame):
             BRepTools.BRepTools().Read(shape, str(filename), builder)
         else:
             return True
-        self.canva._3dDisplay.EraseAll()
-        self.canva._3dDisplay.DisplayShape(shape)
+        self.canva.EraseAll()
+        self.canva.DisplayShape(shape)
         wx.SafeYield()
         self.canva._3dDisplay.View_Iso()
         self.canva._3dDisplay.FitAll()
@@ -1895,9 +1897,9 @@ class AppFrame(wx.Frame):
         '''
         for i in range (21):
             edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0,i*5,0),gp_Pnt(100,i*5,0)).Edge()
-            self.canva.DisplayCustomShape(edge,'BLACK',False,0,1,False)
+            self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
             edge = BRepBuilderAPI_MakeEdge(gp_Pnt(i*5,0,0),gp_Pnt(i*5,100,0)).Edge()
-            self.canva.DisplayCustomShape(edge,'BLACK',False,0,1,False)
+            self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
         '''
         plgn = BRepBuilderAPI_MakePolygon()
         plgn.Add(gp_Pnt(0, 0, 0))
@@ -1906,15 +1908,9 @@ class AppFrame(wx.Frame):
         plgn.Add(gp_Pnt(5, 0, 0))
         plgn.Close()
         w = plgn.Wire()
-        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
+        s1=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
         self.canva.SetTogglesToFalse(event)
         self.canva.ZoomAll()
-        s1=self.canva_top._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
-        self.canva_top.SetTogglesToFalse(event)
-        self.canva_top.ZoomAll()
-        s1=self.canva_front._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
-        self.canva_front.SetTogglesToFalse(event)
-        self.canva_front.ZoomAll()
         self._refreshui()
         print '---==========---'
         print 'self.canva.drawList:'
