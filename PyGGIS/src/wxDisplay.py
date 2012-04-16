@@ -1076,17 +1076,19 @@ class GraphicsCanva3D(wx.Panel):
 
     def Erase(self,shape):
         self._3dDisplay.Context.Erase(shape)
-        print shape
+        #print shape
         if self.main:
             try:
-                print shape.canva_top
                 self.frame.canva_top._3dDisplay.Context.Erase(shape.canva_top)
+                print "ok top"
             except AttributeError:
+                print 'attribute error top'
                 self.frame.canva_top._3dDisplay.Context.Erase(shape)
             try:
-                print shape.canva_front
                 self.frame.canva_top._3dDisplay.Context.Erase(shape.canva_front)
+                print "ok front"
             except AttributeError:
+                print 'attribute error front'
                 self.frame.canva_top._3dDisplay.Context.Erase(shape)
 
     def EraseAll(self):
@@ -1127,7 +1129,13 @@ class GraphicsCanva3D(wx.Panel):
             line_type=OCC.Aspect.Aspect_TOL_DASH
         
         for shape in shapes:
-            shape_to_display=OCC.AIS.AIS_Shape(shape)
+            #shape_to_display=OCC.AIS.AIS_Shape(shape)
+            if self.main:
+                canva_top=self.frame.canva_top.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
+                canva_front=self.frame.canva_front.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
+                shape_to_display=v3DShape(shape,canva_top,canva_front)
+            else:
+                shape_to_display=OCC.AIS.AIS_Shape(shape)
             if toggle==False:
                 shape_to_display.UnsetSelectionMode()
             shape_to_display.SetContext(self._3dDisplay.Context.GetHandle())
@@ -1137,7 +1145,8 @@ class GraphicsCanva3D(wx.Panel):
             Drawer.SetWireAspect(LineType.GetHandle())
             Drawer.SetLineAspect(LineType.GetHandle())
             shape_to_display.SetAttributes(Drawer.GetHandle())
- 
+
+                #print shape_to_display.canva_top
             shape_to_display=shape_to_display.GetHandle()
             self._3dDisplay.Context.SetColor(shape_to_display,color,0)
             ais_shapes.append(shape_to_display)
@@ -1147,30 +1156,29 @@ class GraphicsCanva3D(wx.Panel):
             else:
                 self._3dDisplay.Context.Display(shape_to_display, False)
         if SOLO:
-            if self.main:
-                s1=self.frame.canva_top.DisplayShape( shapes[0], color_to_send, update, line_type , line_thickness ,toggle )
-                s2=self.frame.canva_front.DisplayShape( shapes[0], color_to_send, update, line_type , line_thickness ,toggle )
-                ais_shapes[0].canva_top=s1
-                ais_shapes[0].canva_front=s2
-                #print ais_shapes[0],s1,s2
             return ais_shapes[0]
         else:
-            if self.main:
-                for i,shape in inumerate(shapes):
-                    s1=self.frame.canva_top.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
-                    s2=self.frame.canva_front.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
-                    ais_shapes[i].canva_top=s1
-                    ais_shapes[i].canva_front=s2
             return ais_shapes
 
-class 3DShape(OCC.AIS.AIS_Shape):
-    def __init__(self,shape):
+class v3DShape(OCC.AIS.AIS_Shape):
+    self.canva_top=None
+    self.canva_front=None
+    def __init__(self,shape,canva_top=None,canva_front=None):
         OCC.AIS.AIS_Shape.__init__(self,shape)
-        self.canva_top=0
-        self.canva_frame=0
+        self.canva_top=canva_top
+        self.canva_front=canva_front
 
-class Handle_3DShape(OCC.AIS.Handle_AIS_Shape):
-    def __init__(self)
-        OCC.AIS.Handle_AIS_Shape.__init__(self)
-        self.canva_top=0
-        self.canva_frame=0
+    def GetHandle(self):
+        return Handle_v3DShape(OCC.AIS.AIS_Shape.GetHandle(self),self.canva_top,self.canva_front)
+
+
+class Handle_v3DShape(OCC.AIS.Handle_AIS_Shape):
+    self.canva_top=None
+    self.canva_front=None
+    def __init__(self,shape,canva_top=None,canva_front=None):
+        OCC.AIS.Handle_AIS_Shape.__init__(self,shape)
+        self.canva_top=canva_top
+        self.canva_front=canva_front
+
+    def GetObject(self):
+        return v3DShape(OCC.AIS.Handle_AIS_Shape.GetObject(self).Shape(),self.canva_top,self.canva_front)
