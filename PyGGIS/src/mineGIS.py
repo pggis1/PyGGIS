@@ -195,13 +195,6 @@ class AppFrame(wx.Frame):
                                 #,size = self.GetSize()
                                 )
         self.notebook = nb
-        # Create the image list
-        #imageList = wx.ImageList(16, 16, True, 3)
-        #py_icon = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'py.png'), 16, 16)
-        #imageList.Add(py_icon);
-        #imageList.Add(py_icon);
-        #imageList.Add(py_icon);
-        #imageList.Add(py_icon);
 
         self.panel1 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Геометрия карьера
         nb.AddPage(self.panel1, 'К')
@@ -1540,9 +1533,13 @@ class AppFrame(wx.Frame):
 
     def OnAntialiasingOn(self, event):
         self.canva._3dDisplay.EnableAntiAliasing()
+        self.canva_top._3dDisplay.EnableAntiAliasing()
+        self.canva_front._3dDisplay.EnableAntiAliasing()
 
     def OnAntialiasingOff(self, event):
         self.canva._3dDisplay.DisableAntiAliasing()
+        self.canva_top._3dDisplay.DisableAntiAliasing()
+        self.canva_front._3dDisplay.DisableAntiAliasing()
 
     def _zoomall(self, event):
         self.canva.SetTogglesToFalse(event)
@@ -1553,6 +1550,10 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         self.canva.WinZoom = True
         self.canva._drawbox = None
+        self.canva_top.WinZoom = True
+        self.canva_top._drawbox = None
+        self.canva_front.WinZoom = True
+        self.canva_front._drawbox = None
         self._refreshui()
 
     def _pointer(self, event):
@@ -1562,11 +1563,15 @@ class AppFrame(wx.Frame):
     def _dynamiczoom(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaZoom = True
+        self.canva_top.DynaZoom = True
+        self.canva_front.DynaZoom = True
         self._refreshui()
 
     def _pan(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaPan = True
+        self.canva_top.DynaPan = True
+        self.canva_front.DynaPan = True
         self._refreshui()
 
     def _rotate(self, event):
@@ -1901,6 +1906,7 @@ class AppFrame(wx.Frame):
             edge = BRepBuilderAPI_MakeEdge(gp_Pnt(i*5,0,0),gp_Pnt(i*5,100,0)).Edge()
             self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
         '''
+        '''
         plgn = BRepBuilderAPI_MakePolygon()
         plgn.Add(gp_Pnt(0, 0, 0))
         plgn.Add(gp_Pnt(0, 5, 0))
@@ -1912,6 +1918,28 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         self.canva.ZoomAll()
         self._refreshui()
+        '''
+        gridSize=self.stepXY.GetValue()
+        if gridSize>0:
+            minx, miny = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(0, 0)[:2]
+            maxx, maxy = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(self.canva.GetSize()[0], self.canva.GetSize()[1])[:2]
+            #print minx, miny, maxx, maxy
+            if maxx>minx:
+                stepx=1
+            else:
+                stepx=-1
+            if maxy>miny:
+                stepy=1
+            else:
+                stepy=-1
+            for x in range(int(minx),int(maxx)+stepx,stepx):
+                for y in range(int(miny),int(maxy)+stepy,stepy):
+                    if x%gridSize==0 and y%gridSize==0:
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(x,miny,0),gp_Pnt(x,maxy,0)).Edge()
+                        self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx,y,0),gp_Pnt(maxx,y,0)).Edge()
+                        self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+        return
         print '---==========---'
         print 'self.canva.drawList:'
         print self.canva.drawList

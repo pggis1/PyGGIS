@@ -145,6 +145,7 @@ class GraphicsCanva3D(wx.Panel):
         if self.main:
             self._3dDisplay.DisplayTriedron()
             self._3dDisplay.Context.SetTrihedronSize(10.0)
+        self._3dDisplay.Context.SetHilightColor(OCC.Quantity.Quantity_NOC_GREEN)#OCC.Quantity.Quantity_Color(0.5,0.2,0.5,False))
         ##self._3dDisplay.SetModeShaded()
         self._3dDisplay.SetModeWireFrame()
 
@@ -162,7 +163,8 @@ class GraphicsCanva3D(wx.Panel):
     def OnSize(self, event):
         if self._inited:
             self._3dDisplay.OnResize()
-            self._3dDisplay.Repaint()
+            #self._3dDisplay.Repaint()
+            self.Repaint(event)
 
     def OnMaximize(self, event):
         if self._inited:
@@ -190,7 +192,7 @@ class GraphicsCanva3D(wx.Panel):
             self._3dDisplay.Repaint()
 
     def OnPaint(self, event):
-        #pass
+        #pass OLOLO
         if self._inited:
             self._3dDisplay.Repaint()
         
@@ -201,9 +203,7 @@ class GraphicsCanva3D(wx.Panel):
             self.frame.canva_front._3dDisplay.FitAll()
 
     def Repaint(self, evt):
-        #pass
-        if self._inited:
-            self._3dDisplay.Repaint()
+        self.OnPaint(evt)
 
     def OnLeftDown(self, evt):
         """ Обработка левой кнопки мыши. 
@@ -341,10 +341,12 @@ class GraphicsCanva3D(wx.Panel):
         if self.MakePoint:
             self.worldPt = resPnt
             self.frame.onCoord_yes(evt)
-            return 
+            return
 
         self.dragStartPos = self.startPt        #evt.GetPosition()
-        self._3dDisplay.MoveTo(self.dragStartPos.x,self.dragStartPos.y)     # cyx 
+        self._3dDisplay.MoveTo(self.dragStartPos.x,self.dragStartPos.y)     # cyx
+        if not self.main:
+            return
         self._3dDisplay.StartRotation(self.dragStartPos.x,self.dragStartPos.y)
         
         self._3dDisplay.Select(self.dragStartPos.x, self.dragStartPos.y)
@@ -491,11 +493,11 @@ class GraphicsCanva3D(wx.Panel):
             #self.Erase(selObj)
             bPoints=getPoints(self.drawList[self.tempIndex][2].Shape())
             newPnts=[]
-            print "self.tempPointIndex: ",self.tempPointIndex
-            print "bPoints: ",bPoints
-            print "resPnt: ",resPnt
-            print "self.lstPnt: ",self.lstPnt
-            print "endPointIndex: ",endPointIndex
+            #print "self.tempPointIndex: ",self.tempPointIndex
+            #print "bPoints: ",bPoints
+            #print "resPnt: ",resPnt
+            #print "self.lstPnt: ",self.lstPnt
+            #print "endPointIndex: ",endPointIndex
             if endPointIndex>self.tempPointIndex:
                 newPnts.append(bPoints[self.tempPointIndex])
                 for i in range(len(self.lstPnt)):
@@ -577,6 +579,8 @@ class GraphicsCanva3D(wx.Panel):
             # Установить цвет, тип,толщину и др.
             if selColor:
                 self._3dDisplay.Context.SetColor(newShape,selColor,0)
+                self.frame.canva_top._3dDisplay.Context.SetColor(newShape.canva_top,selColor,0)
+                self.frame.canva_frame._3dDisplay.Context.SetColor(newShape.canva_front,selColor,0)
             if indexInfo <> None:
                 oldInfo = self.drawList[indexInfo]
                 #print oldInfo
@@ -641,6 +645,8 @@ class GraphicsCanva3D(wx.Panel):
             # Установить цвет, тип,толщину и др.
             if selColor:
                 self._3dDisplay.Context.SetColor(newShape,selColor,0)
+                self.frame.canva_top._3dDisplay.Context.SetColor(newShape.canva_top,selColor,0)
+                self.frame.canva_frame._3dDisplay.Context.SetColor(newShape.canva_front,selColor,0)
             if indexInfo <> None:
                 oldInfo = self.drawList[indexInfo]
                 #print oldInfo
@@ -787,7 +793,11 @@ class GraphicsCanva3D(wx.Panel):
             # Установить цвет, тип,толщину и др.
             if selColor:
                 self._3dDisplay.Context.SetColor(newShape1,selColor,0)
+                self.frame.canva_top._3dDisplay.Context.SetColor(newShape1.canva_top,selColor,0)
+                self.frame.canva_frame._3dDisplay.Context.SetColor(newShape1.canva_front,selColor,0)
                 self._3dDisplay.Context.SetColor(newShape2,selColor,0)
+                self.frame.canva_top._3dDisplay.Context.SetColor(newShape2.canva_top,selColor,0)
+                self.frame.canva_frame._3dDisplay.Context.SetColor(newShape2.canva_front,selColor,0)
             if indexInfo <> None:
                 self.drawList[indexInfo][2] = newShape1.GetObject()
                 self.drawList[indexInfo][-1] = True
@@ -1080,16 +1090,16 @@ class GraphicsCanva3D(wx.Panel):
         if self.main:
             try:
                 self.frame.canva_top._3dDisplay.Context.Erase(shape.canva_top)
-                print "ok top"
+                #print "ok top"
             except AttributeError:
-                print 'attribute error top'
+                #print 'attribute error top'
                 self.frame.canva_top._3dDisplay.Context.Erase(shape)
             try:
-                self.frame.canva_top._3dDisplay.Context.Erase(shape.canva_front)
-                print "ok front"
+                self.frame.canva_front._3dDisplay.Context.Erase(shape.canva_front)
+                #print "ok front"
             except AttributeError:
-                print 'attribute error front'
-                self.frame.canva_top._3dDisplay.Context.Erase(shape)
+                #print 'attribute error front'
+                self.frame.canva_front._3dDisplay.Context.Erase(shape)
 
     def EraseAll(self):
         self._3dDisplay.EraseAll()
@@ -1131,8 +1141,8 @@ class GraphicsCanva3D(wx.Panel):
         for shape in shapes:
             #shape_to_display=OCC.AIS.AIS_Shape(shape)
             if self.main:
-                canva_top=self.frame.canva_top.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
-                canva_front=self.frame.canva_front.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle )
+                canva_top=self.frame.canva_top.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle=False )
+                canva_front=self.frame.canva_front.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle=False )
                 shape_to_display=v3DShape(shape,canva_top,canva_front)
             else:
                 shape_to_display=OCC.AIS.AIS_Shape(shape)
@@ -1161,8 +1171,8 @@ class GraphicsCanva3D(wx.Panel):
             return ais_shapes
 
 class v3DShape(OCC.AIS.AIS_Shape):
-    self.canva_top=None
-    self.canva_front=None
+    canva_top=None
+    canva_front=None
     def __init__(self,shape,canva_top=None,canva_front=None):
         OCC.AIS.AIS_Shape.__init__(self,shape)
         self.canva_top=canva_top
@@ -1173,8 +1183,8 @@ class v3DShape(OCC.AIS.AIS_Shape):
 
 
 class Handle_v3DShape(OCC.AIS.Handle_AIS_Shape):
-    self.canva_top=None
-    self.canva_front=None
+    canva_top=None
+    canva_front=None
     def __init__(self,shape,canva_top=None,canva_front=None):
         OCC.AIS.Handle_AIS_Shape.__init__(self,shape)
         self.canva_top=canva_top
