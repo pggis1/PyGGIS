@@ -38,8 +38,8 @@
 import sys
 import os
 import os.path
-import browser
-import urllib
+#import browser
+#import urllib
 from math import *
 
 try:
@@ -195,31 +195,41 @@ class AppFrame(wx.Frame):
                                 #,size = self.GetSize()
                                 )
         self.notebook = nb
-        # Create the image list
-        #imageList = wx.ImageList(16, 16, True, 3)
-        #py_icon = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'py.png'), 16, 16)
-        #imageList.Add(py_icon);
-        #imageList.Add(py_icon);
-        #imageList.Add(py_icon);
-        #imageList.Add(py_icon);
-
 
         self.panel1 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Геометрия карьера
         nb.AddPage(self.panel1, 'К')
-        topsizer_K = wx.BoxSizer( wx.VERTICAL );
-        self.panel1.win = wx.Window(self.panel1, -1,
-                                    #size = wx.DefaultSize,
-                                    size = self.GetSize(),
-                                    style = wx.SIMPLE_BORDER)    # size = wx.DefaultSize,
-        topsizer_K.Add(self.panel1.win,
-                     1,             # make vertically stretchable
-                     wx.EXPAND |    # make horizontally stretchable
-                     wx.ALL,        # and make border all around
-                     2 )            # set border width to 2
-        self.panel1.SetSizer( topsizer_K )    # use the sizer for layout
 
-        self.canva = GraphicsCanva3D(self.panel1.win)      #panel1.win
-        self._mgr.AddPane(self.canva, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
+        self.panel1.win = wx.Panel(self.panel1, -1, size = wx.DefaultSize)
+
+        topsizer_K = wx.BoxSizer( wx.HORIZONTAL );
+        #topsizer_K_left = wx.BoxSizer( wx.VERTICAL );
+        topsizer_K_left = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Проекция" ), wx.VERTICAL )
+        topsizer_K_right = wx.BoxSizer( wx.VERTICAL );
+        topsizer_K_right_top = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Сверху" ), wx.VERTICAL )
+        topsizer_K_right_front = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Спереди" ), wx.VERTICAL )
+        self.canva = GraphicsCanva3D(self.panel1.win,True)
+        self.canva_top = GraphicsCanva3D(self.panel1.win)
+        self.canva_front = GraphicsCanva3D(self.panel1.win)
+
+        #projText=wx.StaticText(self.panel1.win, -1, u'Проекция', wx.DefaultPosition, wx.DefaultSize, 0)
+        #topText=wx.StaticText(self.panel1.win, -1, u'Сверху', wx.DefaultPosition, wx.DefaultSize, 0)
+        #leftText=wx.StaticText(self.panel1.win, -1, u'Спереди', wx.DefaultPosition, wx.DefaultSize, 0)
+
+        #topsizer_K_left.Add(projText, 0, wx.ALL, 1)
+        topsizer_K_left.Add(self.canva, 1, wx.EXPAND|wx.ALL, 0)
+
+        #topsizer_K_right.Add(topText, 0, wx.ALL, 1)
+        topsizer_K_right_top.Add(self.canva_top, 1, wx.EXPAND|wx.ALL, 0)
+        #topsizer_K_right.Add(leftText, 0, wx.ALL, 1)
+        topsizer_K_right_front.Add(self.canva_front, 1, wx.EXPAND|wx.ALL, 0)
+
+        topsizer_K_right.Add(topsizer_K_right_top, 1, wx.EXPAND|wx.ALL, 0)
+        topsizer_K_right.Add(topsizer_K_right_front, 1, wx.EXPAND|wx.ALL, 0)
+        topsizer_K.Add(topsizer_K_left, 60, wx.EXPAND|wx.ALL, 1)
+        topsizer_K.Add(topsizer_K_right, 40, wx.EXPAND|wx.ALL, 1)
+
+        self.panel1.win.SetSizer(topsizer_K)
+        self._mgr.AddPane(self.panel1.win, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
 
         self.panel2 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Панель для настройки параметров
         nb.AddPage(self.panel2, 'О')
@@ -258,6 +268,8 @@ class AppFrame(wx.Frame):
         py = wx.py.shell.Shell(self.panel4, - 1, introText=intronote, size=(800,700))
         py.interp.locals["self"] = self             # Для доступа из интерпретатора
         py.interp.locals["canvas"] = self.canva     # Для доступа из интерпретатора
+        py.interp.locals["canvas_top"] = self.canva_top     # Для доступа из интерпретатора
+        py.interp.locals["canvas_front"] = self.canva_front     # Для доступа из интерпретатора
         self.pyshell = py
         topsizer_P.Add(py, flag=wx.EXPAND)
         self.panel4.SetSizer( topsizer_P )    # use the sizer for layout
@@ -266,7 +278,6 @@ class AppFrame(wx.Frame):
         self.tb2 = self.CreateGgisToolbar()
         self._mgr.AddPane(self.tb1, wx.aui.AuiPaneInfo().Name("View").Caption("View").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
         self._mgr.AddPane(self.tb2, wx.aui.AuiPaneInfo().Name("GGIS").Caption("GGIS").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
-
         #Кнопочное меню
         self.buttonMenu=[
                 #['',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
@@ -364,6 +375,7 @@ class AppFrame(wx.Frame):
                                     ['make_cut_query',wx.NewId(),u'Применить',self.OnCutPLineYes,None,'cut'],
                                     ['make_cut_query',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
                                 ['start_cut_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut'],
+                            ['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
 
                         ['edit',wx.NewId(),u'Поуровневая прирезка',self.OnCutNavigateMenu,None,'cut_levels'],
                             ['cut_levels',wx.NewId(),u'ОпрПолилинию1',self.OnCutPLine1,None,'start_cut_levels_pline'],
@@ -373,13 +385,13 @@ class AppFrame(wx.Frame):
                                 ['start_cut_levels_pline',wx.NewId(),u'Закончить',self.OnCutPLineYes,None,'cut_levels'],
                                 ['start_cut_levels_pline',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'cut_levels'],
                             ['cut_levels',wx.NewId(),u'Построить',self.OnCutPLineYesMany,None,'edit'],
+                            ['cut_levels',wx.NewId(),u'Отмена',self.OnEdgeCancel,None,'edit'],
 
-                            #['cut',wx.NewId(),u'Отмена',self.NavigateMenu,None,'edit'],
-                        #['edit',wx.NewId(),u'Отсечь',self.NavigateMenu,None,'merge'],
                         ['edit',wx.NewId(),u'РедактТчк',self.OnCEdit,None,'cedit'],
                 ['',wx.NewId(),u'---',None,None,'main'],
                 ['',wx.NewId(),u'Debug',self.OnDebug,None],
                 ['',wx.NewId(),u'Длинна',self.OnLenth,None],
+                ['',wx.NewId(),u'Обратить',self.OnInvert,None],
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
@@ -388,7 +400,7 @@ class AppFrame(wx.Frame):
         self.menu_now='main'
         self.tb3 = self.CreateMenu()
         self.NavigateMenu()
-        self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left())
+        self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left().LeftDockable())
 
         self._mgr.Update()
         #self._mgr.GetPane("Help").MinSize((-1,-1)) # now make it so that the help pane can be resized
@@ -406,7 +418,6 @@ class AppFrame(wx.Frame):
             if maxresembleimised:
                 self.Maximize()
         self.statusbar = self.CreateStatusBar(3, wx.ST_SIZEGRIP)
-        self.canva.frame = self
         # Creating Menu
         menuBar = wx.MenuBar()
         FileMenu = wx.Menu()
@@ -450,7 +461,7 @@ class AppFrame(wx.Frame):
         # View menu
         viewmenu = wx.Menu()
         restoreperspectiveID = wx.NewId()
-        viewmenu.Append(restoreperspectiveID, u'Restore default layout', 'Restore the UI to the default layout.')
+        viewmenu.Append(restoreperspectiveID, u'Восстановить\tAlt+r', u'Восстановить стандартное положение панелей.')
         self.Bind(wx.EVT_MENU, self.OnRestoreDefaultPerspective, id=restoreperspectiveID)
         viewmenu.AppendSeparator()
         v_Top = wx.NewId()
@@ -603,18 +614,23 @@ class AppFrame(wx.Frame):
         self.SetStatusText("Приглашение", 0)
         self.SetStatusText("Координаты курсора", 1)
         self.SetStatusText("Результат", 2)
+        self.InitCanva(self.canva)
+        self.InitCanva(self.canva_top)
+        self.InitCanva(self.canva_front)
+        pass
 
-        self.canva.GumLine = False
-        self.canva.MakeLine = False
-        self.canva.MakePLine = False
-        self.canva.MakePoint = False
-        self.canva.startPt = False
-        #self.canva.MakeErase = False
-        self.canva.drawList = []
-        self.canva.tmpEdge = None
+    def InitCanva(self,canva):
+        canva.frame = self
+        canva.GumLine = False
+        canva.MakeLine = False
+        canva.MakePLine = False
+        canva.MakePoint = False
+        canva.startPt = False
+        canva.drawList = []
+        canva.tmpEdge = None
 
     def CreateMenu(self):
-        return wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
+        return wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
 
     def NavigateMenu(self,event=None,menuname='main'):
         if(event<>None):
@@ -751,7 +767,7 @@ class AppFrame(wx.Frame):
         skv = skv.Shell()
         s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
 
-        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+        self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
 
         oldInfo = self.canva.drawList[self.canva.tempIndex]
         #print oldInfo
@@ -798,7 +814,7 @@ class AppFrame(wx.Frame):
                 return
 
             selObj = self.canva._3dDisplay.Context.SelectedInteractive()
-            self.canva._3dDisplay.Context.Erase(selObj)
+            self.canva.Erase(selObj)
             pnts = getPoints(sel_shape)
             self.canva.lstPnt=pnts
             self.OnPLine(event)
@@ -814,7 +830,7 @@ class AppFrame(wx.Frame):
             self.canva.lstPnt=[]
             Coord_yes(self)
             if self.canva.tmpEdge:
-                self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+                self.canva.Erase(self.canva.tmpEdge)
                 self.canva.tmpEdge = None
         else:
             self.OnEdgeCancel(event)
@@ -834,7 +850,7 @@ class AppFrame(wx.Frame):
                 SaveDB(self)
             elif result==wx.ID_CANCEL:
                 return
-        self.canva._3dDisplay.EraseAll()
+        self.canva.EraseAll()
         self.canva.drawList = []
 
     def OnCutNavigateMenu(self,event):
@@ -870,15 +886,15 @@ class AppFrame(wx.Frame):
         PLine(self)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
-        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+        self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
         self.canva.drawList[self.canva.tempIndex][2]=None
         self.canva.drawList[self.canva.tempIndex][-1]=True
         self.OnCancel(event)
         """
         if self.cutPlineId==None:
             pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
-            self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
-            self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+            self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
+            self.canva.Erase(self.canva.tmpEdge)
             for i,v in enumerate(self.egde_typeList):
                 if v[0]==self.canva.drawList[self.canva.tempIndex][4]:
                     edge_type=self.egde_typeList[i]
@@ -933,7 +949,7 @@ class AppFrame(wx.Frame):
 
     def CreateRightToolbar(self):
         # Начало формирования палитры
-        tb = wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER) #| wx.TB_VERTICAL )
+        tb = wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER) #| wx.TB_VERTICAL )
 
         tb.SetToolBitmapSize((24, 24))
         zoom_all = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'zoom_all.bmp'), 24, 24)
@@ -984,8 +1000,9 @@ class AppFrame(wx.Frame):
 
     def CreateGgisToolbar(self):
         # Начало формирования палитры кнопочного меню
-        tb = wx.ToolBar(self.panel1.win, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
+        tb = wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
         tb.SetToolBitmapSize((24, 24))
+        '''
         # Отмена
         img_cancel = CreatePng(os.path.join(THISPATH, 'icons', 'process-stop.png'), 16, 16)
         self.cancelID = wx.NewId()
@@ -1005,7 +1022,7 @@ class AppFrame(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.OnPLine, id=self.plineID)
 
         # Coord input cyx
-        tb.AddSeparator()
+        tb.AddSeparator()'''
         # Ввод координат
         tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Точка: ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.coordXYZ = wx.NewId()
@@ -1029,6 +1046,7 @@ class AppFrame(wx.Frame):
                                       wx.DefaultPosition, wx.DefaultSize,
                                       [u'Без привязки', u'Конец', u'Близкая', u'Центр', u'Тангенциальная'],
                                       wx.CB_SIMPLE)
+        self.canva.snap.SetSelection(0)
         tb.AddControl(self.canva.snap)
         # Конец формирования палитры
         tb.Realize()
@@ -1401,7 +1419,7 @@ class AppFrame(wx.Frame):
             self._createpythonshell()
 
     def _clearall(self, event):
-        self.canva._3dDisplay.EraseAll()
+        self.canva.EraseAll()
 
     def _refreshui(self):
         setpointer = True
@@ -1515,9 +1533,13 @@ class AppFrame(wx.Frame):
 
     def OnAntialiasingOn(self, event):
         self.canva._3dDisplay.EnableAntiAliasing()
+        self.canva_top._3dDisplay.EnableAntiAliasing()
+        self.canva_front._3dDisplay.EnableAntiAliasing()
 
     def OnAntialiasingOff(self, event):
         self.canva._3dDisplay.DisableAntiAliasing()
+        self.canva_top._3dDisplay.DisableAntiAliasing()
+        self.canva_front._3dDisplay.DisableAntiAliasing()
 
     def _zoomall(self, event):
         self.canva.SetTogglesToFalse(event)
@@ -1528,6 +1550,10 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         self.canva.WinZoom = True
         self.canva._drawbox = None
+        self.canva_top.WinZoom = True
+        self.canva_top._drawbox = None
+        self.canva_front.WinZoom = True
+        self.canva_front._drawbox = None
         self._refreshui()
 
     def _pointer(self, event):
@@ -1537,11 +1563,15 @@ class AppFrame(wx.Frame):
     def _dynamiczoom(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaZoom = True
+        self.canva_top.DynaZoom = True
+        self.canva_front.DynaZoom = True
         self._refreshui()
 
     def _pan(self, event):
         self.canva.SetTogglesToFalse(event)
         self.canva.DynaPan = True
+        self.canva_top.DynaPan = True
+        self.canva_front.DynaPan = True
         self._refreshui()
 
     def _rotate(self, event):
@@ -1605,8 +1635,8 @@ class AppFrame(wx.Frame):
             BRepTools.BRepTools().Read(shape, str(filename), builder)
         else:
             return True
-        self.canva._3dDisplay.EraseAll()
-        self.canva._3dDisplay.DisplayShape(shape)
+        self.canva.EraseAll()
+        self.canva.DisplayShape(shape)
         wx.SafeYield()
         self.canva._3dDisplay.View_Iso()
         self.canva._3dDisplay.FitAll()
@@ -1817,6 +1847,37 @@ class AppFrame(wx.Frame):
         self.SetStatusText("Укажите объект", 0)
         pass
 
+    def OnInvert(self,event):
+        sel_shape = self.canva._3dDisplay.selected_shape
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        indexInfo = None;
+        for i in range(len(self.canva.drawList)):
+            s1 = self.canva.drawList[i][2]
+            if s1:
+                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    indexInfo = i
+                    break
+        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+            return
+        w=invert(sel_shape)
+        '''
+        edge_type=self.egde_typeList[self.canva.drawList[indexInfo][]]
+        for i in range(len(self.colorList)):
+            if self.colorList[i][0]==edge_type[3]:
+                r=int(str(self.colorList[i][2]))/255.0
+                g=int(str(self.colorList[i][3]))/255.0
+                b=int(str(self.colorList[i][4]))/255.0
+                s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                break
+        '''
+        self.canva.drawList[indexInfo][2]=OCC.AIS.AIS_Shape(w)
+        self.canva.drawList[indexInfo][-1]=True
+
     def OnLenth(self,event):
         sel_shape = self.canva._3dDisplay.selected_shape
         if not sel_shape:
@@ -1838,14 +1899,47 @@ class AppFrame(wx.Frame):
         """
         Prints debug information into console
         """
-        '''plgn = BRepBuilderAPI_MakePolygon()
+        '''
+        for i in range (21):
+            edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0,i*5,0),gp_Pnt(100,i*5,0)).Edge()
+            self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+            edge = BRepBuilderAPI_MakeEdge(gp_Pnt(i*5,0,0),gp_Pnt(i*5,100,0)).Edge()
+            self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+        '''
+        '''
+        plgn = BRepBuilderAPI_MakePolygon()
         plgn.Add(gp_Pnt(0, 0, 0))
         plgn.Add(gp_Pnt(0, 5, 0))
         plgn.Add(gp_Pnt(5, 5, 0))
         plgn.Add(gp_Pnt(5, 0, 0))
         plgn.Close()
         w = plgn.Wire()
-        s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)'''
+        s1=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
+        self.canva.SetTogglesToFalse(event)
+        self.canva.ZoomAll()
+        self._refreshui()
+        '''
+        gridSize=self.stepXY.GetValue()
+        if gridSize>0:
+            minx, miny = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(0, 0)[:2]
+            maxx, maxy = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(self.canva.GetSize()[0], self.canva.GetSize()[1])[:2]
+            #print minx, miny, maxx, maxy
+            if maxx>minx:
+                stepx=1
+            else:
+                stepx=-1
+            if maxy>miny:
+                stepy=1
+            else:
+                stepy=-1
+            for x in range(int(minx),int(maxx)+stepx,stepx):
+                for y in range(int(miny),int(maxy)+stepy,stepy):
+                    if x%gridSize==0 and y%gridSize==0:
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(x,miny,0),gp_Pnt(x,maxy,0)).Edge()
+                        self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx,y,0),gp_Pnt(maxx,y,0)).Edge()
+                        self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+        return
         print '---==========---'
         print 'self.canva.drawList:'
         print self.canva.drawList
@@ -1875,7 +1969,11 @@ if __name__ == "__main__":
         frame.Show(True)
         wx.SafeYield()
         frame.canva.Init3dViewer()
-        frame.canva._3dDisplay.View_Top()
+        frame.canva._3dDisplay.View_Iso()
+        frame.canva_top.Init3dViewer()
+        frame.canva_top._3dDisplay.View_Top()
+        frame.canva_front.Init3dViewer()
+        frame.canva_front._3dDisplay.View_Front()
         #frame.pyshell.interp.locals["display"] = frame.canva._3dDisplay
     app.SetTopWindow(frame)
     app.MainLoop()

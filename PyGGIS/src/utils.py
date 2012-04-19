@@ -458,3 +458,17 @@ def length(pnts):
     for i in range(len(pnts)-1):
         l+=distance3d(pnts[i],pnts[i+1])
     return l
+
+def getGrided(coord,gridSize):
+    per=coord%gridSize
+    if per<gridSize/2:
+        return coord-per
+    else:
+        return coord+(gridSize-per)
+
+def invert(obj):
+    pnts=getPoints(obj)
+    plgn = BRepBuilderAPI_MakePolygon()
+    for i in range(len(pnts)-1,-1,-1):
+        plgn.Add(gp_Pnt(pnts[i][0], pnts[i][1], pnts[i][2]))
+    return plgn.Wire()

@@ -16,7 +16,7 @@ from utils import *
 from liblas import *
 import os, time
 from math import *
-from inpLAS import *
+#from inpLAS import *
 from random import random
 
 from OCC.Quantity import Quantity_Color
@@ -67,13 +67,13 @@ def CAxis(self):
     """ Рисование длинных осей """
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
                         gp_Pnt(0, 10000, 0))
-    self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'CYAN')            
+    self.canva.DisplayShape(edge.Edge(), 'CYAN')            
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
                         gp_Pnt(10000, 0, 0))
-    self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'CYAN')       
+    self.canva.DisplayShape(edge.Edge(), 'CYAN')       
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
                         gp_Pnt(0, 0, 10000))
-    self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'CYAN')
+    self.canva.DisplayShape(edge.Edge(), 'CYAN')
 
 def Point(self):
     self.canva.MakePLine = False
@@ -276,15 +276,15 @@ def CEdit(self):
         selColor = None
         if selObj.GetObject().HasColor():
             selColor = self.canva._3dDisplay.Context.Color(selObj)
-        self.canva._3dDisplay.Context.Erase(selObj)
+        self.canva.Erase(selObj)
 
         # get params sel object
-        self.canva._3dDisplay.Context.Erase(selObj)           # Удалить старый
+        self.canva.Erase(selObj)           # Удалить старый
         plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
         for pnt1 in newpoints:
             plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
         w = plgn.Wire()
-        newShape = self.canva._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
         # Установить цвет, тип,толщину и др.
         if selColor:
             self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
@@ -324,7 +324,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                 #if (self.canva._3dDisplay.Context.HasOpenedContext()):
                 #    self.canva._3dDisplay.Context.CloseLocalContext()
                 if self.canva.tmpEdge<>None:
-                    self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+                    self.canva.Erase(self.canva.tmpEdge)
                     self.canva.tmpEdge = None
                 plgn = BRepBuilderAPI_MakePolygon()
                 for pnt1 in self.canva.lstPnt:
@@ -355,7 +355,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                             r=int(str(self.colorList[i][2]))/255.0
                             g=int(str(self.colorList[i][3]))/255.0
                             b=int(str(self.colorList[i][4]))/255.0
-                            s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                            s1=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                             break
                     self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],False]]
                 elif type==1:
@@ -380,7 +380,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                             r=int(str(self.colorList[i][2]))/255.0
                             g=int(str(self.colorList[i][3]))/255.0
                             b=int(str(self.colorList[i][4]))/255.0
-                            s1=self.canva._3dDisplay.DisplayColoredShape(ShapeFused, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                            s1=self.canva.DisplayShape(ShapeFused, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                             break                                                        #point,h_body
                     self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,bodyh,sort[0],sort[3],sort[6],False]]
                 elif type==3:
@@ -398,7 +398,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                     conn.commit() 
                     curs.close()
                     conn.close()
-                    s1=self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
+                    s1=self.canva.DisplayShape(w, 'GREEN', False)
                     self.canva.drawList = self.canva.drawList + [[3,id_topo,s1.GetObject(),heigth,coord_sys,False]]
                 elif self.menu_now=='start_cut_pline':
                     self.SetStatusText("Готово", 2)
@@ -431,14 +431,14 @@ def Coord_yes(self,drawP=False,closeP=False):
         newPnts[self.canva.tempPointIndex]=lst1
 
         #
-        self.canva._3dDisplay.Context.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())           # Удалить старый
+        self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())           # Удалить старый
         plgn = BRepBuilderAPI_MakePolygon()             		  # Построить новый
         for pnt1 in newPnts:
             plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
             #if closeP:
         #    plgn.Close()
         w = plgn.Wire()
-        newShape = self.canva._3dDisplay.DisplayColoredShape(w,'YELLOW', False)        #,'WHITE'
+        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
         # Установить цвет, тип,толщину и др.
         if selColor:
             self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
@@ -466,7 +466,7 @@ def Coord_yes(self,drawP=False,closeP=False):
         pnt2 = self.canva.lstPnt[1]
         edge = BRepBuilderAPI_MakeEdge(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]),
             gp_Pnt(pnt2[0], pnt2[1], pnt2[2]))
-        self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'BLACK', False)        #
+        self.canva.DisplayShape(edge.Edge(), 'BLACK', False)        #
         self.SetStatusText("Готово", 2)
         CancelOp(self)
 
@@ -476,13 +476,13 @@ def Coord_yes(self,drawP=False,closeP=False):
         #    self.canva._3dDisplay.Context.OpenLocalContext()    #False
             #self.canva.isLocalContext = True
         if self.canva.tmpEdge:
-            self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+            self.canva.Erase(self.canva.tmpEdge)
             self.canva.tmpEdge = None
         plgn = BRepBuilderAPI_MakePolygon()
         for pnt1 in self.canva.lstPnt:
             plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
         w = plgn.Wire()
-        self.canva.tmpEdge = self.canva._3dDisplay.DisplayColoredShape(w, 'ORANGE', False)        #,'WHITE'
+        self.canva.tmpEdge = self.canva.DisplayShape(w, 'ORANGE', False)        #,'WHITE'
     elif self.canva.MakePoint:
         x=self.canva.lstPnt[-1][0]
         y=self.canva.lstPnt[-1][1]
@@ -509,14 +509,14 @@ def Coord_yes(self,drawP=False,closeP=False):
             conn.commit() 
             curs.close()
             conn.close()
-            s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
+            s1=self.canva.DisplayShape(skv, 'YELLOW', False)
             self.canva.drawList = self.canva.drawList + [[2,id_drill,s1.GetObject(),id_hor,coord_sys,type_drill,x,y,z,dept,name,False]]
             CancelOp(self)
             return
         if self.canva.tmpEdge:
-            self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+            self.canva.Erase(self.canva.tmpEdge)
             self.canva.tmpEdge = None
-        self.canva.tmpEdge = self.canva._3dDisplay.DisplayColoredShape(skv, 'ORANGE', False)
+        self.canva.tmpEdge = self.canva.DisplayShape(skv, 'ORANGE', False)
                 
 def CancelOp(self):
     """ Отмена рисования элементов """
@@ -524,10 +524,10 @@ def CancelOp(self):
     #    self.canva._3dDisplay.Context.CloseLocalContext()
     #    self.canva.isLocalContext = False
     if self.canva.tmpEdge: 
-        self.canva._3dDisplay.Context.Erase(self.canva.tmpEdge)
+        self.canva.Erase(self.canva.tmpEdge)
         self.canva.tmpEdge = None
     if self.canva.gumline_edge:
-        self.canva._3dDisplay.Context.Erase(self.canva.gumline_edge)
+        self.canva.Erase(self.canva.gumline_edge)
         self.canva.gumline_edge=None
     self.canva.MakePLine = False
     self.canva.MakeLine = False
@@ -573,7 +573,7 @@ def Refresh(self):
     # gorLst = [[id_hor, point, h_ledge, description], ...]
     # objLst = ["Бровки", "Тела", "Скважины", "Изолинии", "Отметки","Надписи", "БВР"]
     # Clear display
-    self.canva._3dDisplay.EraseAll()
+    self.canva.EraseAll()
     self.canva.drawList = []
 
     if ("Бровки" in objLst):
@@ -606,8 +606,8 @@ def Refresh(self):
                 #self.msgWin.AppendText(str(pnt) + ", ")
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
             w = plgn.Wire()
-            #s = self.canva._3dDisplay.DisplayColoredShape(w, 'BLUE', False)
-            s=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
+            #s = self.canva.DisplayShape(w, 'BLUE', False)
+            s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
         #print("Бровки=",self.canva.edgeList)
@@ -661,8 +661,8 @@ def Refresh(self):
             #print myFaceProfile, aPrismVec
             myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec).Shape()
             #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
-            s=self.canva._3dDisplay.DisplayColoredShape(myBody, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
-            #s = self.canva._3dDisplay.DisplayColoredShape(myBody, 'BLUE', False)
+            s=self.canva.DisplayShape(myBody, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
+            #s = self.canva.DisplayShape(myBody, 'BLUE', False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[1, id_body, s1, id_hor, point, h_body, id_sort, color, color_fill, False]]
         #print("Тела=",self.canva.drawList)            
@@ -691,7 +691,7 @@ def Refresh(self):
             position = gp_Ax2(gp_Pnt(coord_x, coord_y, coord_z), gp_Dir(0, 0, - 1))
             skv = BRepPrim_Cylinder(position, 0.1, dept)
             skv = skv.Shell()
-            s = self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
+            s = self.canva.DisplayShape(skv, 'YELLOW', False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[2, id_drill_fld, s1, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, dept, name, False]]
             #print [2,id_drill_fld,s1,horiz,coord_system,type_drill,coord_x,coord_y,coord_z,dept,name,False]
@@ -719,7 +719,7 @@ def Refresh(self):
             for pnt in coordsPLine:
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))
             w = plgn.Wire()
-            s = self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
+            s = self.canva.DisplayShape(w, 'GREEN', False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[3, id_topo, s1, heigth, coord_sys, False]]
         #print self.canva.drawList
@@ -761,7 +761,7 @@ def DemoPit(self):
                 edgeUp.Add(gp_Pnt(X, Y, Z))
                 Cnt = Cnt + 1
             edgeUp.Close()
-            self.canva._3dDisplay.DisplayColoredShape(edgeUp.Wire(), 'BLUE', False)
+            self.canva.DisplayShape(edgeUp.Wire(), 'BLUE', False)
             edgeUp = BRepBuilderAPI_MakePolygon()
             D2 = D1 + R - Hust / 2
             for j in range(0, m):
@@ -771,7 +771,7 @@ def DemoPit(self):
                 edgeUp.Add(gp_Pnt(X, Y, Z))
                 Cnt = Cnt + 1
             edgeUp.Close()
-            self.canva._3dDisplay.DisplayColoredShape(edgeUp.Wire(), 'BLUE', False)
+            self.canva.DisplayShape(edgeUp.Wire(), 'BLUE', False)
             self.canva._3dDisplay.DisplayMessage(gp_Pnt(X00 + D2 + 2, Y00, Z), str(Z), False)
         t11 = time.time()        
         print("Число вершин в контурах всех бровок = %f" % (Cnt))
@@ -801,7 +801,7 @@ def LoadDB(self):
         objList = resDict['objList']    # Список типов объектов из БД
         izoLst = resDict['izoLst']     # Диапазон отметок изолиний
         # Clear display
-        self.canva._3dDisplay.EraseAll()
+        self.canva.EraseAll()
         self.canva.drawList = []
 
         if (0 in objList):      # Бровки
@@ -826,7 +826,7 @@ def LoadDB(self):
                     #print pnt
                     plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
                 w = plgn.Wire()
-                s = self.canva._3dDisplay.DisplayColoredShape(w, 'BLUE', False)
+                s = self.canva.DisplayShape(w, 'BLUE', False)
                 s1 = s.GetObject()
                 self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
             #print("Бровки=",self.canva.edgeList)
@@ -879,7 +879,7 @@ def LoadDB(self):
                 #print myFaceProfile, aPrismVec
                 myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec).Shape()
                 #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
-                s = self.canva._3dDisplay.DisplayColoredShape(myBody, 'BLUE', False)
+                s = self.canva.DisplayShape(myBody, 'BLUE', False)
                 s1 = s.GetObject()
                 self.canva.drawList = self.canva.drawList + [[1, id_body, s1, id_hor, point, h_body, id_sort, color, color_fill, False]]
             #print("Тела=",self.canva.drawList)            
@@ -907,7 +907,7 @@ def LoadDB(self):
                 position = gp_Ax2(gp_Pnt(coord_x, coord_y, coord_z), gp_Dir(0, 0, - 1))
                 skv = BRepPrim_Cylinder(position, 0.1, dept)
                 skv = skv.Shell()
-                s = self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
+                s = self.canva.DisplayShape(skv, 'YELLOW', False)
                 s1 = s.GetObject()
                 self.canva.drawList = self.canva.drawList + [[2, id_drill_fld, s1, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, dept, name, False]]
                 #print [2,id_drill_fld,s1,horiz,coord_system,type_drill,coord_x,coord_y,coord_z,dept,name,False]
@@ -933,7 +933,7 @@ def LoadDB(self):
                 for pnt in coordsPLine:
                     plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))
                 w = plgn.Wire()
-                s = self.canva._3dDisplay.DisplayColoredShape(w, 'GREEN', False)
+                s = self.canva.DisplayShape(w, 'GREEN', False)
                 s1 = s.GetObject()
                 self.canva.drawList = self.canva.drawList + [[3, id_topo, s1, heigth, coord_sys, False]]
             #print self.canva.drawList
@@ -1269,8 +1269,8 @@ def Lidar(self):
                             otkos.append(w)
                         else:
                             plosk.append(w)
-            self.canva._3dDisplay.DisplayColoredShape(plosk, 'WHITE', False)                             
-            self.canva._3dDisplay.DisplayColoredShape(otkos, 'GREEN', False)         
+            self.canva.DisplayShape(plosk, 'WHITE', False)                             
+            self.canva.DisplayShape(otkos, 'GREEN', False)         
         
         
             #print "Рисование клеток за ", str(time.time() - sTime), " сек"
@@ -1384,8 +1384,8 @@ def Lidar(self):
             granXYZ.append(granYZ)
             
             #self.SetStatusText(""+str(int(iX/nX*100))+"%", 2)
-                #self.canva._3dDisplay.DisplayColoredShape(edge.Edge(), 'BLUE', False)
-        #self.canva._3dDisplay.DisplayColoredShape(shapes, 'RED', False)
+                #self.canva.DisplayShape(edge.Edge(), 'BLUE', False)
+        #self.canva.DisplayShape(shapes, 'RED', False)
         #fLog.write("granXYZ="+str(granXYZ)+"\n")
         #print "Нашли границы за ", str(time.time() - sTime), " сек " , iPnt, " точек"
 
@@ -1474,7 +1474,7 @@ def Lidar(self):
                         cntPnt = cntPnt + 1
                 w = plgn.Wire()                # Преобразование полигона в каркас
                 shapes.append(w)        # Добавили каркас в список форм для отрисовки
-        self.canva._3dDisplay.DisplayColoredShape(shapes, 'BLUE', False)     # Рисование форм на экране синим цветом  
+        self.canva.DisplayShape(shapes, 'BLUE', False)     # Рисование форм на экране синим цветом  
         
         sumErrP = sumErrP/cntPnt 
         sumErrZ = sumErrZ/cntPnt   
@@ -1515,7 +1515,7 @@ def Etalon(self):
                 edgeDn.Add(gp_Pnt(X, Y, zDn))
                 Cnt = Cnt + 1
             edgeDn.Close()
-            self.canva._3dDisplay.DisplayColoredShape(edgeDn.Wire(), 'GREEN', False)
+            self.canva.DisplayShape(edgeDn.Wire(), 'GREEN', False)
             
             edgeUp = BRepBuilderAPI_MakePolygon()
             for j in range(0, m):
@@ -1525,6 +1525,6 @@ def Etalon(self):
                 edgeUp.Add(gp_Pnt(X, Y, zUp))
                 Cnt = Cnt + 1
             edgeUp.Close()
-            self.canva._3dDisplay.DisplayColoredShape(edgeUp.Wire(), 'GREEN', False)
+            self.canva.DisplayShape(edgeUp.Wire(), 'GREEN', False)
             
         #print "Создали бровки за ", time.time() - startTime, "сек. Число точек = ", Cnt
