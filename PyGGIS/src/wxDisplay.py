@@ -102,6 +102,8 @@ class GraphicsCanva3D(wx.Panel):
         wx.EVT_MOTION(self, self.OnMotion)
         wx.EVT_KEY_DOWN(self,self.OnKeyDown)
 
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+
         self._3dDisplay     = None
         self._inited        = False
         self.DynaZoom       = False
@@ -141,7 +143,7 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        #self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
+        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
         if self.main:
             self._3dDisplay.DisplayTriedron()
             self._3dDisplay.Context.SetTrihedronSize(10.0)

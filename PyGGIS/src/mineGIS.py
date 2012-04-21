@@ -1919,7 +1919,7 @@ class AppFrame(wx.Frame):
         self.canva.ZoomAll()
         self._refreshui()
         '''
-        '''
+
         gridSize=self.stepXY.GetValue()
         if gridSize>0:
             minx, miny = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(0, 0)[:2]
@@ -1940,14 +1940,6 @@ class AppFrame(wx.Frame):
                         self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
                         edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx,y,0),gp_Pnt(maxx,y,0)).Edge()
                         self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
-        '''
-        dc=wx.ClientDC(self)
-        dc.BeginDrawing()
-        dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))##     BLACK_DASHED_PEN ##DOT
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.SetLogicalFunction(wx.COPY)
-        dc.DrawLine(0,0,self.GetSize()[0],self.GetSize()[1])
-        dc.EndDrawing()
 
         return
         print '---==========---'
