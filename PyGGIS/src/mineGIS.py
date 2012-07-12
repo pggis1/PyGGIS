@@ -395,7 +395,9 @@ class AppFrame(wx.Frame):
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
-                ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None]
+                ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None],
+                ['',wx.NewId(),u'Добавить текст',self.OnAddText,None],
+                ['',wx.NewId(),u'Сетка',self.OnShowNet,None]
                 ]
         self.menu_now='main'
         self.tb3 = self.CreateMenu()
@@ -1023,6 +1025,12 @@ class AppFrame(wx.Frame):
 
         # Coord input cyx
         tb.AddSeparator()'''
+        # Ввод текста /broly
+        tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Текст: ', wx.DefaultPosition, wx.DefaultSize, 0))
+        self.textxyz = wx.NewId()
+        self.canva.text = wx.TextCtrl(tb, self.textxyz, "<координаты>", wx.DefaultPosition, (190, 40), 0)
+        tb.AddControl(self.canva.text)
+
         # Ввод координат
         tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Точка: ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.coordXYZ = wx.NewId()
@@ -1941,6 +1949,9 @@ class AppFrame(wx.Frame):
                         edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx,y,0),gp_Pnt(maxx,y,0)).Edge()
                         self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
 
+
+
+
         return
         print '---==========---'
         print 'self.canva.drawList:'
@@ -1957,6 +1968,17 @@ class AppFrame(wx.Frame):
         print self.line_typeList
         print 'self.colorList:'
         print self.colorList
+
+    def OnAddText(self,event):
+        self.canva.EdCmd = CMD_AddText
+
+    def OnShowNet(self,event):
+        print "=_='' не знаю как сохранять объекты в массив, пока что так"
+        for i in range(0,11):
+            edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(i*500-2500, 0-2500, 0), gp_Pnt(i*500-2500, 5000-2500, 0))
+            edge2 = BRepBuilderAPI_MakeEdge(gp_Pnt(0-2500, i*500-2500, 0), gp_Pnt(5000-2500, i*500-2500, 0))
+            self.canva.DisplayShape(edge1.Edge(), 'GREEN')
+            self.canva.DisplayShape(edge2.Edge(), 'GREEN')
 
 
 #====================================================================

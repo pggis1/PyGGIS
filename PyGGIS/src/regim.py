@@ -65,6 +65,9 @@ CMD_EdBrSelB    = 108
 CMD_EdBrCutE    = 109
 CMD_EdBrMoveP   = 110
 CMD_EdBrMerge   = 111
+CMD_AddText     = 112
+
+CurrentText     = "<координаты>"
 #CMD_EdBr????    = 108
 POSTGR_DBN     =   u'postgres'
 POSTGR_USR     =   u'postgres'

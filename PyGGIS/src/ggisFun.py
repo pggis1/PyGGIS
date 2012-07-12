@@ -305,7 +305,7 @@ def CEdit(self):
 def Coord_yes(self,drawP=False,closeP=False):
     """ Ввод координат из окна Point от кнопки или мыши """
     Z = float(self.canva.coordZ.GetValue())
-    coordStr = self.canva.coord.GetValue()
+   # coordStr = self.canva.text.GetValue()
     #print(coordStr)
     if self.canva.MakePLine:
         # PolyLine
