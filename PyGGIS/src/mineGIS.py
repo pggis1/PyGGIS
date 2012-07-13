@@ -1975,35 +1975,36 @@ class AppFrame(wx.Frame):
 
 
     def OnShowNet(self,event):
-
-        if Net_DoOnce==0:
+        ListEdges = []
+        if self.canva.Net_DoOnce==0:
             List = []
             for i in range(0,11):
                 edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(i*500-2500, 0-2500, 0), gp_Pnt(i*500-2500, 5000-2500, 0))
                 edge2 = BRepBuilderAPI_MakeEdge(gp_Pnt(0-2500, i*500-2500, 0), gp_Pnt(5000-2500, i*500-2500, 0))
                 List.append(edge1)
-            Net_rev=1
+                List.append(edge2)
+            self.canva.Net_rev=1
+            self.canva.Net_DoOnce = 1
 
         z=0
-        if Net_rev:
+        if self.canva.Net_rev:
+            print "creating NET"
+            self.canva.Net_rev = 0
+            for i in range(0,22):
 
-            for i in range(0,11):
-                edge1=List[z]
-                self.canva.DisplayShape(edge1.Edge(), 'GREEN')
-                z=z+1
-                edge2=List[z]
-                z=z+1
-                self.canva.DisplayShape(edge2.Edge(), 'GREEN')
+                edge1=List[i]
+                redge=self.canva.DisplayShape(edge1.Edge(), 'GREEN')
+                ListEdges.append(redge)
+
         else:
+            self.canva.Net_rev = 1
+            print "destroing NET"
+            for i in range(0,22):
 
-            for i in range(0,11):
-                edge1=List[z]
-                self.canva.Erase(edge1.Edge())
-                z=z+1
-                edge2=List[z]
-                z=z+1
-                self.canva.Erase(edge2.Edge())
-        Net_rev = not Net_rev
+                redge=ListEdges[i]
+                self.canva.Erase(redge)
+
+        #self.canva.Net_rev = not self.canva.Net_rev#
 
 
 
