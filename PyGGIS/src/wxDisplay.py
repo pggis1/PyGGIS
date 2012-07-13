@@ -131,6 +131,9 @@ class GraphicsCanva3D(wx.Panel):
         self.tempPointIndex = None # Временый индекс точки
         self.tempPoint      = None # Временная точка
 
+        self.Net_DoOnce = 0
+        self.Net_rev = 0
+
         self.gumline_edge = None
         self.MakePoint = False
 

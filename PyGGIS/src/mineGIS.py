@@ -71,7 +71,7 @@ from regim import *
 from utils import *
 from ggisFun import *
 
-VERSION = "for_pyOCE_0.5"
+VERSION = "Edited by Broly..."
 
 def CreateMaskedBitmap(fname, h=16, w=16):
     '''Ceate a masked bitmap where the mask colour is pink.'''
@@ -1972,13 +1972,39 @@ class AppFrame(wx.Frame):
     def OnAddText(self,event):
         self.canva.EdCmd = CMD_AddText
 
+
+
     def OnShowNet(self,event):
-        print "=_='' не знаю как сохранять объекты в массив, пока что так"
-        for i in range(0,11):
-            edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(i*500-2500, 0-2500, 0), gp_Pnt(i*500-2500, 5000-2500, 0))
-            edge2 = BRepBuilderAPI_MakeEdge(gp_Pnt(0-2500, i*500-2500, 0), gp_Pnt(5000-2500, i*500-2500, 0))
-            self.canva.DisplayShape(edge1.Edge(), 'GREEN')
-            self.canva.DisplayShape(edge2.Edge(), 'GREEN')
+
+        if Net_DoOnce==0:
+            List = []
+            for i in range(0,11):
+                edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(i*500-2500, 0-2500, 0), gp_Pnt(i*500-2500, 5000-2500, 0))
+                edge2 = BRepBuilderAPI_MakeEdge(gp_Pnt(0-2500, i*500-2500, 0), gp_Pnt(5000-2500, i*500-2500, 0))
+                List.append(edge1)
+            Net_rev=1
+
+        z=0
+        if Net_rev:
+
+            for i in range(0,11):
+                edge1=List[z]
+                self.canva.DisplayShape(edge1.Edge(), 'GREEN')
+                z=z+1
+                edge2=List[z]
+                z=z+1
+                self.canva.DisplayShape(edge2.Edge(), 'GREEN')
+        else:
+
+            for i in range(0,11):
+                edge1=List[z]
+                self.canva.Erase(edge1.Edge())
+                z=z+1
+                edge2=List[z]
+                z=z+1
+                self.canva.Erase(edge2.Edge())
+        Net_rev = not Net_rev
+
 
 
 #====================================================================
