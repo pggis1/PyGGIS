@@ -71,6 +71,7 @@ import os.path
 import sys
 import wx
 import types
+import sdxf
 
 # --------------------------------------------------
 try:
@@ -136,6 +137,10 @@ class GraphicsCanva3D(wx.Panel):
 
         self.gumline_edge = None
         self.MakePoint = False
+
+        self.DXF_stream = sdxf.Drawing() # Поток для DXF файла
+
+
 
         if sys.platform=='win32':
             self.Init3dViewer()
@@ -247,7 +252,8 @@ class GraphicsCanva3D(wx.Panel):
 
             #print '---==========---'
             #self._3dDisplay.DisplayMessage(mousexyz,". ["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]") # /(c) Broly
-            self._3dDisplay.DisplayMessage(mousexyz,CurrentText) # /(c) Broly
+            self._3dDisplay.DisplayMessage(mousexyz,CurrentText)
+            self.DXF_stream.append(sdxf.Text(CurrentText,point=(xt,yt,zt)))# /(c) Broly
 
         self.worldPt = resPnt
         # Обслуживание привязок

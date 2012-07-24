@@ -70,6 +70,7 @@ import psycopg2
 from regim import *
 from utils import *
 from ggisFun import *
+import sdxf
 
 VERSION = "Edited by Broly..."
 
@@ -397,7 +398,8 @@ class AppFrame(wx.Frame):
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
                 ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None],
                 ['',wx.NewId(),u'Добавить текст',self.OnAddText,None],
-                ['',wx.NewId(),u'Сетка',self.OnShowNet,None]
+                ['',wx.NewId(),u'Сетка',self.OnShowNet,None],
+                ['',wx.NewId(),u'save as DXF (WIP)',self.OnSaveDXF,None]
                 ]
         self.menu_now='main'
         self.tb3 = self.CreateMenu()
@@ -2005,6 +2007,13 @@ class AppFrame(wx.Frame):
                 self.canva.Erase(redge)
 
         #self.canva.Net_rev = not self.canva.Net_rev#
+
+    def OnSaveDXF(self,event):
+        print "hey, a now I saving a DXF file..."
+        '''
+        DXF_stream.append(sdxf.Line(points=[(0,0,0),(1,1,1)]))'''
+        frame.canva.DXF_stream.saveas('file.dxf')
+        # Early WIP
 
 
 
