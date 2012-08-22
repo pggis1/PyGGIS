@@ -28,6 +28,9 @@ from scipy import linalg
 
 from OCC.TColgp import *
 from OCC.GeomAPI import *
+from random import *
+
+W = WichmannHill()
 
 def GetRowsTbl(tableName, where=""):
     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
