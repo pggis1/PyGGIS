@@ -151,7 +151,7 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
+        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgDGray.bmp"))
         if self.main:
             self._3dDisplay.DisplayTriedron()
             self._3dDisplay.Context.SetTrihedronSize(10.0)
@@ -224,6 +224,37 @@ class GraphicsCanva3D(wx.Panel):
         self.startPt = evt.GetPosition()
         xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(self.startPt.x, self.startPt.y) #, Xw,Yw,Zw
         resPnt = [xt,yt,zt]
+        if self.EdCmd == CMD_MakePoly:
+            mousexyz = gp_Pnt(xt,yt,zt) # (c) Broly
+            CurrentText=self.frame.canva.text.GetValue()
+            CurrentPoly = CurrentPoly + [xt,yt,zt]
+            print CurrentText
+
+
+            aUnicode = u' 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮйцукенгшщзхъфывапролджэячсмитьбю-+=~!@#$%^&*()_+{}[]:;"<>,./?|'
+            aASCII   =  ' 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzYCYKENJWW3XbFIBANPOLDGER4CMNTb6Jycykenrww3xbfivanpoldjej4cmitb6u-+=~!@#$%^&*()_+{}[]:;"<>,./?|'
+            ASCIIRes = '';
+
+            for Cnt in range(0,len(CurrentText)):
+                for Ctt in range(len(aUnicode)):
+                    if CurrentText[Cnt]==aUnicode[Ctt]:
+                        ASCIIRes=ASCIIRes+aASCII[Ctt]
+
+            CurrentText = ASCIIRes;
+            CurrentText=CurrentText.replace("<XYZ>","["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]")
+            CurrentText=CurrentText.replace("<koopdinati>","["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]")
+            CurrentText=CurrentText.replace("<XY>","["+str(trunc(xt))+"; "+str(trunc(yt))+"]")
+            CurrentText=CurrentText.replace("<XZ>","["+str(trunc(xt))+"; "+str(trunc(zt))+"]")
+            CurrentText=CurrentText.replace("<YZ>","["+str(trunc(yt))+"; "+str(trunc(zt))+"]")
+            CurrentText=CurrentText.replace("<X>","["+str(trunc(xt))+"]")
+            CurrentText=CurrentText.replace("<Y>","["+str(trunc(yt))+"]")
+            CurrentText=CurrentText.replace("<Z>","["+str(trunc(zt))+"]")
+            CurrentText='. '+CurrentText
+
+            #print '---==========---'
+            #self._3dDisplay.DisplayMessage(mousexyz,". ["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]") # /(c) Broly
+            self._3dDisplay.DisplayMessage(mousexyz,CurrentText)
+
         if self.EdCmd == CMD_AddText:
             mousexyz = gp_Pnt(xt,yt,zt) # (c) Broly
             CurrentText=self.frame.canva.text.GetValue()
@@ -973,7 +1004,7 @@ class GraphicsCanva3D(wx.Panel):
             return
         dc = wx.ClientDC(self)
         dc.BeginDrawing()
-        dc.SetPen(wx.Pen(wx.WHITE, 1, wx.DOT))
+        dc.SetPen(wx.Pen(wx.BLUE, 1, wx.DOT))
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
         dc.SetLogicalFunction(wx.XOR)
         if self._drawbox:
