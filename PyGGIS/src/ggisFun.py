@@ -17,9 +17,274 @@ from liblas import *
 import os, time
 from math import *
 #from inpLAS import *
-from random import random
+from random import *
 
 from OCC.Quantity import Quantity_Color
+
+W = WichmannHill()
+
+
+def Distance(Point1,Point2):
+    return hypot(Point2[0]-Point1[0],Point2[1]-Point1[1])
+
+def NoisePoly2D(Poly,Seed):
+    for i in range(len(Poly)-1):
+        Poly[i][0]=Poly[i][0]+W.random()*Seed
+        Poly[i][1]=Poly[i][1]+W.random()*Seed
+    return Poly
+
+def NoisePoly3D(Poly,Seed):
+    for i in range(len(Poly)-1):
+        Poly[i][0]=Poly[i][0]+W.random()*Seed
+        Poly[i][1]=Poly[i][1]+W.random()*Seed
+        Poly[i][2]=Poly[i][2]+W.random()*Seed
+    Poly[-1]=Poly[0]
+    return Poly
+
+def PointOnLine(Line, Offset):
+
+    """
+
+    """
+    X1 = Line[0][0]
+    X2 = Line[1][0]
+    Y1 = Line[0][1]
+    Y2 = Line[1][1]
+    Z1 = Line[0][2]
+    Z2 = Line[1][2]
+    X = X1
+    Y = Y1
+    Z = Z1
+    if (X2 - X1) != 0:
+        X = Offset*(X2-X1)+X1
+        Y = (X - X1)*(Y2 - Y1)/(X2 - X1) + Y1
+        Z = (X - X1)*(Z2 - Z1)/(X2 - X1) + Z1
+    else:
+        if (Y2 - Y1) != 0:
+            Y = Offset*(Y2-Y1)+Y1
+            X = (Y - Y1)*(X2 - X1)/(Y2 - Y1) + X1
+            Z = (X - X1)*(Z2 - Z1)/(X2 - X1) + Z1
+        else:
+            if (Z2 - Z1) != 0:
+                Z = Offset*(Z2-Z1)+Z1
+                Y = (Z - Z1)*(Y2 - Y1)/(Z2 - Z1) + Y1
+                X = (Z - Z1)*(X2 - X1)/(Z2 - Z1) + X1
+    return [X,Y,Z]
+    '''
+    X = Offset*abs(X2-X1)+X1
+    Y = ((X-X1)*(Y2-Y1))/(X2-X1)+Y1
+    '''
+
+
+    '''
+    x1 = Line[0][0]
+    y1 = Line[0][1]
+    z1 = Line[0][2] # unused
+
+    x2 = Line[1][0]
+    y2 = Line[1][1]
+    z2 = Line[1][2] # unused
+    Mode = 0
+
+    if (Offset<0):
+        Mode = 1
+        Offset = -Offset
+
+    if (Offset>=1 or Offset<=0):
+        print "PointOnLine ERROR: Offset value must be in [0..1] exclusivly"
+        pass
+    if ((y2-y1) != 0) and ((x2-x1)!=0):
+        a = atan(abs((y2-y1)/(x2-x1)))
+    else:
+        print "PointOnLine ERROR: Wrong line"
+        pass
+    if (x2>x1) and (y2>y1):
+        sc = 1.0
+        ss = 1.0
+
+    if (x2<x1) and (y2>y1):
+        sc = -1.0
+        ss = 1.0
+
+    if (x2>x1) and (y2<y1):
+        sc = 1.0
+        ss = -1.0
+
+    if (x1<x1) and (y2<y1):
+        sc = -1.0
+        ss = -1.0
+    a = atan(abs(abs(y2-y1)/abs(x2-x1)))
+    TGA = abs(abs(y2-y1)/abs(x2-x1))
+    COSA = sqrt(1/(1+TGA*TGA))
+    SINA = sqrt(1-COSA*COSA)
+    p = Offset*Distance(Line[0],Line[1])
+    if (Mode==0):
+        x01 = x1 + sc*COSA*p
+        y01 = y1 + ss*SINA*p
+    else:
+        x01 = x2 - sc*COSA*p
+        y01 = y2 - ss*SINA*p
+
+    return [x01,y01,z1]
+    '''
+
+def EdgeSmooth3D(Poly, Percent):
+    IPoly = []
+    if Poly[0]!=Poly[-1]:
+        IPoly = IPoly + [Poly[0]]
+        for i in range(1,len(Poly)-1):
+            '''
+            x0 = Poly[i][0]
+            y0 = Poly[i][1]
+            x1 = Poly[i-1][0]
+            y1 = Poly[i-1][1]
+            x2 = Poly[i+1][0]
+            y2 = Poly[i+1][1]
+            z1 = Poly[i-1][2]
+            z2 = Poly[i+1][2]
+            '''
+            p01 = PointOnLine([Poly[i],Poly[i-1]], Percent)
+            p02 = PointOnLine([Poly[i],Poly[i+1]], Percent)
+            IPoly = IPoly + [p01] + [p02]
+        IPoly = IPoly + [Poly[len(Poly)-1]]
+    else:
+        del Poly[-1]
+        p01 = PointOnLine([Poly[0],Poly[-1]], Percent)
+        p02 = PointOnLine([Poly[0],Poly[1]], Percent)
+        IPoly = IPoly + [p01] + [p02]
+        for i in range(0,len(Poly)-1):
+            '''
+            x0 = Poly[i][0]
+            y0 = Poly[i][1]
+            x1 = Poly[i-1][0]
+            y1 = Poly[i-1][1]
+            x2 = Poly[i+1][0]
+            y2 = Poly[i+1][1]
+            z1 = Poly[i-1][2]
+            z2 = Poly[i+1][2]
+            '''
+            p01 = PointOnLine([Poly[i],Poly[i-1]], Percent)
+            p02 = PointOnLine([Poly[i],Poly[i+1]], Percent)
+            IPoly = IPoly + [p01] + [p02]
+        IPoly[-1]=IPoly[0]
+    return IPoly
+
+def EdgeOptimize(Poly,Dist):
+    i=0
+    while i<len(Poly)-1:
+        if distance2d(Poly[i],Poly[i+1])<=Dist:
+            del Poly[i+1]
+        i=i+1
+    return Poly
+
+def EdgeSmooth(Poly,Percent):
+    IPoly = []
+    IPoly = IPoly + [Poly[0]]
+    s1c = 1.0
+    s1s = 1.0
+    s2c = 1.0
+    s2s = 1.0
+    i = 1
+    #if Percent>50:
+    #    print "Invalid percent value"
+    #    pass
+    while (i<len(Poly)-2):
+        if (Poly[i]==Poly[i+1]):
+            del Poly[i]
+        i=i+1
+    if (Poly[0]==Poly[len(Poly)-1]):
+        Poly = Poly + [Poly[0]]
+    for i in range(1,len(Poly)-1):
+
+        x0 = Poly[i][0]
+        y0 = Poly[i][1]
+        x1 = Poly[i-1][0]
+        y1 = Poly[i-1][1]
+        x2 = Poly[i+1][0]
+        y2 = Poly[i+1][1]
+        z1 = Poly[i-1][2]
+        z2 = Poly[i+1][2]
+        x01 = x1
+        y01 = y1
+        y02 = y2
+        x02 = x2
+        #p = Distance([x1,y1,0],[x2,y2,0])*(Percent/100)
+        p = Percent
+        #print p
+        if (abs(x0-x1)>p*2 and abs(y0-y1)>p*2 and abs(x0-x2)>p*2 and abs(y0-y2)>p*2):
+            a1=0
+            a2=0
+            if ((y1-y0) != 0) and ((x1-x0)!=0):
+                a1 = atan(abs(abs(y1-y0)/abs(x1-x0)))
+            if ((y2-y0) != 0) and ((x2-x0)!=0):
+                a2 = atan(abs(abs(y2-y0)/abs(x2-x0)))
+
+
+            if (x1>x0) and (y1>y0):
+                s1c = 1.0
+                s1s = 1.0
+
+            if (x1<x0) and (y1>y0):
+                s1c = -1.0
+                s1s = 1.0
+
+            if (x1>x0) and (y1<y0):
+                s1c = 1.0
+                s1s = -1.0
+
+            if (x1<x0) and (y1<y0):
+                s1c = -1.0
+                s1s = -1.0
+
+
+            if (x2>x0) and (y2>y0):
+                s2c = 1.0
+                s2s = 1.0
+
+            if (x2<x0) and (y2>y0):
+                s2c = -1.0
+                s2s = 1.0
+
+            if (x2>x0) and (y2<y0):
+                s2c = 1.0
+                s2s = -1.0
+
+            if (x2<x0) and (y2<y0):
+                s2c = -1.0
+                s2s = -1.0
+            x01 = x0 + s1c*cos(a1)*p
+            y01 = y0 + s1s*sin(a1)*p
+            x02 = x0 + s2c*cos(a2)*p
+            y02 = y0 + s2s*sin(a2)*p
+
+            '''
+            x01 = x0 + s1c*p
+            y01 = y0 + s1s*p
+            x02 = x0 + s2c*p
+            y02 = y0 + s2s*p
+            '''
+            IPoly = IPoly + [[x01,y01,z1]] + [[x02,y02,z2]]
+        else:
+            IPoly = IPoly + [[x01,y01,z1]]
+
+    IPoly = IPoly + [Poly[len(Poly)-1]]
+    if Poly[0]==Poly[len(Poly)-1]:
+        IPoly = IPoly
+    '''
+    for i in range(len(Poly)-1):
+        if (i>=len(Poly)-1):
+            break
+        if IPoly[i]==IPoly[i-1]:
+            IPoly.remove(i)
+    '''
+    i=1
+    while (i<len(IPoly)-3):
+        if (IPoly[i]==IPoly[i+1]):
+            del Poly[i]
+        if (Distance(IPoly[i],IPoly[i+1])>Distance(IPoly[i],IPoly[i+2])):
+            del IPoly[i+1]
+        i=i+1
+    return IPoly
 
 def SaveProt(self):
     """ Сохранение протокола в файле """
@@ -432,7 +697,7 @@ def Coord_yes(self,drawP=False,closeP=False):
 
         #
         self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())           # Удалить старый
-        plgn = BRepBuilderAPI_MakePolygon()             		  # Построить новый
+        plgn = BRepBuilderAPI_MakePolygon()                 	  # Построить новый
         for pnt1 in newPnts:
             plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
             #if closeP:
@@ -542,6 +807,7 @@ def CancelOp(self):
     self._refreshui()
 
 def Refresh(self):
+
     self.msgWin.AppendText("Загрузка из базы данных\n")
     objLst = []
     for i in range(len(self.objList)):
@@ -563,6 +829,7 @@ def Refresh(self):
             gorLst = gorLst + [self.horIds[i]]
             setHorIds = setHorIds + str(self.horIds[i][0]) + ","
     setHorIds = setHorIds[: - 1] + ")"
+
     if gorLst:
         self.msgWin.AppendText("Заданы горизонты базы данных:" +  setHorIds + " -\n" +
                                str(gorLst) + "\n")
@@ -576,6 +843,8 @@ def Refresh(self):
     self.canva.EraseAll()
     self.canva.drawList = []
 
+    for i in range(len(self.horList)):
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(0,0,float(self.horList[i])),'.hrz '+self.horList[i])
     if ("Бровки" in objLst):
         self.SetStatusText("Бровки", 2)
         conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
@@ -600,14 +869,37 @@ def Refresh(self):
             clrBlue = clr[1]
             clrGreen = clr[2]
             plgn = BRepBuilderAPI_MakePolygon()
+            #cp = EdgeSmooth(coordsPLine,250)
+
+            cp = coordsPLine
+            cp = EdgeOptimize(cp,50)
+            cp = EdgeOptimize(cp,50)
+            cp = EdgeOptimize(cp,50)
+            cp = EdgeOptimize(cp,50)
+            cp = EdgeOptimize(cp,50)
+            cp = EdgeSmooth(cp,200)
+            cp = EdgeSmooth(cp,100)
+            cp = EdgeSmooth(cp,50)
+            cp = EdgeSmooth(cp,25)
+            #cp = NoisePoly2D(cp,50)
+            #cp = coordsPLine
+            coordsPLine = cp
+
             for pnt in coordsPLine:
                 if len(pnt) < 3:
                     pnt = pnt + [point]
                 #self.msgWin.AppendText(str(pnt) + ", ")
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
+                #self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. ['+str(trunc(pnt[0]))+'; '+str(trunc(pnt[1]))+'; '+str(trunc(pnt[2]))+']')
             w = plgn.Wire()
             #s = self.canva.DisplayShape(w, 'BLUE', False)
-            s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
+            #s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
+            if pnt[2]<0:
+                cc=0.2
+            if pnt[2]>0:
+                cc=0.6
+            QC = OCC.Quantity.Quantity_Color(0.1+cc, 0.8-cc, 0.1+cc, 0)
+            s=self.canva.DisplayShape(w, QC, False)
             s1 = s.GetObject()
             self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
         #print("Бровки=",self.canva.edgeList)
@@ -731,6 +1023,112 @@ def Refresh(self):
 
     if ("Надписи" in objLst):
         pass
+
+    # съезды
+
+    Points = [[[-1174,1294,250],[5,1458,250]], [[-1096,1012,200],[-80,1176,200]], [[-1116,698,160],[-256,973,160]], [[-895,551,120],[-243,811,120]], [[-748,412,80],[413,541,80]], [[-731,-157,20],[-582,169,80]], [[-183,-347,-60],[-233,-305,-60]]]
+    '''
+    Randoms = []
+
+    for i in range(4):
+        Randoms.append(abs(W.random()))
+    plgn = BRepBuilderAPI_MakePolygon()
+    for i in range(4):
+        P = PointOnLine(Points[i],Randoms[i]-0.1)
+        plgn.Add(gp_Pnt(P[0], P[1], P[2]))
+        pnt = Points[i][0]
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. ['+str(trunc(pnt[0]))+'; '+str(trunc(pnt[1]))+'; '+str(trunc(pnt[2]))+']')
+        pnt = Points[i][1]
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. ['+str(trunc(pnt[0]))+'; '+str(trunc(pnt[1]))+'; '+str(trunc(pnt[2]))+']')
+    w = plgn.Wire()
+    s=self.canva.DisplayShape(w, "GREEN", False)
+    plgn = BRepBuilderAPI_MakePolygon()
+    for i in range(4):
+        P = PointOnLine(Points[i],Randoms[i]+0.1)
+        plgn.Add(gp_Pnt(P[0], P[1], P[2]))
+    w = plgn.Wire()
+    s=self.canva.DisplayShape(w, "GREEN", False)
+    '''
+    R = []
+    plgn = BRepBuilderAPI_MakePolygon()
+    P = PointOnLine(Points[0],0.95)
+    R = R + [P]
+    P = PointOnLine(Points[2],0.75)
+    R = R + [P]
+    P = PointOnLine(Points[3],0.60)
+    R = R + [P]
+    P = PointOnLine(Points[4],0.05)
+    R = R + [P]
+    P = PointOnLine(Points[5],0.05)
+    R = R + [P]
+    P = PointOnLine(Points[6],0.1)
+    R = R + [P]
+    SR = EdgeSmooth3D(R,0.3)
+    SR = EdgeSmooth3D(SR,0.2)
+    SR = EdgeSmooth3D(SR,0.1)
+    for i in range(len(SR)):
+        plgn.Add(gp_Pnt(SR[i][0], SR[i][1], SR[i][2]))
+    #pnt = Points[i][0]
+    w = plgn.Wire()
+    s=self.canva.DisplayShape(w, "GREEN", False)
+    R = []
+    SR = []
+
+    plgn = BRepBuilderAPI_MakePolygon()
+    P = PointOnLine(Points[0],0.99)
+    R = R + [P]
+    P = PointOnLine(Points[2],0.79)
+    R = R + [P]
+    P = PointOnLine(Points[3],0.66)
+    R = R + [P]
+    P = PointOnLine(Points[4],0.09)
+    R = R + [P]
+    P = PointOnLine(Points[5],0.19)
+    R = R + [P]
+    P = PointOnLine(Points[6],0.9)
+    R = R + [P]
+    SR = EdgeSmooth3D(R,0.3)
+    SR = EdgeSmooth3D(SR,0.2)
+    SR = EdgeSmooth3D(SR,0.1)
+
+    for i in range(len(SR)):
+        plgn.Add(gp_Pnt(SR[i][0], SR[i][1], SR[i][2]))
+    w = plgn.Wire()
+    s=self.canva.DisplayShape(w, "GREEN", False)
+
+    p = 0.01
+    '''
+    for i in range(len(Points)):
+        pnt = Points[i][0]
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. A ['+str(trunc(pnt[0]))+'; '+str(trunc(pnt[1]))+'; '+str(trunc(pnt[2]))+']')
+        pnt = Points[i][1]
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. B ['+str(trunc(pnt[0]))+'; '+str(trunc(pnt[1]))+'; '+str(trunc(pnt[2]))+']')
+
+    for i in range(len(Points)):
+        p = 0.01
+        while (p<1):
+            pnt = PointOnLine(Points[i],p)
+            #self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. ['+str(trunc(pnt[0]))+'; '+str(trunc(pnt[1]))+'; '+str(trunc(pnt[2]))+']')
+            self.canva._3dDisplay.DisplayMessage(gp_Pnt(pnt[0],pnt[1],pnt[2]),'. P')
+            p = p + 0.05
+    '''
+    #for i in range(4)
+
+    '''
+    a = [[50, 1215, 245],[52, 169, 3]]
+    b = DoubleLine(a,3)
+
+    plgn = BRepBuilderAPI_MakePolygon()
+    plgn.Add(gp_Pnt(b[0][0], b[0][1], b[0][2]))
+    plgn.Add(gp_Pnt(b[1][0], b[1][1], b[1][2]))
+    w = plgn.Wire()
+    s=self.canva.DisplayShape(w, "GREEN", False)
+    plgn = BRepBuilderAPI_MakePolygon()
+    plgn.Add(gp_Pnt(b[2][0], b[2][1], b[2][2]))
+    plgn.Add(gp_Pnt(b[3][0], b[3][1], b[3][2]))
+    w = plgn.Wire()
+    s=self.canva.DisplayShape(w, "GREEN", False)
+    '''
     pass
 
 def DemoPit(self):
@@ -783,6 +1181,7 @@ def DemoPit(self):
         
 def LoadDB(self):
         """ Загрузка элементов из базы данных PostGIS """
+        print "TESTING"
         dlg = LoadDlg(self, - 1, "Диалог загрузки БД")
         dlg.CenterOnScreen()
         dlg.ShowModal()
@@ -803,6 +1202,8 @@ def LoadDB(self):
         # Clear display
         self.canva.EraseAll()
         self.canva.drawList = []
+        #self._3dDisplay.DisplayMessage(mousexyz,CurrentText)
+
 
         if (0 in objList):      # Бровки
             self.SetStatusText("Бровки", 2)
@@ -826,7 +1227,7 @@ def LoadDB(self):
                     #print pnt
                     plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
                 w = plgn.Wire()
-                s = self.canva.DisplayShape(w, 'BLUE', False)
+                s = self.canva.DisplayShape(w, 'GREEN', False)
                 s1 = s.GetObject()
                 self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
             #print("Бровки=",self.canva.edgeList)
@@ -1269,7 +1670,7 @@ def Lidar(self):
                             otkos.append(w)
                         else:
                             plosk.append(w)
-            self.canva.DisplayShape(plosk, 'WHITE', False)                             
+            self.canva.DisplayShape(plosk, 'WHITE', False)
             self.canva.DisplayShape(otkos, 'GREEN', False)         
         
         
