@@ -71,8 +71,93 @@ from regim import *
 from utils import *
 from ggisFun import *
 import sdxf
+from random import *
 
 VERSION = "Edited by Broly..."
+
+W = WichmannHill()
+
+def Srch(list,item,start):
+    for i in range(start,len(list)):
+        if list[i]==item:
+            return i
+    return -1
+# Функция сглаживания полилинии
+# Poly - массив точек полилини, p - порог сглаживания
+# Результат функции равен двойному количеству точек минус 2
+# Будьде внимательны: порог не должен превышать разность соседних координат
+# (C) By Broly
+def EdgeSmooth(Poly,p):
+    IPoly = []
+    IPoly = IPoly + [Poly[0]]
+    s1c = 1.0
+    s1s = 1.0
+    s2c = 1.0
+    s2s = 1.0
+    for i in range(1,len(Poly)-1):
+        x0 = Poly[i][0]
+        y0 = Poly[i][1]
+        x1 = Poly[i-1][0]
+        y1 = Poly[i-1][1]
+        x2 = Poly[i+1][0]
+        y2 = Poly[i+1][1]
+        a1 = atan(abs(abs(y1-y0)/abs(x1-x0)))
+        a2 = atan(abs(abs(y2-y0)/abs(x2-x0)))
+
+
+        if (x1>x0) and (y1>y0):
+            s1c = 1.0
+            s1s = 1.0
+
+        if (x1<x0) and (y1>y0):
+            s1c = -1.0
+            s1s = 1.0
+
+        if (x1>x0) and (y1<y0):
+            s1c = 1.0
+            s1s = -1.0
+
+        if (x1<x0) and (y1<y0):
+            s1c = -1.0
+            s1s = -1.0
+
+
+        if (x2>x0) and (y2>y0):
+            s2c = 1.0
+            s2s = 1.0
+
+        if (x2<x0) and (y2>y0):
+            s2c = -1.0
+            s2s = 1.0
+
+        if (x2>x0) and (y2<y0):
+            s2c = 1.0
+            s2s = -1.0
+
+        if (x2<x0) and (y2<y0):
+            s2c = -1.0
+            s2s = -1.0
+
+        x01 = x0 + s1c*cos(a1)*p
+        y01 = y0 + s1s*sin(a1)*p
+        x02 = x0 + s2c*cos(a2)*p
+        y02 = y0 + s2s*sin(a2)*p
+
+        '''
+        x01 = x0 + s1c*p
+        y01 = y0 + s1s*p
+        x02 = x0 + s2c*p
+        y02 = y0 + s2s*p
+        '''
+        IPoly = IPoly + [[x01,y01,0]] + [[x02,y02,0]]
+    IPoly = IPoly + [Poly[len(Poly)-1]]
+    for i in range(len(Poly)-1):
+        if (i>=len(Poly)-1):
+            break
+        if IPoly[i]==IPoly[i-1]:
+            IPoly.remove(i)
+    return IPoly
+
 
 def CreateMaskedBitmap(fname, h=16, w=16):
     '''Ceate a masked bitmap where the mask colour is pink.'''
@@ -179,6 +264,8 @@ def YesNo(parent, question, caption='Yes or No?'):
 
 class AppFrame(wx.Frame):
     def __init__(self, parent):
+        self.CurrentEffect = 0
+        self.EffectList = [["шум",self.OnNoise],["сгладить",self.OnSmooth],["оптимиз.",self.OnOptimize],["цвет",self.OnColorChange]]
         """
 
         """
@@ -399,7 +486,17 @@ class AppFrame(wx.Frame):
                 ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None],
                 ['',wx.NewId(),u'Добавить текст',self.OnAddText,None],
                 ['',wx.NewId(),u'Сетка',self.OnShowNet,None],
-                ['',wx.NewId(),u'save as DXF (WIP)',self.OnSaveDXF,None]
+                ['',wx.NewId(),u'save as DXF (WIP)',self.OnSaveDXF,None],
+                ['',wx.NewId(),u'load DXF (WIP)',self.OnLoadDXF,None],
+                #['',wx.NewId(),u'Test interpolator',self.TestIntpl,None],
+                ['',wx.NewId(),u'Выбрать эффект',self.OnChangeEffect,None,"cheff"],
+                ['',wx.NewId(),u'-',self.OnApplyEffect,None,"apeff"],
+                ['',wx.NewId(),u'get cam',self.OnGetCam,None,"apeff"]
+                #['',wx.NewId(),u'-',self.OnBeginPoly,None,""],
+                #['',wx.NewId(),u'-',self.OnEndPoly,None,""]
+                #['',wx.NewId(),u'Сгладить',self.OnSmooth,None],
+                #['',wx.NewId(),u'Оптимизировать',self.OnOptimize,None],
+                #['',wx.NewId(),u'Шум',self.OnNoise,None],
                 ]
         self.menu_now='main'
         self.tb3 = self.CreateMenu()
@@ -1362,6 +1459,7 @@ class AppFrame(wx.Frame):
 
         dataBox.Add(par2Box,flag=wx.EXPAND)     # Включить в сайзер
         #dataBox.Add((40,10))
+        # Ввод текста /broly
 
 
         panel.SetSizer(dataBox)
@@ -2009,13 +2107,351 @@ class AppFrame(wx.Frame):
         #self.canva.Net_rev = not self.canva.Net_rev#
 
     def OnSaveDXF(self,event):
-        print "hey, a now I saving a DXF file..."
+        p=len(frame.canva.drawList)
+        print "hey, a now I saving a DXF file...\nElements count: ",p
+        print "Saving elements:"
         '''
         DXF_stream.append(sdxf.Line(points=[(0,0,0),(1,1,1)]))'''
+
+        for indexInfo in range(len(self.canva.drawList)):
+            element = self.canva.drawList[indexInfo]
+            print element[2],"appending"
+            s1 = element[2]
+            pnts = getPoints(s1.Shape())
+            #P = []
+            #for idx in range(len(pnts)):
+            #    P = P + [pnts[idx][0],pnts[idx][1],pnts[idx][2]]
+                # pnts[idx] - X,Y,Z of point, lol
+            frame.canva.DXF_stream.append(sdxf.PolyLine(points=pnts,closed=1,color=1))
+            print "comleted"
+        print 'saving as "file.dxf" in current directory'
         frame.canva.DXF_stream.saveas('file.dxf')
-        # Early WIP
+        print "complete!"
+
+        # Early WIP !!!
+    def OnChangeEffect(self,event):
+        for i in range(len(self.buttonMenu)):
+            try:
+                if self.buttonMenu[i][5]=="cheff":
+                    self.CurrentEffect+=1
+                    if self.CurrentEffect>=len(self.EffectList):
+                        self.CurrentEffect=0
+                    self.buttonMenu[i][2] = self.EffectList[self.CurrentEffect][0]+" (->)"
+                    self.buttonMenu[i+1][2] = "Прим. "+self.EffectList[self.CurrentEffect][0]
+                    self.buttonMenu[i+1][3] = self.EffectList[self.CurrentEffect][1]
+                    self.menu_now='main'
+                    #self.tb3 = self.CreateMenu()
+                    self.NavigateMenu()
+                    self._mgr.Update()
+                    break
+            except:
+                pass
 
 
+    def OnApplyEffect(self,event):
+        if CurrentEffect=="":
+            self.SetStatusText("Эффект не выбран", 0)
+
+    def OnGetCam(self,event):
+        print self.canva._3dDisplay.View.Angle
+        pass
+
+    def OnEndPoly(self,event):
+        pass
+
+    ########################################################
+    #
+    #               EFFECTS DECLARATIONS
+    #
+    ########################################################
+
+    def OnNoise(self,event):
+        """ шум """
+        sel_shape = self.canva._3dDisplay.selected_shape
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        indexInfo = None;
+        for i in range(len(self.canva.drawList)):
+            s1 = self.canva.drawList[i][2]
+            if s1:
+                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    indexInfo = i
+                    break
+        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+            return
+        pnts=getPoints(sel_shape)
+        #
+        newpoints=NoisePoly3D(pnts,10)
+        selObj = self.canva._3dDisplay.Context.SelectedInteractive()
+        selColor = None
+        if selObj.GetObject().HasColor():
+            selColor = self.canva._3dDisplay.Context.Color(selObj)
+        self.canva.Erase(selObj)
+        plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
+        for pnt1 in newpoints:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+        w = plgn.Wire()
+        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
+            # Установить цвет, тип,толщину и др.
+        if selColor:
+            self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
+        if indexInfo <> None:
+            oldInfo = self.canva.drawList[indexInfo]
+            oldInfo[2] = newShape.GetObject()
+            oldInfo[5] = True
+            self.canva.drawList[indexInfo] = oldInfo          # Обновить список
+
+
+    def OnColorChange(self,event):
+        """ шум """
+        sel_shape = self.canva._3dDisplay.selected_shape
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        indexInfo = None;
+        for i in range(len(self.canva.drawList)):
+            s1 = self.canva.drawList[i][2]
+            if s1:
+                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    indexInfo = i
+                    break
+        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+            return
+        pnts=getPoints(sel_shape)
+        #
+        newpoints=pnts
+        selObj = self.canva._3dDisplay.Context.SelectedInteractive()
+        selColor = None
+        if selObj.GetObject().HasColor():
+            selColor = self.canva._3dDisplay.Context.Color(selObj)
+        selColor = OCC.Quantity.Quantity_Color(0.5,0.7,0.5,0)
+
+        self.canva.Erase(selObj)
+        plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
+        for pnt1 in newpoints:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+        w = plgn.Wire()
+        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
+        # Установить цвет, тип,толщину и др.
+        if selColor:
+            self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
+        if indexInfo <> None:
+            oldInfo = self.canva.drawList[indexInfo]
+            oldInfo[2] = newShape.GetObject()
+            oldInfo[5] = True
+            self.canva.drawList[indexInfo] = oldInfo          # Обновить список
+
+    def OnSmooth(self,event):
+        """ шум """
+        sel_shape = self.canva._3dDisplay.selected_shape
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        indexInfo = None;
+        for i in range(len(self.canva.drawList)):
+            s1 = self.canva.drawList[i][2]
+            if s1:
+                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    indexInfo = i
+                    break
+        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+            return
+        pnts=getPoints(sel_shape)
+        #
+        newpoints=EdgeSmooth3D(pnts,0.1)
+        selObj = self.canva._3dDisplay.Context.SelectedInteractive()
+        selColor = None
+        if selObj.GetObject().HasColor():
+            selColor = self.canva._3dDisplay.Context.Color(selObj)
+        self.canva.Erase(selObj)
+        plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
+        for pnt1 in newpoints:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+        w = plgn.Wire()
+        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
+        # Установить цвет, тип,толщину и др.
+        if selColor:
+            self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
+        if indexInfo <> None:
+            oldInfo = self.canva.drawList[indexInfo]
+            oldInfo[2] = newShape.GetObject()
+            oldInfo[5] = True
+            self.canva.drawList[indexInfo] = oldInfo          # Обновить список
+
+    def OnOptimize(self,event):
+        """ шум """
+        sel_shape = self.canva._3dDisplay.selected_shape
+        if not sel_shape:
+            self.SetStatusText("Выберите объект и повторите команду", 0)
+            return
+        indexInfo = None;
+        for i in range(len(self.canva.drawList)):
+            s1 = self.canva.drawList[i][2]
+            if s1:
+                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    indexInfo = i
+                    break
+        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+            return
+        pnts=getPoints(sel_shape)
+        #
+        newpoints=EdgeOptimize(pnts,50)
+        selObj = self.canva._3dDisplay.Context.SelectedInteractive()
+        selColor = None
+        if selObj.GetObject().HasColor():
+            selColor = self.canva._3dDisplay.Context.Color(selObj)
+        self.canva.Erase(selObj)
+        plgn = BRepBuilderAPI_MakePolygon()             # Построить новый
+        for pnt1 in newpoints:
+            plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
+        w = plgn.Wire()
+        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
+        # Установить цвет, тип,толщину и др.
+        if selColor:
+            self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
+        if indexInfo <> None:
+            oldInfo = self.canva.drawList[indexInfo]
+            oldInfo[2] = newShape.GetObject()
+            oldInfo[5] = True
+            self.canva.drawList[indexInfo] = oldInfo          # Обновить список
+
+    ########################################################
+    #
+    #             END EFFECTS DECLARATIONS
+    #
+    ########################################################
+
+    def OnLoadDXF(self,event):
+        print "Loading DXF file: 'files.dxf'\nFile loading into memory, please wait."
+        lines = open("file.dxf","r").readlines()
+        print "File successfully loaded. Scanning for polylines..."
+        i=0
+        pc=0
+        pls=[]
+        Scp = 0 # scan mode: 0 - polyline, 1 - vertex, 2 - points
+        while i<len(lines):
+            if lines[i]=="POLYLINE\r\n":
+                verts=[]
+                i=i+1
+                while i<len(lines):
+                    if lines[i]=="VERTEX\r\n":
+                        i=i+1
+                        x="nil"
+                        y="nil"
+                        z="nil"
+                        while i<len(lines):
+                            if lines[i]==" 10\r\n":
+                                x=float(lines[i+1][:-2])
+                            if lines[i]==" 20\r\n":
+                                y=float(lines[i+1][:-2])
+                            if lines[i]==" 30\r\n":
+                                z=float(lines[i+1][:-2])
+                                break
+                            if (lines[i]=="VERTEX\r\n") or (lines[i]=="POLYLINE\r\n") or (lines[i]=="EOF\r\n"):
+                                i=i-1
+                                break
+                            i=i+1
+                        i=i-1
+                        verts=verts+[[x,y,z]]
+
+
+                    if (lines[i]=="POLYLINE\r\n") or (lines[i]=="EOF\r\n"):
+                        i=i-1
+                        break
+                    i=i+1
+                pls=pls+[verts]
+                if (lines[i]=="EOF\r\n"):
+                    break
+            if (lines[i]=="EOF\r\n"):
+                break
+            i=i+1
+        print "Polylines loading success!"
+        print "constructing"
+        plgn = BRepBuilderAPI_MakePolygon()
+        for i in range(30, 50):
+            '''len(pls)'''
+            for j in range(len(pls[i])):
+                plgn.Add(gp_Pnt(pls[i][j][0],pls[i][j][1],pls[i][j][2]))
+            plgn.Add(gp_Pnt(pls[i][j][0],pls[i][j][1],pls[i][j][2]))
+            w = plgn.Wire()
+            s = self.canva.DisplayShape(w, 'GREEN', False)
+            s1 = s.GetObject()
+            self.canva.drawList = self.canva.drawList + [[3, i, s1, 666, 666, False]]
+            plgn.Delete()
+        print "ready"
+        '''
+        plgn = BRepBuilderAPI_MakePolygon()
+        for i in range(len(Lns)):
+            #edge = BRepBuilderAPI_MakeEdge(gp_Pnt(Lns[i][3], Lns[i][5], Lns[i][7]), gp_Pnt(Lns[i][9], Lns[i][11], Lns[i][13]))
+            #self.canva.DisplayShape(edge.Edge(), 'GREEN')
+            plgn.Add(gp_Pnt(Lns[i][3], Lns[i][5], Lns[i][7]))
+            plgn.Add(gp_Pnt(Lns[i][9], Lns[i][11], Lns[i][13]))
+        w = plgn.Wire()
+        s = self.canva.DisplayShape(w, 'GREEN', False)
+        s1 = s.GetObject()
+        self.canva.drawList = self.canva.drawList + [[3, 666, s1, 666, 666, False]]'''
+        print "SUCCESS"
+
+    def TestIntpl(self,event):
+        Line = [[0,0,0],[1000,1000,0]]
+
+
+        plgn = BRepBuilderAPI_MakePolygon()
+        plgn.Add(gp_Pnt(Line[0][0],Line[0][1],Line[0][2]))
+        plgn.Add(gp_Pnt(Line[1][0],Line[1][1],Line[1][2]))
+
+        O = W.random()
+        if (O==1 or O==0):
+            O = W.random()
+        Point = PointOnLine(Line,O)
+        print "Line: ",Line,"\nPoint:",Point
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(Point[0],Point[1],Point[2]),'. here')
+
+        O = -O
+        Point = PointOnLine(Line,O)
+        self.canva._3dDisplay.DisplayMessage(gp_Pnt(Point[0],Point[1],Point[2]),'. here')
+
+        w = plgn.Wire()
+        s = self.canva.DisplayShape(w, 'GREEN', False)
+
+
+    '''
+    def TestIntpl(self,event):
+        Poly = [[0,0,0],[1000,1000,0],[2000,800,0],[2500,0,0],[2300,-800,0],[1500,-1500,0],[1000,-800,0],[-0,-1500,0]]
+        p=10
+
+        IPoly = EdgeSmooth(Poly,200)
+        IPoly = EdgeSmooth(IPoly,100)
+        IPoly = EdgeSmooth(IPoly,50)
+
+        print Poly
+        print IPoly
+
+        print "Poly counter: ",len(Poly)
+        print "IPoly counter: ",len(IPoly)
+
+        plgn = BRepBuilderAPI_MakePolygon()
+        for j in range(len(Poly)):
+            plgn.Add(gp_Pnt(Poly[j][0],Poly[j][1],Poly[j][2]))
+            self.canva._3dDisplay.DisplayMessage(gp_Pnt(IPoly[j][0],IPoly[j][1],IPoly[j][2]),'['+str(IPoly[j][0])+'; '+str(IPoly[j][1])+'; '+str(IPoly[j][2])+']')
+        w = plgn.Wire()
+        s = self.canva.DisplayShape(w, 'GREEN', False)
+
+        plgn = BRepBuilderAPI_MakePolygon()
+        for j in range(len(IPoly)):
+            plgn.Add(gp_Pnt(IPoly[j][0],IPoly[j][1],IPoly[j][2]))
+        w = plgn.Wire()
+        s = self.canva.DisplayShape(w, 'BLUE', False)
+        ''
+        for j in range(len(IPoly)):
+            edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(IPoly[j][0]-20,IPoly[j][1],IPoly[j][2]), gp_Pnt(IPoly[j][0]+20,IPoly[j][1],IPoly[j][2]))
+            self.canva.DisplayShape(edge1.Edge(), 'RED')
+        for j in range(len(IPoly)):
+            edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(IPoly[j][0],IPoly[j][1]-20,IPoly[j][2]), gp_Pnt(IPoly[j][0],IPoly[j][1]+20,IPoly[j][2]))
+            self.canva.DisplayShape(edge1.Edge(), 'RED')
+        ''
+    '''
 
 #====================================================================
 
@@ -2029,11 +2465,12 @@ if __name__ == "__main__":
         frame.Show(True)
         wx.SafeYield()
         frame.canva.Init3dViewer()
+        #frame.canva._3dDisplay.View = V3d_PerspectiveView()
         frame.canva._3dDisplay.View_Iso()
         frame.canva_top.Init3dViewer()
         frame.canva_top._3dDisplay.View_Top()
         frame.canva_front.Init3dViewer()
         frame.canva_front._3dDisplay.View_Front()
-        #frame.pyshell.interp.locals["display"] = frame.canva._3dDisplay
+        frame.pyshell.interp.locals["display"] = frame.canva._3dDisplay
     app.SetTopWindow(frame)
     app.MainLoop()
