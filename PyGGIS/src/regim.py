@@ -6,9 +6,9 @@
 ##
 """ Настройки и константы ГГИС """
 
-MW_SIZE     = (1024,768)        # Размеры главного окна
-CANVAS_SIZE = (300,100)         # Размеры канвы
-HELP_SIZE   = (500,500)         # Размеры окна помощи
+MW_SIZE     = (1024, 768)        # Размеры главного окна
+CANVAS_SIZE = (300, 100)         # Размеры канвы
+HELP_SIZE   = (500, 500)         # Размеры окна помощи
 MNU_OPEN    = ("&Открыть", "Открыть STEP файл")
 MNU_SAVEAS  = ("Сохранить как &картинку\tAlt-I", "Сохраняет текущий экран как картинку.")
 MNU_SCRIPT  = ("Выполнить скрипт", "Выполнить сторонний скрипт в этой сессии.")
@@ -65,6 +65,9 @@ CMD_EdBrSelB    = 108
 CMD_EdBrCutE    = 109
 CMD_EdBrMoveP   = 110
 CMD_EdBrMerge   = 111
+CMD_AddText     = 112
+
+CurrentText     = "<координаты>"
 #CMD_EdBr????    = 108
 POSTGR_DBN     =   u'postgres'
 POSTGR_USR     =   u'postgres'
@@ -109,7 +112,6 @@ menu_titles={
     'start_cut_pline': u'Задание Прирезки',
     'make_cut_query': u'ПодтвердПрирезку',
     'cut_OnEdBrSelB': u'Задание Начала',
-
     'cut_levels': u'Поур.Прирезка',
     'start_cut_levels_pline': u'Задание Прирезки',
 }

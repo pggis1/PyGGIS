@@ -13,18 +13,19 @@ import psycopg2
 import OCC
 from OCC.BRepOffsetAPI import BRepOffsetAPI_MakeOffset
 from OCC.GeomAbs import GeomAbs_Arc
-#from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
+from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
 #from OCC.AIS import AIS_Shape
 from OCC.BRepBuilderAPI import *
 from OCC.gp import *
 from regim import *
 #import OCC.KBE
-#from OCC.KBE.TypesLookup import ShapeToTopology
-from OCC.KBE.types_lut import ShapeToTopology
 from utils import *
 from math import *
 from scipy import *
 from scipy import linalg
+from addons.ShapeToTopology import ShapeToTopology
+from OCC.TopAbs import *
+from OCC.TopExp import *
 
 from OCC.TColgp import *
 from OCC.GeomAPI import *
@@ -42,8 +43,8 @@ def GetRowsTbl(tableName, where=""):
 class LoadDlg(wx.Dialog):
     """Класс диалога задания объектов из базы данных"""
     def __init__(self,parent,ID,title,
-        size=wx.DefaultSize, pos=wx.DefaultPosition,
-        style=wx.DEFAULT_DIALOG_STYLE):
+        size = wx.DefaultSize, pos=wx.DefaultPosition,
+        style = wx.DEFAULT_DIALOG_STYLE):
         pre = wx.PreDialog()
         pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
         pre.Create(parent, ID, title, pos, size, style)
@@ -51,7 +52,7 @@ class LoadDlg(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         label = wx.StaticText(self,-1,"Введите параметры загрузки БД")
-        sizer.Add(label,0,wx.ALIGN_CENTRE|wx.ALL,5)        
+        sizer.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL,5)
         # Остальные окна        
         dataBox = wx.BoxSizer(wx.HORIZONTAL)
         # Горизонты
@@ -67,18 +68,18 @@ class LoadDlg(wx.Dialog):
             self.horIds = self.horIds + [hor[0]]
             self.horList = self.horList + [str(hor[1])]
         self.chkHors = wx.CheckListBox(self, -1, (20, 20), (120, 200), self.horList, wx.LB_MULTIPLE)
-        for i in range(len(self.horIds)):
+        for i in xrange(len(self.horIds)):
             self.chkHors.Check(i, True)
-        horBox.Add(self.chkHors,0,wx.ALIGN_CENTRE|wx.ALL,5)  
-        dataBox.Add(horBox,0,wx.ALIGN_CENTRE|wx.ALL,5)
+        horBox.Add(self.chkHors, 0, wx.ALIGN_CENTRE|wx.ALL,5)
+        dataBox.Add(horBox, 0, wx.ALIGN_CENTRE|wx.ALL,5)
         # Конец горизонтов
         # Геометрия
         geomBox = wx.BoxSizer(wx.VERTICAL)
-        geomBox.Add(wx.StaticText(self,-1,"Объекты"),0,wx.ALIGN_CENTRE|wx.ALL,5)
+        geomBox.Add(wx.StaticText(self, -1, "Объекты"),0,wx.ALIGN_CENTRE|wx.ALL,5)
         self.geomList = ["Бровки", "Тела", "Скважины", "Изолинии"]
         self.chkGeoms = wx.CheckListBox(self, -1, (20, 20), (120, 150), self.geomList, wx.LB_MULTIPLE)
-        geomBox.Add(self.chkGeoms,0,wx.ALIGN_CENTRE|wx.ALL,5)         
-        dataBox.Add(geomBox,0,wx.ALIGN_CENTRE|wx.ALL,5)
+        geomBox.Add(self.chkGeoms, 0, wx.ALIGN_CENTRE|wx.ALL,5)
+        dataBox.Add(geomBox, 0, wx.ALIGN_CENTRE|wx.ALL,5)
         # Конец геометрии      
         # Изолинии
         curs.execute("select min(heigth), max(heigth) from topograph")
@@ -100,11 +101,11 @@ class LoadDlg(wx.Dialog):
         btnOk.SetDefault()
         btnOk.SetHelpText("Загрузить объекты из БД")
         self.Bind(wx.EVT_BUTTON, self.onBtnOk, id=btnOk.GetId())
-        cmdBox.Add(btnOk,0,wx.ALIGN_CENTRE|wx.ALL,5)
+        cmdBox.Add(btnOk, 0, wx.ALIGN_CENTRE|wx.ALL,5)
         
         btnCancel = wx.Button(self, wx.ID_CANCEL, "Отменить")
         btnCancel.SetHelpText("Отменить и выйти")
-        cmdBox.Add(btnCancel,0,wx.ALIGN_CENTRE|wx.ALL,5)
+        cmdBox.Add(btnCancel, 0, wx.ALIGN_CENTRE|wx.ALL,5)
         self.Bind(wx.EVT_BUTTON, self.onBtnCancel, id=btnCancel.GetId())
         sizer.Add(cmdBox,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL,5)
         self.SetSizer(sizer)
@@ -116,13 +117,13 @@ class LoadDlg(wx.Dialog):
         self.resDict = dict()
         # сформировать словарь
         lstHor = []
-        for indHor in range(0,len(self.horList)):
+        for indHor in xrange(0, len(self.horList)):
             if self.chkHors.IsChecked(indHor):
                 lstHor = lstHor + [self.horIds[indHor]]
         self.resDict['horIds'] = lstHor
         
         lstObj = []
-        for indObj in range(0,len(self.geomList)):
+        for indObj in xrange(0, len(self.geomList)):
             if self.chkGeoms.IsChecked(indObj):
                 lstObj = lstObj + [indObj]        
         self.resDict['objList'] = lstObj
@@ -159,40 +160,44 @@ def getPoints(shape):
     """Получить точки выбранного объекта"""
     result = []
     if shape:
-        ex=OCC.TopExp.TopExp_Explorer()            
-        ex.Init(shape,OCC.TopAbs.TopAbs_VERTEX)            
+        ex = TopExp_Explorer()
+        ex.Init(shape, TopAbs_VERTEX)
         te = ShapeToTopology()
-        bt = OCC.BRep.BRep_Tool()
+        bt = OCC.BRep.BRep_Tool
         result = []
         while True:
-            sv=ex.Current()
-            vv=te(sv)
-            p1=OCC.BRep.BRep_Tool.Pnt(vv)
-            p1 = [p1.X(),p1.Y(),p1.Z()]
-            #print('Точка: '+str([p1.X(),p1.Y(),p1.Z(),]))
-            if (len(result)==0) or (p1 <> result[-1]):
+            sv = ex.Current()
+            vv = te(sv)
+            p1 = OCC.BRep.BRep_Tool.Pnt(vv)
+            p1 = [p1.X(), p1.Y(), p1.Z()]
+            print('Точка: '+str([p1]))
+            if (len(result) == 0) or (p1 != result[-1]):
                 result = result + [p1]
-            sv=ex.Next()
+            sv = ex.Next()
             if not ex.More():
                 break
     return result
+
 
 def makeLINESTRING(pnts):
     geom = "GeomFromEWKT('SRID=-1;LINESTRING("
     j = 0
     for p in pnts:
-        if (j > 0):
-            geom = geom + ","
+        if j > 0:
+            geom += ","
         j = 1
-        geom = geom + "%.0f %.0f %.0f"%(p[0],p[1],p[2])
-    geom = geom + ")')"
+        geom += "%.0f %.0f %.0f"%(p[0],p[1],p[2])
+    geom += ")')"
     return geom
+
 
 def distance2d(p1,p2):
     return sqrt((p1[0]-p2[0])*(p1[0]-p2[0]) + (p1[1]-p2[1])*(p1[1]-p2[1]))
 
+
 def distance3d(p1,p2):
     return sqrt((p1[0]-p2[0])*(p1[0]-p2[0]) + (p1[1]-p2[1])*(p1[1]-p2[1]) + (p1[2]-p2[2])*(p1[2]-p2[2]))
+
 
 def getMNK(cloud, offset=[0,0] ):    #  [[x,y,z],...]
     """ Поиск линейной аппроксимации облака точек cloud = [[x,y,z], ...]
@@ -205,7 +210,7 @@ def getMNK(cloud, offset=[0,0] ):    #  [[x,y,z],...]
     res = []
     xc = offset[0]; yc = offset[1]
     nCloud = len(cloud)
-    if nCloud < 3 :
+    if nCloud < 3:
         #print "Нет решения для ", cloud 
         return res
     sz = 0.0; zz = 0.0; zx = 0.0; zy = 0.0; sx = 0.0; sy = 0.0; xx = 0.0; yy = 0.0; xy = 0.0
@@ -224,29 +229,29 @@ def getMNK(cloud, offset=[0,0] ):    #  [[x,y,z],...]
     D = matrix([[sz], [zx], [zy]])
     A = matrix([[nCloud, sx, sy], [sx, xx, xy], [sy, xy, yy] ])
     try:
-        res = linalg.solve(A, D);
-        res = [res[0,0],res[1,0],res[2,0]]
+        res = linalg.solve(A, D)
+        res = [res[0, 0], res[1, 0], res[2, 0]]
     except:
         res = []
         #print "Нет решения для ", cloud   
     return res
 
 def getGrad(pnt, cloud):
-    grad = [0.0,0.0]
+    grad = [0.0, 0.0]
     n = 0
     for p in cloud:
-        if p <> pnt:
+        if p != pnt:
             dist = distance2d(pnt,p)
             if dist > 0.001:
                 grP = (p[2]-pnt[2])/dist
                 grPx = grP * (p[0]-pnt[0]) / dist
                 grPy = grP * (p[1]-pnt[1]) / dist
-                grad[0] = grad[0] + grPx
-                grad[1] = grad[1] + grPy
-                n = n + 1
-    if n>0:
-        grad[0] = grad[0] / n
-        grad[1] = grad[1] / n            
+                grad[0] += grPx
+                grad[1] += grPy
+                n += 1
+    if n > 0:
+        grad[0] /= n
+        grad[1] /= n
     return grad            
                 
 def getNear(pnt, cloud):
@@ -254,7 +259,7 @@ def getNear(pnt, cloud):
     if cloud:
         near = cloud[0]
         for p in cloud[1:]:
-            if distance2d(pnt,p) < distance2d(pnt,near):
+            if distance2d(pnt, p) < distance2d(pnt, near):
                 near = p
     return near            
 
@@ -305,10 +310,10 @@ class CoordsDlg(wx.Dialog):
         self.superMainPanel.Fit(self)
         
         self.grid.ClearGrid()
-        self.grid.DeleteRows(0,self.grid.GetNumberRows(),True)
-        for i in range(len(coords)):
+        self.grid.DeleteRows(0, self.grid.GetNumberRows(),True)
+        for i in xrange(len(coords)):
             self.grid.AppendRows(1,True)
-            for j in range(3):
+            for j in xrange(3):
                 if coords[i][j]=='':
                     self.grid.SetCellValue(i,j,'0')
                 else:
@@ -316,26 +321,26 @@ class CoordsDlg(wx.Dialog):
 
         self.save=False                
         
-    def OnAddLine(self,event):
+    def OnAddLine(self, event):
         self.grid.AppendRows(1,True)
 
-    def OnDelLines(self,event):
-        self.grid.DeleteRows(self.grid.GetNumberRows()-1,1,True)
+    def OnDelLines(self, event):
+        self.grid.DeleteRows(self.grid.GetNumberRows()-1, 1, True)
 
-    def OnClose(self,event):
+    def OnClose(self, event):
         self.Close()
 
-    def OnSave(self,event):
-        self.save=True
+    def OnSave(self, event):
+        self.save = True
         self.Close()
 
     def ret(self):
-        result=[]
-        for i in range(self.grid.GetNumberRows()):
-            result.append([0,0,0])
-            for j in range(3):
+        result = []
+        for i in xrange(self.grid.GetNumberRows()):
+            result.append([0, 0, 0])
+            for j in xrange(3):
                 if not self.grid.GetCellValue(i,j)=='':
-                    result[i][j]=float(self.grid.GetCellValue(i,j))
+                    result[i][j] = float(self.grid.GetCellValue(i,j))
         return result
 
 
@@ -344,39 +349,39 @@ class CoordsDlg(wx.Dialog):
     offset.Perform(d, h)
     return offset.Shape()"""
 
-def make_offset(shape,offset,height=0,round=True,close=True):
-    offset*=-1
-    pnts=getPoints(shape)
-    pnts_new=[]
-    Close=False
-    if pnts[0]==pnts[-1]:
-        Close=True
+def make_offset(shape, offset, height=0, round=True, close=True):
+    offset *=- 1
+    pnts = getPoints(shape)
+    pnts_new = []
+    Close = False
+    if pnts[0] == pnts[-1]:
+        Close = True
         pnts.pop()
-    triangles=getTriangles(pnts,close)
-    for i,v in enumerate(triangles):
+    triangles = getTriangles(pnts, close)
+    for i, v in enumerate(triangles):
         a=measure_angle(v[0],v[1],v[2])
-        if v[2][0]>=v[1][0]:
+        if v[2][0] >= v[1][0]:
             #b=measure_angle([v[0][0]+20,v[0][1],v[0][2]],v[0],v[1])
-            b=measure_angle([v[1][0],v[1][1]+20,v[1][2]],v[1],v[2])
+            b = measure_angle([v[1][0],v[1][1]+20,v[1][2]],v[1],v[2])
         else:
-            b=measure_angle([v[1][0],v[1][1]-20,v[1][2]],v[1],v[2])+math.pi
+            b = measure_angle([v[1][0],v[1][1]-20,v[1][2]],v[1],v[2])+math.pi
         #print '-=-=-=-=-'
         #print math.degrees(a)
         #print math.degrees(b)
         #print math.degrees(tmp)
-        if offset<0 and round:
+        if offset < 0 and round:
             #print 'a=',math.degrees(a),', b=', math.degrees(b)
             pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
             pnts_new.append(polar(pnts[i],b+a/2,offset,height))
             pnts_new.append(polar(pnts[i],b+math.pi/2,offset,height))
-        elif not round and (i==0 or i==len(triangles)-1):
-            if i==0:
-                if offset<0:
+        elif not round and (i == 0 or i == len(triangles)-1):
+            if i == 0:
+                if offset < 0:
                     pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
                 else:
                     pnts_new.append(polar(pnts[i],b+a-math.pi/2,offset,height))
             else:
-                if offset<0:
+                if offset < 0:
                     pnts_new.append(polar(pnts[i],b-math.pi/2,offset,height))
                 else:
                     pnts_new.append(polar(pnts[i],b+math.pi*2,offset,height))
@@ -391,21 +396,23 @@ def make_offset(shape,offset,height=0,round=True,close=True):
     #print dir(plgn)
     return plgn.Wire()
 
+
 def getTriangles(pnts,close):
-    l=len(pnts)
-    triangles=[]
+    l = len(pnts)
+    triangles = []
     if close:
         triangles.append([pnts[-1],pnts[0],pnts[1]])
     else:
         triangles.append([continueLine(pnts[0],1),pnts[0],pnts[1]])
-    for i in range(l-2):
-        tmp= [pnts[i],pnts[i+1],pnts[i+2]]
+    for i in xrange(l-2):
+        tmp = [pnts[i], pnts[i+1], pnts[i+2]]
         triangles.append(tmp)
     if close:
         triangles.append([pnts[-2],pnts[-1],pnts[0]])
     else:
         triangles.append([continueLine(pnts[-1],1),pnts[-1],pnts[0]])
     return triangles
+
 
 def polar(point, angle, dist, height=0):
     #if angle>math.pi:
@@ -428,8 +435,8 @@ def measure_angle(p1,p2,p3):
 
 def Interpolate(pnts):
     print pnts
-    array  = TColgp_HArray1OfPnt (1,len(pnts))
-    for i,v in enumerate(pnts):
+    array = TColgp_HArray1OfPnt (1,len(pnts))
+    for i, v in enumerate(pnts):
         print v
         array.SetValue(i+1,gp_Pnt (v[0],v[1],v[2]))
     print array.Length()
@@ -441,7 +448,7 @@ def Interpolate(pnts):
     return spline.Shape()
 
 def continueLine(pnt,l):
-    newpnt=[0,0,0]
+    newpnt = [0,0,0]
     if pnt[0]<0:
         newpnt[0]=pnt[0]-l
     else:
@@ -455,20 +462,20 @@ def continueLine(pnt,l):
 
 def length(pnts):
     l=0
-    for i in range(len(pnts)-1):
-        l+=distance3d(pnts[i],pnts[i+1])
+    for i in xrange(len(pnts)-1):
+        l += distance3d(pnts[i],pnts[i+1])
     return l
 
 def getGrided(coord,gridSize):
-    per=coord%gridSize
-    if per<gridSize/2:
+    per = coord%gridSize
+    if per < gridSize/2:
         return coord-per
     else:
         return coord+(gridSize-per)
 
 def invert(obj):
-    pnts=getPoints(obj)
+    pnts = getPoints(obj)
     plgn = BRepBuilderAPI_MakePolygon()
-    for i in range(len(pnts)-1,-1,-1):
+    for i in range(len(pnts)-1, -1, -1):
         plgn.Add(gp_Pnt(pnts[i][0], pnts[i][1], pnts[i][2]))
     return plgn.Wire()
