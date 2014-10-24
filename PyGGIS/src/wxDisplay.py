@@ -48,12 +48,10 @@ from OCC.Geom import *
 from OCC.Geom2d import *
 from OCC.GeomAPI import *
 from OCC.GeomAbs import *
-#from OCC.KBE.TypesLookup import ShapeToTopology
-from OCC.KBE.types_lut import ShapeToTopology
 from OCC.Precision import *
 from OCC.Quantity import *
 from OCC.TColgp import *
-from OCC.Utils.Topology import Topo
+#from OCC.Utils.Topology import Topo    TML
 from OCC.gp import *
 from regim import *
 from utils import *
@@ -63,6 +61,7 @@ from OCC.Visual3d import Visual3d_Layer
 from OCC.Aspect import *
 from OCC import BRep
 from OCC import Prs3d
+from addons.ShapeToTopology import ShapeToTopology
 
 import math
 import sys
@@ -80,6 +79,7 @@ except:
 if THISPATH.endswith("zip"):
     THISPATH = os.path.dirname(THISPATH)
 # --------------------------------------------------
+
 
 class GraphicsCanva3D(wx.Panel):
     def __init__(self, parent, main=False):
@@ -131,6 +131,9 @@ class GraphicsCanva3D(wx.Panel):
         self.tempPointIndex = None # Временый индекс точки
         self.tempPoint      = None # Временная точка
 
+        self.Net_DoOnce = 0
+        self.Net_rev = 0
+
         self.gumline_edge = None
         self.MakePoint = False
 
@@ -143,9 +146,9 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay = Viewer3d(self.GetHandle())
         self._3dDisplay.Create()
         self._inited = True
-        self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
+        #self._3dDisplay.SetBackgroundImage(os.path.join(THISPATH, "icons", "bgWhite.bmp"))
         if self.main:
-            self._3dDisplay.DisplayTriedron()
+            #self._3dDisplay.DisplayTriedron()
             self._3dDisplay.Context.SetTrihedronSize(10.0)
         self._3dDisplay.Context.SetHilightColor(OCC.Quantity.Quantity_NOC_GREEN)#OCC.Quantity.Quantity_Color(0.5,0.2,0.5,False))
         ##self._3dDisplay.SetModeShaded()
@@ -153,13 +156,13 @@ class GraphicsCanva3D(wx.Panel):
 
     def OnKeyDown(self,evt):
         key_code = evt.GetKeyCode()
-        if key_code==87:#"W"
+        if key_code == 87:#"W"
             self._3dDisplay.SetModeWireFrame()
-        elif key_code==83:#"S"
+        elif key_code == 83:#"S"
             self._3dDisplay.SetModeShaded()
-        elif key_code==65:#"A"
+        elif key_code == 65:#"A"
             self._3dDisplay.EnableAntiAliasing()
-        elif key_code==66:#"B"
+        elif key_code == 66:#"B"
             self._3dDisplay.DisableAntiAliasing()
               
     def OnSize(self, event):
@@ -194,12 +197,11 @@ class GraphicsCanva3D(wx.Panel):
             self._3dDisplay.Repaint()
 
     def OnPaint(self, event):
-        #pass OLOLO
         if self._inited:
             self._3dDisplay.Repaint()
         
     def ZoomAll(self):
-        self._3dDisplay.FitAll()#Zoom_FitAll()
+        self._3dDisplay.FitAll()  # Zoom_FitAll()
         if self.main:
             self.frame.canva_top._3dDisplay.FitAll()
             self.frame.canva_front._3dDisplay.FitAll()
@@ -215,20 +217,50 @@ class GraphicsCanva3D(wx.Panel):
         
         self.startPt = evt.GetPosition()
         xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(self.startPt.x, self.startPt.y) #, Xw,Yw,Zw
-        resPnt = [xt,yt,zt]
+        resPnt = [xt, yt, zt]
+        if self.EdCmd == CMD_AddText:
+            mousexyz = gp_Pnt(xt, yt, zt)  # (c) Broly
+            CurrentText = self.frame.canva.text.GetValue()
+            print CurrentText
+
+
+            aUnicode = u' 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮйцукенгшщзхъфывапролджэячсмитьбю-+=~!@#$%^&*()_+{}[]:;"<>,./?|'
+            aASCII   =  ' 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzYCYKENJWW3XbFIBANPOLDGER4CMNTb6Jycykenrww3xbfivanpoldjej4cmitb6u-+=~!@#$%^&*()_+{}[]:;"<>,./?|'
+            ASCIIRes = '';
+
+            for Cnt in xrange(0, len(CurrentText)):
+                for Ctt in xrange(len(aUnicode)):
+                    if CurrentText[Cnt] == aUnicode[Ctt]:
+                        ASCIIRes = ASCIIRes+aASCII[Ctt]
+
+            CurrentText = ASCIIRes;
+            CurrentText = CurrentText.replace("<XYZ>","["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]")
+            CurrentText = CurrentText.replace("<koopdinati>","["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]")
+            CurrentText = CurrentText.replace("<XY>","["+str(trunc(xt))+"; "+str(trunc(yt))+"]")
+            CurrentText = CurrentText.replace("<XZ>","["+str(trunc(xt))+"; "+str(trunc(zt))+"]")
+            CurrentText = CurrentText.replace("<YZ>","["+str(trunc(yt))+"; "+str(trunc(zt))+"]")
+            CurrentText = CurrentText.replace("<X>","["+str(trunc(xt))+"]")
+            CurrentText = CurrentText.replace("<Y>","["+str(trunc(yt))+"]")
+            CurrentText = CurrentText.replace("<Z>","["+str(trunc(zt))+"]")
+            CurrentText = '. '+CurrentText
+
+            #print '---==========---'
+            #self._3dDisplay.DisplayMessage(mousexyz,". ["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]") # /(c) Broly
+            self._3dDisplay.DisplayMessage(mousexyz,CurrentText) # /(c) Broly
+
         self.worldPt = resPnt
         # Обслуживание привязок
         snap = self.frame.canva.snap.GetCurrentSelection()
         if snap == 0:       # нет привязки
-            gridSize=self.frame.stepXY.GetValue()
-            if gridSize>0:
+            gridSize = self.frame.stepXY.GetValue()
+            if gridSize > 0:
                 resPnt[0]=getGrided(resPnt[0],gridSize)
                 resPnt[1]=getGrided(resPnt[1],gridSize)
                 resPnt[2]=getGrided(resPnt[2],gridSize)
             pass
         elif snap == 1:     # end
             self._3dDisplay.Select(self.startPt.x, self.startPt.y)
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             pnts = getPoints(sel_shape)
             #print sel_shape, pnts
             if pnts:
@@ -249,9 +281,8 @@ class GraphicsCanva3D(wx.Panel):
                 midleH = 0
                 for pnt in pnts:
                     midleH += pnt[2]
-                midleH = midleH/len(pnts)
-                cur = gp_Pnt(resPnt[0],resPnt[1],midleH)
-                      
+                midleH /= len(pnts)
+                cur = gp_Pnt(resPnt[0], resPnt[1],midleH)
                 te = ShapeToTopology()
                 bt = BRep.BRep_Tool()
                 #print bt
@@ -273,11 +304,11 @@ class GraphicsCanva3D(wx.Panel):
                             nea = proj
                             neaP1 = p1; neaP2 = p2
                         else:
-                            if (nea.Distance(cur) > proj.Distance(cur)):
+                            if nea.Distance(cur) > proj.Distance(cur):
                                 nea = proj
                                 neaP1 = p1; neaP2 = p2
                         p1 = p2
-                resPnt = [nea.X(),nea.Y(),nea.Z()]
+                resPnt = [nea.X(), nea.Y(), nea.Z()]
                 #print resPnt,[neaP1[0],neaP1[1],neaP1[2]],[neaP2[0],neaP2[1],neaP2[2]]           
             pass
         elif snap == 3:    # center
@@ -288,11 +319,10 @@ class GraphicsCanva3D(wx.Panel):
                 midleH = 0
                 for pnt in pnts:
                     midleH += pnt[2]
-                midleH = midleH/len(pnts)
+                midleH /= len(pnts)
                 cur = gp_Pnt(resPnt[0],resPnt[1],midleH)
-                      
                 te = ShapeToTopology()
-                bt = BRep.BRep_Tool()
+                bt = BRep.BRep_Tool
                 #print bt
                 isP1 = False
                 isNea = False
@@ -312,7 +342,7 @@ class GraphicsCanva3D(wx.Panel):
                             nea = proj
                             neaP1 = p1; neaP2 = p2
                         else:
-                            if (nea.Distance(cur) > proj.Distance(cur)):
+                            if nea.Distance(cur) > proj.Distance(cur):
                                 nea = proj
                                 neaP1 = p1; neaP2 = p2
                         p1 = p2
@@ -320,10 +350,11 @@ class GraphicsCanva3D(wx.Panel):
                 cx=min(neaP1[0],neaP2[0])+math.fabs(max(neaP1[0],neaP2[0])-min(neaP1[0],neaP2[0]))/2
                 cy=min(neaP1[1],neaP2[1])+math.fabs(max(neaP1[1],neaP2[1])-min(neaP1[1],neaP2[1]))/2
                 cz=min(neaP1[2],neaP2[2])+math.fabs(max(neaP1[2],neaP2[2])-min(neaP1[2],neaP2[2]))/2
-                resPnt = [cx,cy,cz]
+                resPnt = [cx, cy, cz]
             pass
         elif snap == 4:    # tangent
             pass
+
         # Координаты точки в окно координат 
         self.frame.canva.coord.SetValue("%.1f,%.1f"%(resPnt[0],resPnt[1]))
         #self.frame.canva.coord.SetValue("%.2f,%.2f,%.2f"%(resPnt[0],resPnt[1],resPnt[2]))
@@ -354,20 +385,20 @@ class GraphicsCanva3D(wx.Panel):
         self._3dDisplay.Select(self.dragStartPos.x, self.dragStartPos.y)
 
         if (self.EdCmd == CMD_EdBrMerge) and (self.EdStep == 1):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
             self.tempIndex = None;
-            for i in range(len(self.drawList)):
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         self.tempIndex = i
                         break
-            if self.tempIndex<>None:
-                if not self.drawList[self.tempIndex][0]==0:
+            if self.tempIndex is not None:
+                if not self.drawList[self.tempIndex][0] == 0:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    if self.frame.getTypeByMenu()==-1:
+                    if self.frame.getTypeByMenu() == -1:
                         self.EdCmd = 0; self.EdStep = 0
                         # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
@@ -376,19 +407,19 @@ class GraphicsCanva3D(wx.Panel):
                     self.EdStep = 2
 
         elif (self.EdCmd == CMD_EdBrMerge) and (self.EdStep == 2):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
             ItemIndex = None;
-            for i in range(len(self.drawList)):
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         ItemIndex = i
                         break
-            if ItemIndex<>None:
-                pnts1=getPoints(self.drawList[self.tempIndex][2].Shape())
-                pnts2=getPoints(self.drawList[ItemIndex][2].Shape())
+            if ItemIndex is not None:
+                pnts1 = getPoints(self.drawList[self.tempIndex][2].Shape())
+                pnts2 = getPoints(self.drawList[ItemIndex][2].Shape())
                 plgn = BRepBuilderAPI_MakePolygon()
                 for pnt1 in pnts1:
                     plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
@@ -431,87 +462,88 @@ class GraphicsCanva3D(wx.Panel):
                 w = plgn.Wire()
                 self.Erase(self.drawList[self.tempIndex][2].GetHandle())
                 self.Erase(self.drawList[ItemIndex][2].GetHandle())
-                for i,v in enumerate(self.frame.egde_typeList):
-                    if v[0]==self.drawList[self.tempIndex][4]:
-                        edge_type=self.frame.egde_typeList[i]
+                for i, v in enumerate(self.frame.egde_typeList):
+                    if v[0] == self.drawList[self.tempIndex][4]:
+                        edge_type = self.frame.egde_typeList[i]
                         break
                 for i in range(len(self.frame.colorList)):
-                    if self.frame.colorList[i][0]==edge_type[3]:
-                        r=int(str(self.frame.colorList[i][2]))/255.0
-                        g=int(str(self.frame.colorList[i][3]))/255.0
-                        b=int(str(self.frame.colorList[i][4]))/255.0
-                        s1=self.DisplayShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                    if self.frame.colorList[i][0] == edge_type[3]:
+                        r = int(str(self.frame.colorList[i][2]))/255.0
+                        g = int(str(self.frame.colorList[i][3]))/255.0
+                        b = int(str(self.frame.colorList[i][4]))/255.0
+                        s1 = self.DisplayShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                         break
-                self.drawList[self.tempIndex][2]=s1.GetObject()
-                self.drawList[self.tempIndex][-1]=True
-                self.drawList[ItemIndex][2]=None
-                self.drawList[ItemIndex][-1]=True
+                self.drawList[self.tempIndex][2] = s1.GetObject()
+                self.drawList[self.tempIndex][-1] = True
+                self.drawList[ItemIndex][2] = None
+                self.drawList[ItemIndex][-1] = True
         ### Выбрать бровку
         if (self.EdCmd == CMD_EdBrSelB) and (self.EdStep == 1):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
-            self.tempIndex = None;
-            for i in range(len(self.drawList)):
+            self.tempIndex = None
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         self.tempIndex = i
                         break
-            if self.tempIndex<>None:
-                if not self.drawList[self.tempIndex][0]==0:
+            if self.tempIndex is not None:
+                if not self.drawList[self.tempIndex][0] == 0:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    if self.frame.getTypeByMenu()==-1:
+                    if self.frame.getTypeByMenu() == -1:
                         self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
                 for i,pnt in enumerate(pnts):
                     if pnt == neaP1:
-                        self.tempPointIndex=i
-                        self.tempPoint=neaP1
-                        self.coordZ.SetValue("%.1f"%(neaP1[2]))
+                        self.tempPointIndex = i
+                        self.tempPoint = neaP1
+                        self.coordZ.SetValue("%.1f" % (neaP1[2]))
                     elif pnt == neaP2:
                         continue
                         #self.tempPoint[1]=neaP2
 
         ### Окончание прирезки
         if (self.EdCmd == CMD_EdBrCutE) and (self.EdStep == 1):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
-            type=0
-            if not self.drawList[self.tempIndex][0]==type:
+            type = 0
+            if not self.drawList[self.tempIndex][0] == type:
                 self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                if self.frame.getTypeByMenu()==-1:
-                    self.EdCmd = 0; self.EdStep = 0
+                if self.frame.getTypeByMenu() == -1:
+                    self.EdCmd = 0
+                    self.EdStep = 0
                     # Восстановить старые привязки
                 self.frame.canva.snap.SetSelection(0)
                 return
-            endPointIndex=None
-            for i,pnt in enumerate(pnts):
+            endPointIndex = None
+            for i, pnt in enumerate(pnts):
                 if pnt == neaP2:
-                    endPointIndex=i
+                    endPointIndex = i
             #self.Erase(selObj)
-            bPoints=getPoints(self.drawList[self.tempIndex][2].Shape())
-            newPnts=[]
+            bPoints = getPoints(self.drawList[self.tempIndex][2].Shape())
+            newPnts = []
             #print "self.tempPointIndex: ",self.tempPointIndex
             #print "bPoints: ",bPoints
             #print "resPnt: ",resPnt
             #print "self.lstPnt: ",self.lstPnt
             #print "endPointIndex: ",endPointIndex
-            if endPointIndex>self.tempPointIndex:
+            if endPointIndex > self.tempPointIndex:
                 newPnts.append(bPoints[self.tempPointIndex])
-                for i in range(len(self.lstPnt)):
+                for i in xrange(len(self.lstPnt)):
                     newPnts.append(self.lstPnt[i])
                 newPnts.append(resPnt)
-                for i in range(endPointIndex,len(bPoints)):
+                for i in range(endPointIndex, len(bPoints)):
                     newPnts.append(bPoints[i])
                 for i in range(self.tempPointIndex):
                     newPnts.append(bPoints[i])
             else:
                 newPnts.append(bPoints[self.tempPointIndex])
-                for i in range(len(self.lstPnt)):
+                for i in xrange(len(self.lstPnt)):
                     newPnts.append(self.lstPnt[i])
                 newPnts.append(resPnt)
                 for i in range(endPointIndex,self.tempPointIndex):
@@ -527,32 +559,33 @@ class GraphicsCanva3D(wx.Panel):
                 self.tmpEdge = None
             if self.gumline_edge:
                 self.Erase(self.gumline_edge)
-                self.gumline_edge=None
+                self.gumline_edge = None
             self.tmpEdge = self.DisplayShape(w,'RED', False)
-            self.GumLine=False
+            self.GumLine = False
             self.EdCmd = None
             self.EdStep = None
 
         ### Вставить вершину в линию
         if (self.EdCmd == CMD_EdBrInsV) and (self.EdStep == 1):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
-            type=self.frame.getTypeByMenu()
-            indexInfo = None;
-            for i in range(len(self.drawList)):
+            type = self.frame.getTypeByMenu()
+            indexInfo = None
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         indexInfo = i
                         break
-            if indexInfo<>None:
-                if not self.drawList[indexInfo][0]==type:
+            if indexInfo is not None:
+                if not self.drawList[indexInfo][0] == type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    if self.frame.getTypeByMenu()==-1:
-                        self.EdCmd = 0; self.EdStep = 0
+                    if self.frame.getTypeByMenu() == -1:
+                        self.EdCmd = 0
+                        self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
@@ -580,10 +613,10 @@ class GraphicsCanva3D(wx.Panel):
             newShape = self.DisplayShape(w,'YELLOW', False)        #,'WHITE'
             # Установить цвет, тип,толщину и др.
             if selColor:
-                self._3dDisplay.Context.SetColor(newShape,selColor,0)
-                self.frame.canva_top._3dDisplay.Context.SetColor(newShape.canva_top,selColor,0)
-                self.frame.canva_frame._3dDisplay.Context.SetColor(newShape.canva_front,selColor,0)
-            if indexInfo <> None:
+                self._3dDisplay.Context.SetColor(newShape, selColor,0)
+                self.frame.canva_top._3dDisplay.Context.SetColor(newShape.canva_top, selColor,0)
+                self.frame.canva_frame._3dDisplay.Context.SetColor(newShape.canva_front, selColor,0)
+            if indexInfo is not None:
                 oldInfo = self.drawList[indexInfo]
                 #print oldInfo
                 oldInfo[2] = newShape.GetObject()
@@ -591,31 +624,32 @@ class GraphicsCanva3D(wx.Panel):
                 #print oldInfo
                 self.drawList[indexInfo] = oldInfo          # Обновить список
             self.frame.SetStatusText("Готово!", 2)
-            if self.frame.getTypeByMenu()==-1:
-                self.EdCmd = 0; self.EdStep = 0
+            if self.frame.getTypeByMenu() == -1:
+                self.EdCmd = 0
+                self.EdStep = 0
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
             pass
 
         # удалить точку
         if (self.EdCmd == CMD_EdBrDelV) and (self.EdStep == 1):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
             type=self.frame.getTypeByMenu()
-            indexInfo = None;
-            for i in range(len(self.drawList)):
+            indexInfo = None
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         indexInfo = i
                         break
-            if indexInfo<>None:
-                if not self.drawList[indexInfo][0]==type:
+            if indexInfo is not None:
+                if not self.drawList[indexInfo][0] == type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    if self.frame.getTypeByMenu()==-1:
+                    if self.frame.getTypeByMenu() == -1:
                         self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
@@ -627,9 +661,9 @@ class GraphicsCanva3D(wx.Panel):
             # добавить все точки, кроме resPnt
             newPnts = []
             cnt=0
-            for i in range(len(pnts)):
-                if pnts[i]==resPnt and cnt==0:
-                    cnt=1
+            for i in xrange(len(pnts)):
+                if pnts[i] == resPnt and cnt == 0:
+                    cnt = 1
                 else:
                     newPnts = newPnts + [pnts[i]]
                 #print newPnts
@@ -649,7 +683,7 @@ class GraphicsCanva3D(wx.Panel):
                 self._3dDisplay.Context.SetColor(newShape,selColor,0)
                 self.frame.canva_top._3dDisplay.Context.SetColor(newShape.canva_top,selColor,0)
                 self.frame.canva_frame._3dDisplay.Context.SetColor(newShape.canva_front,selColor,0)
-            if indexInfo <> None:
+            if indexInfo is not None:
                 oldInfo = self.drawList[indexInfo]
                 #print oldInfo
                 oldInfo[2] = newShape.GetObject()
@@ -657,32 +691,31 @@ class GraphicsCanva3D(wx.Panel):
                 #print oldInfo
                 self.drawList[indexInfo] = oldInfo          # Обновить список
             self.frame.SetStatusText("Готово!", 2)
-            if self.frame.getTypeByMenu()==-1:
+            if self.frame.getTypeByMenu() == -1:
                 self.EdCmd = 0; self.EdStep = 0
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
-            pass
-
 
         #переместить скважину, шаг 1
         elif (self.EdCmd == CMD_EdBrMoveP) and (self.EdStep == 1):
             # переместить точку
-            type=self.frame.getTypeByMenu()
-            indexInfo = None;
-            sel_shape=self._3dDisplay.selected_shape
-            for i in range(len(self.drawList)):
+            type = self.frame.getTypeByMenu()
+            indexInfo = None
+            sel_shape = self._3dDisplay.selected_shape
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         indexInfo = i
                         break
-            if indexInfo<>None:
-                if not self.drawList[indexInfo][0]==type:
+            if indexInfo is not None:
+                if not self.drawList[indexInfo][0] == type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    self.EdCmd = 0; self.EdStep = 0
+                    self.EdCmd = 0
+                    self.EdStep = 0
                     self.frame.canva.snap.SetSelection(0)
                     return
-                self.tempIndex=indexInfo
+                self.tempIndex = indexInfo
                 # найти точку
             self.EdCmd = 0; self.EdStep = 0
             self.frame.SetStatusText("Новое положение", 2)
@@ -695,27 +728,27 @@ class GraphicsCanva3D(wx.Panel):
         #переместить точку, шаг 1
         elif (self.EdCmd == CMD_EdBrMoveV) and (self.EdStep == 1):
             # переместить точку
-            type=self.frame.getTypeByMenu()
-            indexInfo = None;
-            sel_shape=self._3dDisplay.selected_shape
-            for i in range(len(self.drawList)):
+            type = self.frame.getTypeByMenu()
+            indexInfo = None
+            sel_shape = self._3dDisplay.selected_shape
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         indexInfo = i
                         break
-            if indexInfo<>None:
-                if not self.drawList[indexInfo][0]==type:
+            if indexInfo is not None:
+                if not self.drawList[indexInfo][0] == type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    if self.frame.getTypeByMenu()==-1:
+                    if self.frame.getTypeByMenu() == -1:
                         self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
                     return
-                self.tempIndex=indexInfo
+                self.tempIndex = indexInfo
             # найти точку
-            for i in range(len(pnts)):
-                if pnts[i]==resPnt:
+            for i in xrange(len(pnts)):
+                if pnts[i] == resPnt:
                     self.tempPointIndex = i
                     break
 
@@ -732,18 +765,18 @@ class GraphicsCanva3D(wx.Panel):
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
-            type=self.frame.getTypeByMenu()
-            indexInfo = None;
-            for i in range(len(self.drawList)):
+            type = self.frame.getTypeByMenu()
+            indexInfo = None
+            for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                    if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                         indexInfo = i
                         break
-            if indexInfo<>None:
-                if not self.drawList[indexInfo][0]==type:
+            if indexInfo is not None:
+                if not self.drawList[indexInfo][0] == type:
                     self.frame.SetStatusText("Это не "+str(type_labels[type]), 2)
-                    if self.frame.getTypeByMenu()==-1:
+                    if self.frame.getTypeByMenu() == -1:
                         self.EdCmd = 0; self.EdStep = 0
                     # Восстановить старые привязки
                     self.frame.canva.snap.SetSelection(0)
@@ -756,10 +789,10 @@ class GraphicsCanva3D(wx.Panel):
             newPntsSecond = []
 
             #найти местоположение разрыва
-            index=0
-            for i in range(len(pnts)):
-                if pnts[i]==neaP1:
-                    index=i
+            index = 0
+            for i in xrange(len(pnts)):
+                if pnts[i] == neaP1:
+                    index = i
                     break
             #задать точки для половины до разрыва
             for i in range(index+1):
@@ -767,7 +800,7 @@ class GraphicsCanva3D(wx.Panel):
             newPntsFirst.append(resPnt) 
             #задать точки для половины после разрыва
             newPntsSecond.append(resPnt)
-            for i in range(index+1,len(pnts)):
+            for i in range(index+1, len(pnts)):
                 newPntsSecond.append(pnts[i])
 
             #print newPntsFirst
@@ -800,26 +833,25 @@ class GraphicsCanva3D(wx.Panel):
                 self._3dDisplay.Context.SetColor(newShape2,selColor,0)
                 self.frame.canva_top._3dDisplay.Context.SetColor(newShape2.canva_top,selColor,0)
                 self.frame.canva_frame._3dDisplay.Context.SetColor(newShape2.canva_front,selColor,0)
-            if indexInfo <> None:
+            if indexInfo is not None:
                 self.drawList[indexInfo][2] = newShape1.GetObject()
                 self.drawList[indexInfo][-1] = True
                 #print oldInfo
                 #self.drawList[indexInfo] = oldInfo          # Обновить список
                 #создать новый объект
                 newInfo = []
-                for i in range(len(self.drawList[indexInfo])):
+                for i in xrange(len(self.drawList[indexInfo])):
                     newInfo.append(self.drawList[indexInfo][i])
                 newInfo[1] = -1
                 newInfo[2] = newShape2.GetObject()
-                newInfo[-1]=True
-                self.drawList=self.drawList+[newInfo]
+                newInfo[-1] = True
+                self.drawList = self.drawList+[newInfo]
 
             self.frame.SetStatusText("Готово!", 2)
-            if self.frame.getTypeByMenu()==-1:
+            if self.frame.getTypeByMenu() == -1:
                 self.EdCmd = 0; self.EdStep = 0
             # Восстановить старые привязки
             self.frame.canva.snap.SetSelection(0)
-            pass
         
         ### Удалить линию с экрана и из списка объектов, если есть
         if (self.EdCmd == CMD_EdBrDelB) and (self.EdStep == 1):
@@ -828,17 +860,17 @@ class GraphicsCanva3D(wx.Panel):
             sel_shape = self._3dDisplay.selected_shape
             if sel_shape:
                 selObj = self._3dDisplay.Context.SelectedInteractive()
-                type=self.frame.getTypeByMenu()
-                indexInfo = None; 
-                for i in range(len(self.drawList)):
+                type = self.frame.getTypeByMenu()
+                indexInfo = None
+                for i in xrange(len(self.drawList)):
                     s1 = self.drawList[i][2]
                     if s1:
-                        if (s1.Shape().IsEqual(sel_shape)):
+                        if s1.Shape().IsEqual(sel_shape):
                             indexInfo = i
                             break
-                if indexInfo <> None:
+                if indexInfo is not None:
                     oldInfo = self.drawList[indexInfo]
-                    if oldInfo[0]==type or type==-1:
+                    if oldInfo[0] == type or type == -1:
                         self.Erase(oldInfo[2].GetHandle())
                         oldInfo[2] = None
                         oldInfo[-1] = True
@@ -851,9 +883,9 @@ class GraphicsCanva3D(wx.Panel):
                     self.Erase(self.drawList[indexInfo][2].GetHandle())
                     self.Erase(selObj)
                     self.frame.SetStatusText("Удален", 2)
-                if self.frame.getTypeByMenu()==-1:
-                    self.EdCmd = 0; self.EdStep = 0
-            pass
+                if self.frame.getTypeByMenu() == -1:
+                    self.EdCmd = 0
+                    self.EdStep = 0
             
     def OnLeftUp(self, evt):
         if self.WinZoom:
@@ -869,13 +901,13 @@ class GraphicsCanva3D(wx.Panel):
                 myXmin, myYmin, myXd, myYd = self._drawbox
             if self._drawline:
                 #dc.DrawLine(self._drawline)
-                dc.DrawLine(self._drawline[0],self._drawline[1],self._drawline[2],self._drawline[3])
+                dc.DrawLine(self._drawline[0], self._drawline[1],self._drawline[2], self._drawline[3])
             dc.EndDrawing()
             ##myXmin, myYmin, myXd, myYd = self._drawbox
             self._3dDisplay.ZoomArea(myXmin, myYmin, myXmin+myXd, myYmin+myYd)
             self._drawbox = None
             #myView->WindowFitAll(myXmin, myYmin, myXmax, myYmax);
-        if  self.MakeLine or self.MakePLine:
+        if self.MakeLine or self.MakePLine:
             # Удалить локальный контекст
             pass
         pass        #***************************************
@@ -887,15 +919,15 @@ class GraphicsCanva3D(wx.Panel):
         self._drawbox = False
         if event.ControlDown() and event.ShiftDown():
             pt = event.GetPosition()
-            if ((abs(self.dragStartPos.x - pt.x)>1) or (abs(self.dragStartPos.y - pt.y)>1)): 
+            if ((abs(self.dragStartPos.x - pt.x) > 1) or (abs(self.dragStartPos.y - pt.y) > 1)):
                 self._3dDisplay.Zoom_Window(self.dragStartPos.x, self.dragStartPos.y, pt.x, pt.y)
 
     def OnRightDown(self, event):
         self.dragStartPos = event.GetPosition()
-        if (self.MakeLine or self.MakePLine):
+        if self.MakeLine or self.MakePLine:
             self.frame.onCoord_yes(event)
             return
-        self._3dDisplay.StartRotation(self.dragStartPos.x,self.dragStartPos.y)        
+        self._3dDisplay.StartRotation(self.dragStartPos.x, self.dragStartPos.y)
         self.SetTogglesToFalse(None)
 
     def SetTogglesToFalse(self, event):
@@ -1000,10 +1032,10 @@ class GraphicsCanva3D(wx.Panel):
             # view = <OCC.V3d.V3d_View; proxy of <Swig Object of type 'V3d_View *' at 0xa2d3a60> >
             pt = event.GetPosition()
             #if (self.GumLine and self.worldPt):
-            if (self.GumLine and len(self.lstPnt)>0):
+            if self.GumLine and len(self.lstPnt) > 0:
                 pntDspl = view.Convert(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2])
                 
-                dc=wx.ClientDC(self)
+                dc = wx.ClientDC(self)
                 dc.BeginDrawing()
                 dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))##     BLACK_DASHED_PEN ##DOT
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -1017,7 +1049,9 @@ class GraphicsCanva3D(wx.Panel):
 
                 resPnt = self._3dDisplay.GetView().GetObject().ConvertWithProj(pt.x, pt.y) #, Xw,Yw,Zw
                 Z = float(self.coordZ.GetValue())
-                edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1], self.lstPnt[-1][2]),gp_Pnt(resPnt[0], resPnt[1], Z+0*resPnt[2])).Edge()
+                edge = BRepBuilderAPI_MakeEdge(gp_Pnt(self.lstPnt[-1][0], self.lstPnt[-1][1],
+                                                      self.lstPnt[-1][2]), gp_Pnt(resPnt[0], resPnt[1],
+                                                                                 Z+0*resPnt[2])).Edge()
                 if self.gumline_edge:
                     self.Erase(self.gumline_edge)
                 shape=OCC.AIS.AIS_Shape(edge)
@@ -1061,8 +1095,8 @@ class GraphicsCanva3D(wx.Panel):
             self._3dDisplay.MoveTo(pt.x,pt.y)   # Уход в ОСС для обработки выбора около точки
             # отобразить координаты в статусной строке
             view = self._3dDisplay.GetView().GetObject()
-            xt, yt, zt, Pt,Ut,Vt = view.ConvertWithProj(pt.x,pt.y) #, Xw,Yw,Zw
-            self.frame.SetStatusText("%.0f,%.0f"%(xt,yt), 1)
+            xt, yt, zt, Pt, Ut, Vt = view.ConvertWithProj(pt.x, pt.y)  # Xw,Yw,Zw
+            self.frame.SetStatusText("%.0f,%.0f" % (xt,yt), 1)
             #self.frame.canva.coord.SetValue("%.2f,%.2f"%(xt,yt))
         elif event.Dragging() and event.RightIsDown() and event.ControlDown() and event.ShiftDown():
             # Zoom win
@@ -1073,7 +1107,7 @@ class GraphicsCanva3D(wx.Panel):
             # Dyna Zoom
             self._dynazoom(event)
             
-        elif ((event.Dragging() and event.MiddleIsDown()) or \
+        elif ((event.Dragging() and event.MiddleIsDown()) or
                 (event.Dragging() and event.RightIsDown() and event.ShiftDown())) and self.main:
             # Rotate
             self._dynarotate(event)
@@ -1113,16 +1147,16 @@ class GraphicsCanva3D(wx.Panel):
         ais_shapes = []
         color_to_send=color
         if isinstance(color, str):
-            dict_color = {'WHITE':OCC.Quantity.Quantity_NOC_WHITE,
-                          'BLUE':OCC.Quantity.Quantity_NOC_BLUE1,
-                          'RED':OCC.Quantity.Quantity_NOC_RED,
-                          'GREEN':OCC.Quantity.Quantity_NOC_GREEN,
-                          'YELLOW':OCC.Quantity.Quantity_NOC_YELLOW,
+            dict_color = {'WHITE': OCC.Quantity.Quantity_NOC_WHITE,
+                          'BLUE': OCC.Quantity.Quantity_NOC_BLUE1,
+                          'RED': OCC.Quantity.Quantity_NOC_RED,
+                          'GREEN': OCC.Quantity.Quantity_NOC_GREEN,
+                          'YELLOW': OCC.Quantity.Quantity_NOC_YELLOW,
                           # new
-                          'CYAN':OCC.Quantity.Quantity_NOC_CYAN1,
-                          'WHITE':OCC.Quantity.Quantity_NOC_WHITE,
-                          'BLACK':OCC.Quantity.Quantity_NOC_BLACK,
-                          'ORANGE':OCC.Quantity.Quantity_NOC_ORANGE, }
+                          'CYAN': OCC.Quantity.Quantity_NOC_CYAN1,
+                          'WHITE': OCC.Quantity.Quantity_NOC_WHITE,
+                          'BLACK': OCC.Quantity.Quantity_NOC_BLACK,
+                          'ORANGE': OCC.Quantity.Quantity_NOC_ORANGE, }
             color = dict_color[color]
         elif isinstance(color, OCC.Quantity.Quantity_Color):
             pass
@@ -1143,23 +1177,25 @@ class GraphicsCanva3D(wx.Panel):
         for shape in shapes:
             #shape_to_display=OCC.AIS.AIS_Shape(shape)
             if self.main:
-                canva_top=self.frame.canva_top.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle=False )
-                canva_front=self.frame.canva_front.DisplayShape( shape, color_to_send, update, line_type , line_thickness ,toggle=False )
+                canva_top=self.frame.canva_top.DisplayShape(shape, color_to_send, update,
+                                                            line_type, line_thickness, toggle=False)
+                canva_front=self.frame.canva_front.DisplayShape(shape, color_to_send, update,
+                                                                line_type, line_thickness, toggle=False)
                 shape_to_display=v3DShape(shape,canva_top,canva_front)
             else:
                 shape_to_display=OCC.AIS.AIS_Shape(shape)
-            if toggle==False:
+            if toggle is False:
                 shape_to_display.UnsetSelectionMode()
             shape_to_display.SetContext(self._3dDisplay.Context.GetHandle())
-            LineType=Prs3d.Prs3d_LineAspect(color, line_type, line_thickness);
+            LineType = Prs3d.Prs3d_LineAspect(color, line_type, line_thickness)
 
-            Drawer=shape_to_display.Attributes().GetObject()
+            Drawer = shape_to_display.Attributes().GetObject()
             Drawer.SetWireAspect(LineType.GetHandle())
             Drawer.SetLineAspect(LineType.GetHandle())
             shape_to_display.SetAttributes(Drawer.GetHandle())
 
                 #print shape_to_display.canva_top
-            shape_to_display=shape_to_display.GetHandle()
+            shape_to_display = shape_to_display.GetHandle()
             self._3dDisplay.Context.SetColor(shape_to_display,color,0)
             ais_shapes.append(shape_to_display)
             if update:
@@ -1173,24 +1209,24 @@ class GraphicsCanva3D(wx.Panel):
             return ais_shapes
 
 class v3DShape(OCC.AIS.AIS_Shape):
-    canva_top=None
-    canva_front=None
-    def __init__(self,shape,canva_top=None,canva_front=None):
+    canva_top = None
+    canva_front = None
+    def __init__(self, shape,canva_top=None, canva_front=None):
         OCC.AIS.AIS_Shape.__init__(self,shape)
-        self.canva_top=canva_top
-        self.canva_front=canva_front
+        self.canva_top = canva_top
+        self.canva_front = canva_front
 
     def GetHandle(self):
         return Handle_v3DShape(OCC.AIS.AIS_Shape.GetHandle(self),self.canva_top,self.canva_front)
 
 
 class Handle_v3DShape(OCC.AIS.Handle_AIS_Shape):
-    canva_top=None
-    canva_front=None
-    def __init__(self,shape,canva_top=None,canva_front=None):
+    canva_top = None
+    canva_front = None
+    def __init__(self, shape, canva_top=None, canva_front=None):
         OCC.AIS.Handle_AIS_Shape.__init__(self,shape)
-        self.canva_top=canva_top
-        self.canva_front=canva_front
+        self.canva_top = canva_top
+        self.canva_front = canva_front
 
     def GetObject(self):
         return v3DShape(OCC.AIS.Handle_AIS_Shape.GetObject(self).Shape(),self.canva_top,self.canva_front)

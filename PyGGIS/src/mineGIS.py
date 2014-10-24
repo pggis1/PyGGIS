@@ -38,7 +38,7 @@
 import sys
 import os
 import os.path
-#import browser
+from addons import browser
 #import urllib
 from math import *
 
@@ -63,15 +63,15 @@ from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepPrim import *
 from OCC.gp import *
-import OCC.KBE
+#import OCC.KBE TMP
 #from OCC.KBE.TypesLookup import ShapeToTopology #for old pOCC
-from OCC.KBE.types_lut import ShapeToTopology
+#from OCC.KBE.types_lut import ShapeToTopology TMP
 import psycopg2
 from regim import *
 from utils import *
 from ggisFun import *
 
-VERSION = "for_pyOCE_0.5"
+VERSION = "Edited by Broly..."
 
 def CreateMaskedBitmap(fname, h=16, w=16):
     '''Ceate a masked bitmap where the mask colour is pink.'''
@@ -85,6 +85,7 @@ def CreateMaskedBitmap(fname, h=16, w=16):
     except:
         return None
 
+
 def CreatePng(fname, h=16, w=16):
     '''Ceate a png .'''
     try:
@@ -95,6 +96,7 @@ def CreatePng(fname, h=16, w=16):
     except:
         return None
 
+
 def CreateGif(fname, h=16, w=16):
     '''Ceate a gif.'''
     try:
@@ -102,6 +104,7 @@ def CreateGif(fname, h=16, w=16):
         return img
     except:
         return None
+
 
 def CreateXpm(fname, h=16, w=16):
     '''Ceate a xpm.'''
@@ -112,6 +115,7 @@ def CreateXpm(fname, h=16, w=16):
         return img
     except:
         return None
+
 
 def GetRecentFiles(fname):
     '''Open a text file which contains details of the previously opened files.'''
@@ -126,6 +130,7 @@ def GetRecentFiles(fname):
         return result
     else: return []
 
+
 def SaveRecentFiles(filelist, fname):
     '''Save the recent file list to the text file.'''
     if filelist:
@@ -138,6 +143,7 @@ def SaveRecentFiles(filelist, fname):
         f.flush
         f.close
 
+
 def SaveLayout(maximised, position, size, perspective, fname):
     """Save the application window layout to a file."""
     f = open(fname, 'w')
@@ -147,6 +153,7 @@ def SaveLayout(maximised, position, size, perspective, fname):
     f.write(perspective)
     f.flush()
     f.close()
+
 
 def LoadLayout(fname):
     """Read the application layout from a file."""
@@ -170,11 +177,13 @@ def LoadLayout(fname):
     except:
         pass
 
+
 def YesNo(parent, question, caption='Yes or No?'):
     dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
     result = dlg.ShowModal() == wx.ID_YES
     dlg.Destroy()
     return result
+
 
 class AppFrame(wx.Frame):
     def __init__(self, parent):
@@ -201,13 +210,13 @@ class AppFrame(wx.Frame):
 
         self.panel1.win = wx.Panel(self.panel1, -1, size = wx.DefaultSize)
 
-        topsizer_K = wx.BoxSizer( wx.HORIZONTAL );
+        topsizer_K = wx.BoxSizer(wx.HORIZONTAL)
         #topsizer_K_left = wx.BoxSizer( wx.VERTICAL );
-        topsizer_K_left = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Проекция" ), wx.VERTICAL )
-        topsizer_K_right = wx.BoxSizer( wx.VERTICAL );
-        topsizer_K_right_top = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Сверху" ), wx.VERTICAL )
-        topsizer_K_right_front = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Спереди" ), wx.VERTICAL )
-        self.canva = GraphicsCanva3D(self.panel1.win,True)
+        topsizer_K_left = wx.StaticBoxSizer( wx.StaticBox( self.panel1.win, -1, u"Проекция" ), wx.VERTICAL)
+        topsizer_K_right = wx.BoxSizer(wx.VERTICAL)
+        topsizer_K_right_top = wx.StaticBoxSizer(wx.StaticBox( self.panel1.win, -1, u"Сверху" ), wx.VERTICAL)
+        topsizer_K_right_front = wx.StaticBoxSizer(wx.StaticBox( self.panel1.win, -1, u"Спереди" ), wx.VERTICAL)
+        self.canva = GraphicsCanva3D(self.panel1.win, True)
         self.canva_top = GraphicsCanva3D(self.panel1.win)
         self.canva_front = GraphicsCanva3D(self.panel1.win)
 
@@ -248,9 +257,9 @@ class AppFrame(wx.Frame):
 
         self.panel3 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Для сообщений протокола
         nb.AddPage(self.panel3, 'С')
-        topsizer_M = wx.BoxSizer( wx.VERTICAL );
+        topsizer_M = wx.BoxSizer( wx.VERTICAL)
         self.msgWin = wx.TextCtrl(self.panel3, -1, size=wx.DefaultSize,
-                                  style = wx.TE_MULTILINE|#wx.TE_READONLY|
+                                  style=wx.TE_MULTILINE|#wx.TE_READONLY|
                                   wx.HSCROLL|wx.TE_RICH2|wx.TE_WORDWRAP )
         topsizer_M.Add(self.msgWin,
                      1,             # make vertically stretchable
@@ -263,7 +272,7 @@ class AppFrame(wx.Frame):
 
         self.panel4 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Для интерпретаатора питона
         nb.AddPage(self.panel4, 'П')
-        topsizer_P = wx.BoxSizer( wx.VERTICAL );
+        topsizer_P = wx.BoxSizer(wx.VERTICAL)
         intronote = "Interactive Python Shell for pythonOCC."
         py = wx.py.shell.Shell(self.panel4, - 1, introText=intronote, size=(800,700))
         py.interp.locals["self"] = self             # Для доступа из интерпретатора
@@ -272,13 +281,13 @@ class AppFrame(wx.Frame):
         py.interp.locals["canvas_front"] = self.canva_front     # Для доступа из интерпретатора
         self.pyshell = py
         topsizer_P.Add(py, flag=wx.EXPAND)
-        self.panel4.SetSizer( topsizer_P )    # use the sizer for layout
+        self.panel4.SetSizer(topsizer_P)    # use the sizer for layout
 
         self.tb1 = self.CreateRightToolbar()
         self.tb2 = self.CreateGgisToolbar()
         self._mgr.AddPane(self.tb1, wx.aui.AuiPaneInfo().Name("View").Caption("View").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
         self._mgr.AddPane(self.tb2, wx.aui.AuiPaneInfo().Name("GGIS").Caption("GGIS").ToolbarPane().Top().TopDockable(True).BottomDockable(True))
-        #Кнопочное меню
+        #Кнопочное меню / ButtonMenu
         self.buttonMenu=[
                 #['',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
                 ['add',wx.NewId(),u'Главное меню',self.NavigateMenu,None,'main'],
@@ -395,9 +404,12 @@ class AppFrame(wx.Frame):
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
-                ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None]
+                ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None],
+                ['',wx.NewId(),u'Добавить текст',self.OnAddText,None],
+                ['',wx.NewId(),u'Сетка',self.OnShowNet,None]
                 ]
-        self.menu_now='main'
+
+        self.menu_now = 'main'
         self.tb3 = self.CreateMenu()
         self.NavigateMenu()
         self._mgr.AddPane(self.tb3, wx.aui.AuiPaneInfo().Name("Builder").Caption("Построитель карьеров").ToolbarPane().Left().LeftDockable())
@@ -415,7 +427,7 @@ class AppFrame(wx.Frame):
             self._mgr.Update()
             self.SetSize(size)
             self.SetPosition(position)
-            if maxresembleimised:
+            if maximised:
                 self.Maximize()
         self.statusbar = self.CreateStatusBar(3, wx.ST_SIZEGRIP)
         # Creating Menu
@@ -617,9 +629,8 @@ class AppFrame(wx.Frame):
         self.InitCanva(self.canva)
         self.InitCanva(self.canva_top)
         self.InitCanva(self.canva_front)
-        pass
 
-    def InitCanva(self,canva):
+    def InitCanva(self, canva):
         canva.frame = self
         canva.GumLine = False
         canva.MakeLine = False
@@ -633,25 +644,25 @@ class AppFrame(wx.Frame):
         return wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
 
     def NavigateMenu(self,event=None,menuname='main'):
-        if(event<>None):
-            if not isinstance(event.EventObject,wx.Button):
+        if event is not None:
+            if not isinstance(event.EventObject, wx.Button):
                 return
-            for i,v in enumerate(self.buttonMenu):
-                if v[1]==event.EventObject.GetId() and (v[0]==self.menu_now or v[0]==''):
-                    menuname=v[5]
-                    self.menu_now=menuname
+            for i, v in enumerate(self.buttonMenu):
+                if v[1] == event.EventObject.GetId() and (v[0] == self.menu_now or v[0] == ''):
+                    menuname = v[5]
+                    self.menu_now = menuname
                     break
         else:
-            self.menu_now=menuname
+            self.menu_now = menuname
         self.tb3.ClearTools()
         self.tb3.AddControl(wx.StaticText(self.tb3, wx.NewId(), menu_titles[menuname], wx.DefaultPosition, wx.DefaultSize, 0))
         self.tb3.AddSeparator()
         for i,v in enumerate(self.buttonMenu):
-            if v[0]==menuname or v[0]=='':
-                if v[2]==u'---':
+            if v[0] == menuname or v[0] == '':
+                if v[2] == u'---':
                     self.tb3.AddSeparator()
                 else:
-                    self.buttonMenu[i][4]=wx.Button(self.tb3, v[1], v[2],size=(150,30))
+                    self.buttonMenu[i][4] = wx.Button(self.tb3, v[1], v[2],size=(150,30))
                     self.tb3.AddControl(self.buttonMenu[i][4])
                     self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][3], self.buttonMenu[i][4])
         self.tb3.Fit()
@@ -682,37 +693,37 @@ class AppFrame(wx.Frame):
         self.OnCancel(event)
         self.NavigateMenu(event)
 
-    def OnEdgeEnd(self,event):
-        Coord_yes(self,True)
+    def OnEdgeEnd(self, event):
+        Coord_yes(self, True)
         self.NavigateMenu(event)
 
-    def OnEdgeClose(self,event):
-        Coord_yes(self,True,True)
+    def OnEdgeClose(self, event):
+        Coord_yes(self, True, True)
         self.NavigateMenu(event)
 
-    def OnWayPLineYes(self,event):
-        s1=self.canva.tmpEdge.GetObject().Shape()
+    def OnWayPLineYes(self, event):
+        s1 = self.canva.tmpEdge.GetObject().Shape()
 
-        pnts=getPoints(s1)
+        pnts = getPoints(s1)
         plgn = BRepBuilderAPI_MakePolygon()
-        hall=0
+        hall = 0
         plgn.Add(gp_Pnt(pnts[0][0], pnts[0][1], pnts[0][2]))
-        for i in range(1,len(pnts)):
-            l=distance3d(pnts[-1],pnts[i])
-            h=l*math.sin(math.radians(float(self.wayAngle.Value)))
-            hall+=h
+        for i in xrange(1, len(pnts)):
+            l = distance3d(pnts[-1], pnts[i])
+            h = l*math.sin(math.radians(float(self.wayAngle.Value)))
+            hall += h
             plgn.Add(gp_Pnt(pnts[i][0], pnts[i][1], pnts[i][2]-hall))
         #plgn.Add(gp_Pnt(pnts[-1][0], pnts[-1][1], pnts[-1][2]-h))
-        s1=plgn.Wire()
+        s1 = plgn.Wire()
 
-        w1=make_offset(s1,int(self.wayWidth.GetValue())/2,round=False,close=False)
-        pnts=getPoints(w1)
+        w1 = make_offset(s1,int(self.wayWidth.GetValue())/2,round=False,close=False)
+        pnts = getPoints(w1)
         self.OnPLine(event)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
 
-        w2=make_offset(s1,int(self.wayWidth.GetValue())/-2,round=False,close=False)
-        pnts=getPoints(w2)
+        w2 = make_offset(s1, int(self.wayWidth.GetValue())/-2, round=False, close=False)
+        pnts = getPoints(w2)
         self.OnPLine(event)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
@@ -722,16 +733,16 @@ class AppFrame(wx.Frame):
         self.NavigateMenu(event)
         pass
 
-    def OnWayCreate(self,event):
-        pnts=getPoints(self.canva.drawList[self.canva.tempIndex][2].Shape())
+    def OnWayCreate(self, event):
+        pnts = getPoints(self.canva.drawList[self.canva.tempIndex][2].Shape())
         print pnts
         print self.canva.tempPointIndex
-        width=int(self.wayWidth.Value)
-        l=int(self.wayLen.Value)
-        angle=int(self.wayAngle.Value)
+        width = int(self.wayWidth.Value)
+        l = int(self.wayLen.Value)
+        angle = int(self.wayAngle.Value)
 
 
-        newPnts=[]
+        newPnts = []
         for i in range(self.canva.tempPointIndex,len(pnts)):
             newPnts.append(pnts[i])
         for i in range(self.canva.tempPointIndex):
@@ -740,13 +751,13 @@ class AppFrame(wx.Frame):
 
         plgn = BRepBuilderAPI_MakePolygon()
 
-        i=0
-        while l>0:
+        i = 0
+        while l > 0:
             try:
-                pnt1=newPnts[i]
-                i+=1
-                d=distance2d(pnt1,newPnts[i])
-                l-=d
+                pnt1 = newPnts[i]
+                i += 1
+                d = distance2d(pnt1,newPnts[i])
+                l -= d
                 print d
                 plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]*0+10))
             except IndexError:
@@ -756,16 +767,16 @@ class AppFrame(wx.Frame):
 
         pass
 
-    def OnDrillMoveOk(self,event):
-        x=self.canva.worldPt[0]
-        y=self.canva.worldPt[1]
-        z=self.canva.worldPt[2]
+    def OnDrillMoveOk(self, event):
+        x = self.canva.worldPt[0]
+        y = self.canva.worldPt[1]
+        z = self.canva.worldPt[2]
 
         dept=self.canva.drawList[self.canva.tempIndex][9]
 
         skv = BRepPrim_Cylinder(gp_Pnt(x,y,z-dept), 0.1, dept)
         skv = skv.Shell()
-        s1=self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
+        s1 = self.canva._3dDisplay.DisplayColoredShape(skv, 'YELLOW', False)
 
         self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
 
@@ -782,12 +793,12 @@ class AppFrame(wx.Frame):
         self.OnCancel(event)
         self.NavigateMenu(event)
 
-    def OnEdgeOffset(self,event):
-        s1=self.canva._3dDisplay.selected_shape
+    def OnEdgeOffset(self, event):
+        s1 = self.canva._3dDisplay.selected_shape
         if not s1:
             return
-        w=make_offset(s1,int(self.ploshWidth.GetValue()))
-        pnts=getPoints(w)
+        w = make_offset(s1,int(self.ploshWidth.GetValue()))
+        pnts = getPoints(w)
         self.OnPLine(event)
         self.canva.lstPnt=pnts
         Coord_yes(self,True)
@@ -799,18 +810,18 @@ class AppFrame(wx.Frame):
             w=make_offset(s1,x*2,0)
             s1=self.canva._3dDisplay.DisplayColoredShape(w, OCC.Quantity.Quantity_Color(0.5,0.5,0.9,0), False).GetObject().Shape()"""
 
-    def OnEdgeContinue(self,event):
-        sel_shape=self.canva._3dDisplay.selected_shape
+    def OnEdgeContinue(self, event):
+        sel_shape = self.canva._3dDisplay.selected_shape
         if sel_shape:
             object_type=self.getTypeByMenu()
             indexInfo = None;
             for i in range(len(self.canva.drawList)):
                 s1 = self.canva.drawList[i][2]
                 if s1:
-                    if (s1.Shape().IsEqual(sel_shape) and self.canva.drawList[i][0]==object_type):
+                    if (s1.Shape().IsEqual(sel_shape) and self.canva.drawList[i][0] == object_type):
                         indexInfo = i
                         break
-            if indexInfo == None:
+            if indexInfo is None:
                 return
 
             selObj = self.canva._3dDisplay.Context.SelectedInteractive()
@@ -820,14 +831,14 @@ class AppFrame(wx.Frame):
             self.OnPLine(event)
             self.NavigateMenu(event)
 
-    def OnEdgeUndo(self,event):
-        if len(self.canva.lstPnt)>2:
+    def OnEdgeUndo(self, event):
+        if len(self.canva.lstPnt) > 2:
             self.canva.coord.SetValue(str(self.canva.lstPnt[-2][0])+','+str(self.canva.lstPnt[-2][1])+','+str(self.canva.lstPnt[-2][2]))
-            self.canva.lstPnt=self.canva.lstPnt[:-2]
+            self.canva.lstPnt = self.canva.lstPnt[:-2]
             Coord_yes(self)
-        elif len(self.canva.lstPnt)==2:
+        elif len(self.canva.lstPnt) == 2:
             self.canva.coord.SetValue(str(self.canva.lstPnt[0][0])+','+str(self.canva.lstPnt[0][1])+','+str(self.canva.lstPnt[0][2]))
-            self.canva.lstPnt=[]
+            self.canva.lstPnt = []
             Coord_yes(self)
             if self.canva.tmpEdge:
                 self.canva.Erase(self.canva.tmpEdge)
@@ -835,39 +846,39 @@ class AppFrame(wx.Frame):
         else:
             self.OnEdgeCancel(event)
 
-    def OnErase(self,event):
+    def OnErase(self, event):
         """
         Erase query
         """
-        needSave=False
+        needSave = False
         for element in self.canva.drawList:
             needSave = needSave or element[-1]
         if needSave:
             dlg = wx.MessageDialog(self, u"Сохранить изменения перед очисткой?", u'Были изменены элементы карьера', wx.YES | wx.NO | wx.CANCEL | wx.ICON_QUESTION)
             result = dlg.ShowModal()
             dlg.Destroy()
-            if result==wx.ID_YES:
+            if result == wx.ID_YES:
                 SaveDB(self)
-            elif result==wx.ID_CANCEL:
+            elif result == wx.ID_CANCEL:
                 return
         self.canva.EraseAll()
         self.canva.drawList = []
 
-    def OnCutNavigateMenu(self,event):
+    def OnCutNavigateMenu(self, event):
         self.CutPlines=[[],[],[]]
         self.NavigateMenu(event)
 
-    def OnCutPLine1(self,event):
+    def OnCutPLine1(self, event):
         self.OnCutPLine(event,0)
         pass
-    def OnCutPLine2(self,event):
+    def OnCutPLine2(self, event):
         self.OnCutPLine(event,1)
         pass
-    def OnCutPLine3(self,event):
+    def OnCutPLine3(self, event):
         self.OnCutPLine(event,2)
         pass
 
-    def OnCutPLine(self,event,num=None):
+    def OnCutPLine(self, event, num=None):
         self.canva.snap.SetSelection(0)
         self.cutPlineId=num
         self.OnPLine(event)
@@ -878,10 +889,10 @@ class AppFrame(wx.Frame):
             Coord_yes(self)
         self.NavigateMenu(event)
 
-    def OnCutPLineYesMany(self,event):
+    def OnCutPLineYesMany(self, event):
         self.OnCutPLineYes(event,True)
 
-    def OnCutPLineYes(self,event,force=False):
+    def OnCutPLineYes(self,event, force=False):
         """
         PLine(self)
         self.canva.lstPnt=pnts
@@ -949,7 +960,7 @@ class AppFrame(wx.Frame):
 
     def CreateRightToolbar(self):
         # Начало формирования палитры
-        tb = wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER) #| wx.TB_VERTICAL )
+        tb = wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)  #| wx.TB_VERTICAL )
 
         tb.SetToolBitmapSize((24, 24))
         zoom_all = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'zoom_all.bmp'), 24, 24)
@@ -1023,6 +1034,12 @@ class AppFrame(wx.Frame):
 
         # Coord input cyx
         tb.AddSeparator()'''
+        # Ввод текста /broly
+        tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Текст: ', wx.DefaultPosition, wx.DefaultSize, 0))
+        self.textxyz = wx.NewId()
+        self.canva.text = wx.TextCtrl(tb, self.textxyz, "<координаты>", wx.DefaultPosition, (190, 40), 0)
+        tb.AddControl(self.canva.text)
+
         # Ввод координат
         tb.AddControl(wx.StaticText(tb, wx.NewId(), u'Точка: ', wx.DefaultPosition, wx.DefaultSize, 0))
         self.coordXYZ = wx.NewId()
@@ -1052,7 +1069,7 @@ class AppFrame(wx.Frame):
         tb.Realize()
         return tb
 
-    def createOptionsPane(self):
+    def createOptionsPane(self): #!_!
         # Создание окна параметров рисования
         # Оставляет атрибуты главного окна self
         #
@@ -1131,12 +1148,12 @@ class AppFrame(wx.Frame):
 
         self.gorLst = wx.CheckListBox(panel, -1,
                                  #(10,30),
-                                 size=(120,300),
+                                 size=(120, 300),
                                  choices=self.horList,
                                  style=wx.LB_MULTIPLE)
         horBox.Add(self.gorLst, flag=wx.EXPAND)
 
-        horBox.Add((10,40))
+        horBox.Add((10, 40))
         horBox.Add(wx.StaticText(panel, -1, "Текущий горизонт",size=(180,20)),
                    flag=wx.EXPAND)
 
@@ -1162,7 +1179,7 @@ class AppFrame(wx.Frame):
                                  style=wx.LB_MULTIPLE)
         objBox.Add(self.chkObjs, flag=wx.EXPAND)
 
-        objBox.Add((10,40))
+        objBox.Add((10, 40))
         objBox.Add(wx.StaticText(panel,-1,"Шаг сетки",size=(130,20)),
                    flag=wx.EXPAND)
         self.stepXY = wx.SpinCtrl(panel, -1,
@@ -1173,7 +1190,7 @@ class AppFrame(wx.Frame):
                                   min = 0, max = 100, initial = 0)
 
         objBox.Add(self.stepXY, flag=wx.EXPAND)
-        objBox.Add((10,40))
+        objBox.Add((10, 40))
 
         btnRefresh = wx.Button(panel, -1,       # Кнопка Обновить
                                label = "Обновить",
@@ -1186,7 +1203,7 @@ class AppFrame(wx.Frame):
         dataBox.Add((40,10))
 
         par1Box = wx.BoxSizer(wx.VERTICAL)       # Колонка для параметров 1
-        par1Box.Add(wx.StaticText(panel,-1,"Тип бровки",size = (130,20)),
+        par1Box.Add(wx.StaticText(panel, -1, "Тип бровки",size = (130, 20)),
                     flag=wx.EXPAND)
         #[[id_edge_type,  name, line_type, color, thickness] , ... ]
         edges_type = GetRowsTbl("edge_type", "")
@@ -1247,20 +1264,20 @@ class AppFrame(wx.Frame):
         for coord in coord_systems:
             self.coordList = self.coordList + [list(coord)]
             coordLst = coordLst + [coord[2]]
-        if (coordLst):
+        if coordLst:
             value = coordLst[0]
         else:
             value = "Нет координатных систем"
-        self.coordCur =  wx.ComboBox(panel, -1,
+        self.coordCur = wx.ComboBox(panel, -1,
                                          value,
                                          size=(150, 30),
                                          choices=coordLst,
                                          style=wx.CB_READONLY)
         self.coordCur.SetSelection(0)
-        par1Box.Add(self.coordCur, flag=wx.EXPAND, border = 1)
+        par1Box.Add(self.coordCur, flag=wx.EXPAND, border=1)
 
-        par1Box.Add((10,40))
-        par1Box.Add(wx.StaticText(panel,-1,"Глубина сважины",size = (180,20)),
+        par1Box.Add((10, 40))
+        par1Box.Add(wx.StaticText(panel, -1, "Глубина сважины", size = (180, 20)),
                     flag=wx.EXPAND)
         self.drillH = wx.TextCtrl(panel, -1, "16",size=(150,30))
         par1Box.Add(self.drillH, flag=wx.EXPAND, border = 1)
@@ -1290,19 +1307,19 @@ class AppFrame(wx.Frame):
         for line in lines_type:
             self.line_typeList = self.line_typeList + [list(line)]
             lineLst = lineLst + [line[1]]
-        if (lineLst):
+        if lineLst:
             value = lineLst[0]
         else:
             value = "Нет типов линий в БД"
-        self.line_typeCur =  wx.ComboBox(panel, -1,
+        self.line_typeCur = wx.ComboBox(panel, -1,
                                          value,
                                          size=(150, 30),
                                          choices=lineLst,
                                          style=wx.CB_READONLY)
         self.line_typeCur.SetSelection(0)
-        par2Box.Add(self.line_typeCur, flag=wx.EXPAND, border = 1)
-        par2Box.Add((10,40))
-        par2Box.Add(wx.StaticText(panel,-1,"Цвет линии",size = (130,20)),
+        par2Box.Add(self.line_typeCur, flag=wx.EXPAND, border=1)
+        par2Box.Add((10, 40))
+        par2Box.Add(wx.StaticText(panel,-1,"Цвет линии",size = (130, 20)),
                     flag=wx.EXPAND)
 
         colorS = GetRowsTbl("color", "")
@@ -1312,7 +1329,7 @@ class AppFrame(wx.Frame):
         for color in colorS:
             self.colorList = self.colorList + [list(color)]
             colorLst = colorLst + [color[1]]
-        if (colorLst):
+        if colorLst:
             value = colorLst[0]
         else:
             value = "Нет цветов в БД"
@@ -1353,20 +1370,20 @@ class AppFrame(wx.Frame):
         dataBox.Add(par2Box,flag=wx.EXPAND)     # Включить в сайзер
         #dataBox.Add((40,10))
 
-
         panel.SetSizer(dataBox)
         panel.SetAutoLayout(True)
         dataBox.Fit(panel)
 
         pass
     #=====================================================
+
     def ExecPyFile(self, event):
         if not hasattr(self, "workingdir"):
             self.workingdir = "."
         dlg = wx.FileDialog(self, "Execute Script", self.workingdir, "",
                          "Python Files (*.py)|*.py|All Files (*.*)|*.*",
                          wx.OPEN)
-        if dlg.ShowModal() <> wx.ID_OK:
+        if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
             return False
 
@@ -1385,7 +1402,7 @@ class AppFrame(wx.Frame):
             dlg = wx.MessageDialog(self, msg, "Method Error", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            msg = "Unable to execute script [%s]" % (fullpathname)
+            msg = "Unable to execute script [%s]" % fullpathname
         wx.EndBusyCursor()
 
     def OnAbout(self, event):
@@ -1436,8 +1453,8 @@ class AppFrame(wx.Frame):
         if not hasattr(self, "workingdir"):
             self.workingdir = "."
         dlg = wx.FileDialog(self, "Save", self.workingdir, "Image.bmp",
-                         "Bitmap file (*.bmp)|*.bmp|All Files (*.*)|*.*",
-                         wx.SAVE | wx.HIDE_READONLY)
+                            "Bitmap file (*.bmp)|*.bmp|All Files (*.*)|*.*",
+                            wx.SAVE | wx.HIDE_READONLY)
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
             return False
@@ -1682,7 +1699,6 @@ class AppFrame(wx.Frame):
         """Рисование отрезка"""
         CLine(self)
 
-
     def OnPLine(self, event):
         """ Рисование ломаной """
         PLine(self)
@@ -1745,7 +1761,7 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(2)
-        if (self.canva.snap.GetCurrentSelection() == 2):
+        if self.canva.snap.GetCurrentSelection() == 2:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrMerge
             self.canva.EdStep = 1
@@ -1754,12 +1770,12 @@ class AppFrame(wx.Frame):
             self.SetStatusText("*** Нет Near ***", 0)
         pass
 
-    def OnEdBrSelB(selfself,event):
+    def OnEdBrSelB(self,event):
         """ выбрать бровку """
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(2)
-        if (self.canva.snap.GetCurrentSelection() == 2):
+        if self.canva.snap.GetCurrentSelection() == 2:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrSelB
             self.canva.EdStep = 1
@@ -1772,7 +1788,7 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(1)
-        if (self.canva.snap.GetCurrentSelection() == 1):
+        if self.canva.snap.GetCurrentSelection() == 1:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrMoveP
             self.canva.EdStep = 1
@@ -1786,7 +1802,7 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(1)
-        if (self.canva.snap.GetCurrentSelection() == 1):
+        if self.canva.snap.GetCurrentSelection() == 1:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrMoveV
             self.canva.EdStep = 1
@@ -1800,7 +1816,7 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(2)
-        if (self.canva.snap.GetCurrentSelection() == 2):
+        if self.canva.snap.GetCurrentSelection() == 2:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrInsV
             self.canva.EdStep = 1
@@ -1815,7 +1831,7 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
 
         self.canva.snap.SetSelection(1)
-        if (self.canva.snap.GetCurrentSelection() == 1):
+        if self.canva.snap.GetCurrentSelection() == 1:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrDelV
             self.canva.EdStep = 1
@@ -1829,7 +1845,7 @@ class AppFrame(wx.Frame):
         self.canva.SetTogglesToFalse(event)
         # сохранить старые привязки
         self.canva.snap.SetSelection(2)
-        if (self.canva.snap.GetCurrentSelection() == 2):
+        if self.canva.snap.GetCurrentSelection() == 2:
             self.NavigateMenu(event)
             self.canva.EdCmd = CMD_EdBrBrkV
             self.canva.EdStep = 1
@@ -1855,16 +1871,16 @@ class AppFrame(wx.Frame):
         if not sel_shape:
             self.SetStatusText("Выберите объект и повторите команду", 0)
             return
-        indexInfo = None;
-        for i in range(len(self.canva.drawList)):
+        indexInfo = None
+        for i in xrange(len(self.canva.drawList)):
             s1 = self.canva.drawList[i][2]
             if s1:
-                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                     indexInfo = i
                     break
-        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+        if indexInfo is not None and not self.canva.drawList[indexInfo][0] in (0,1,3):
             return
-        w=invert(sel_shape)
+        w = invert(sel_shape)
         '''
         edge_type=self.egde_typeList[self.canva.drawList[indexInfo][]]
         for i in range(len(self.colorList)):
@@ -1878,21 +1894,21 @@ class AppFrame(wx.Frame):
         self.canva.drawList[indexInfo][2]=OCC.AIS.AIS_Shape(w)
         self.canva.drawList[indexInfo][-1]=True
 
-    def OnLenth(self,event):
+    def OnLenth(self, event):
         sel_shape = self.canva._3dDisplay.selected_shape
         if not sel_shape:
             self.SetStatusText("Выберите объект и повторите команду", 0)
             return
-        indexInfo = None;
-        for i in range(len(self.canva.drawList)):
+        indexInfo = None
+        for i in xrange(len(self.canva.drawList)):
             s1 = self.canva.drawList[i][2]
             if s1:
-                if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+                if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                     indexInfo = i
                     break
-        if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+        if indexInfo is not None and not self.canva.drawList[indexInfo][0] in (0,1,3):
             return
-        pnts=getPoints(sel_shape)
+        pnts = getPoints(sel_shape)
         self.msgWin.AppendText(u"Длинна каркаса: "+str(length(pnts)+"\n"))
 
     def OnDebug(self,event):
@@ -1920,26 +1936,29 @@ class AppFrame(wx.Frame):
         self._refreshui()
         '''
 
-        gridSize=self.stepXY.GetValue()
-        if gridSize>0:
+        gridSize = self.stepXY.GetValue()
+        if gridSize > 0:
             minx, miny = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(0, 0)[:2]
             maxx, maxy = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(self.canva.GetSize()[0], self.canva.GetSize()[1])[:2]
             #print minx, miny, maxx, maxy
-            if maxx>minx:
-                stepx=1
+            if maxx > minx:
+                stepx = 1
             else:
-                stepx=-1
-            if maxy>miny:
-                stepy=1
+                stepx = -1
+            if maxy > miny:
+                stepy = 1
             else:
-                stepy=-1
-            for x in range(int(minx),int(maxx)+stepx,stepx):
-                for y in range(int(miny),int(maxy)+stepy,stepy):
-                    if x%gridSize==0 and y%gridSize==0:
-                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(x,miny,0),gp_Pnt(x,maxy,0)).Edge()
+                stepy = -1
+            for x in range(int(minx), int(maxx)+stepx,stepx):
+                for y in range(int(miny), int(maxy)+stepy,stepy):
+                    if x % gridSize == 0 and y % gridSize == 0:
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(x, miny, 0), gp_Pnt(x, maxy, 0)).Edge()
+                        self.canva.DisplayShape(edge, 'BLACK', False, 0, 1, False)
+                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx, y, 0),gp_Pnt(maxx, y, 0)).Edge()
                         self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
-                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx,y,0),gp_Pnt(maxx,y,0)).Edge()
-                        self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
+
+
+
 
         return
         print '---==========---'
@@ -1957,6 +1976,41 @@ class AppFrame(wx.Frame):
         print self.line_typeList
         print 'self.colorList:'
         print self.colorList
+
+    def OnAddText(self, event):
+        self.canva.EdCmd = CMD_AddText
+
+    def OnShowNet(self, event):
+        ListEdges = []
+        if self.canva.Net_DoOnce == 0:
+            List = []
+            for i in range(0,11):
+                edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(i*500-2500, 0-2500, 0), gp_Pnt(i*500-2500, 5000-2500, 0))
+                edge2 = BRepBuilderAPI_MakeEdge(gp_Pnt(0-2500, i*500-2500, 0), gp_Pnt(5000-2500, i*500-2500, 0))
+                List.append(edge1)
+                List.append(edge2)
+            self.canva.Net_rev = 1
+            self.canva.Net_DoOnce = 1
+
+        z = 0
+        if self.canva.Net_rev:
+            print "creating NET"
+            self.canva.Net_rev = 0
+            for i in range(0,22):
+
+                edge1 = List[i]
+                redge = self.canva.DisplayShape(edge1.Edge(), 'GREEN')
+                ListEdges.append(redge)
+
+        else:
+            self.canva.Net_rev = 1
+            print "destroing NET"
+            for i in range(0, 22):
+                redge = ListEdges[i]
+                self.canva.Erase(redge)
+
+        #self.canva.Net_rev = not self.canva.Net_rev#
+
 
 
 #====================================================================

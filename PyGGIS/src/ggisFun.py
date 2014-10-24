@@ -8,18 +8,18 @@ from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepPrim import *
 from OCC.gp import *
-#from OCC.KBE.TypesLookup import ShapeToTopology
-from OCC.KBE.types_lut import ShapeToTopology
 import psycopg2
 from regim import *
 from utils import *
 from liblas import *
-import os, time
+import os
+import time
 from math import *
-#from inpLAS import *
+from inpLAS import *
 from random import random
 
 from OCC.Quantity import Quantity_Color
+
 
 def SaveProt(self):
     """ Сохранение протокола в файле """
@@ -35,7 +35,8 @@ def SaveProt(self):
         fileName = dlg.GetPath()
         self.msgWin.SaveFile(fileName)
     dlg.Destroy()
-    
+
+
 def CLine(self):
     """Рисование отрезка"""
     #self.canva.SetTogglesToFalse(event)
@@ -48,6 +49,7 @@ def CLine(self):
     self._refreshui()
     #if not (self.canva._3dDisplay.Context.HasOpenedContext()):
     #    self.canva._3dDisplay.Context.OpenLocalContext(True)    #False
+
 
 def PLine(self):
     """ Рисование ломаной """
@@ -63,17 +65,19 @@ def PLine(self):
     #if not (self.canva._3dDisplay.Context.HasOpenedContext()):
     #    self.canva._3dDisplay.Context.OpenLocalContext(True,True,True,True)    #False
 
+
 def CAxis(self):
     """ Рисование длинных осей """
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
-                        gp_Pnt(0, 10000, 0))
+                                   gp_Pnt(0, 10000, 0))
     self.canva.DisplayShape(edge.Edge(), 'CYAN')            
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
-                        gp_Pnt(10000, 0, 0))
+                                   gp_Pnt(10000, 0, 0))
     self.canva.DisplayShape(edge.Edge(), 'CYAN')       
     edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
-                        gp_Pnt(0, 0, 10000))
+                                   gp_Pnt(0, 0, 10000))
     self.canva.DisplayShape(edge.Edge(), 'CYAN')
+
 
 def Point(self):
     self.canva.MakePLine = False
@@ -84,6 +88,7 @@ def Point(self):
     self.canva.tmpEdge = None
     self.SetStatusText("Укажите точку", 0)
     self._refreshui()
+
 
 def CreateDB(self): 
     """ Создание элементов в базе данных PostGIS """ 
@@ -114,10 +119,10 @@ def CreateDB(self):
             X = X00 + D1 * cos(fi)
             Y = Y00 + D1 * sin(fi) * D2_D1
             geom = geom + "%.0f %.0f %.0f" % (X, Y, Z)
-            if (j < (m - 1)):
-                geom = geom + ","
-            Cnt = Cnt + 1
-        geom = geom + ")')"
+            if j < (m - 1):
+                geom += ","
+            Cnt += 1
+        geom += ")')"
         #print geom
         query = "INSERT INTO topograph (heigth,coord_sys,geom) VALUES (" + str(Z) + ",1," + geom + ");"  
         #print query
@@ -146,7 +151,7 @@ def CreateDB(self):
     curs.execute("DELETE FROM drills")
     curs.execute("DELETE FROM horizons WHERE id_hor>3")
         
-    for i in range(0, n):        # По горизонтам
+    for i in xrange(0, n):        # По горизонтам
         D1 = D10 + i * R
         Z = Z0 + (i * Hust)
         self.SetStatusText("Создаается горизонт" + str(Z), 2)
@@ -162,11 +167,11 @@ def CreateDB(self):
             fi = j * D_Ugol
             X = X00 + D1 * cos(fi)
             Y = Y00 + D1 * sin(fi) * D2_D1
-            geom = geom + "%.0f %.0f %.0f" % (X, Y, Z)
-            if (j < (m - 1)):
-                geom = geom + ","
-            Cnt = Cnt + 1
-        geom = geom + ")')"
+            geom += "%.0f %.0f %.0f" % (X, Y, Z)
+            if j < (m - 1):
+                geom += ","
+            Cnt += 1
+        geom += ")')"
         #print geom
         query = "INSERT INTO edge (hor,edge_type,geom) VALUES (" + str(id_hor) + ",2," + geom + ");"  
         #print query
@@ -174,15 +179,15 @@ def CreateDB(self):
         # Нижняя бровка
         geom = "GeomFromEWKT('SRID=-1;LINESTRING("
         D2 = D1 + R - Hust / 2
-        for j in range(0, m):
+        for j in xrange(0, m):
             fi = j * D_Ugol
             X = X00 + D2 * cos(fi)
             Y = Y00 + D2 * sin(fi) * D2_D1
-            geom = geom + "%.0f %.0f %.0f" % (X, Y, Z)
-            if (j < (m - 1)):
-                geom = geom + ","
-            Cnt = Cnt + 1
-        geom = geom + ")')"
+            geom += "%.0f %.0f %.0f" % (X, Y, Z)
+            if j < (m - 1):
+                geom += ","
+            Cnt += 1
+        geom += ")')"
         #print geom
         query = "INSERT INTO edge (hor,edge_type,geom) VALUES (" + str(id_hor) + ",1," + geom + ");"  
         #print query
@@ -194,25 +199,25 @@ def CreateDB(self):
             fi = j * D_Ugol
             X = X00 + D2 * cos(fi)
             Y = Y00 + D2 * sin(fi) * D2_D1
-            geom = geom + "%.0f %.0f %.0f," % (X, Y, Z)
+            geom += "%.0f %.0f %.0f," % (X, Y, Z)
             #if (j < (m-1)):
             #    geom = geom + ","
             Cnt = Cnt + 1
-        D2 = D2 + 3 * R
+        D2 += 3 * R
         for j in range(0, m / 2):
             fi = (m / 2 - j) * D_Ugol
             X = X00 + D2 * cos(fi)
             Y = Y00 + D2 * sin(fi) * D2_D1
-            geom = geom + "%.0f %.0f %.0f" % (X, Y, Z)
-            if (j < (m / 2 - 1)):
-                geom = geom + ","
-            Cnt = Cnt + 1
+            geom += "%.0f %.0f %.0f" % (X, Y, Z)
+            if j < (m / 2 - 1):
+                geom += ","
+            Cnt += + 1
         geom = geom + ")')"
         #print geom
         query = "INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES (" + str(id_hor) + "," + str(Hust) + ",4," + geom + ");"  
         curs.execute(query)
         # Скважины
-        for j in range(-5, 5):
+        for j in xrange(-5, 5):
             # координаты скважины в БД
             query = "INSERT INTO drills (horiz,coord_system,type_drill,coord_x,coord_y,coord_z,name) VALUES ("
             query = query + str(id_hor) + ",1,1," + "%.0f,%.0f,%.0f" % ((X00 + D2 + R / 4), (Y00 + j * 10), Z) + ",'" + "%.0f/%.0f" % (Z, (j + 6)) + "') RETURNING id_drill_fld;"    
@@ -236,6 +241,7 @@ def CreateDB(self):
     self.msgWin.AppendText("Время работы %f сек" % (t11 - t00) + "\n")
     self.SetStatusText("Готово", 2)
 
+
 def CExplore(self):
     """ Заказ на просмотр элемента """
     sel_shape = self.canva._3dDisplay.selected_shape        # As shape
@@ -245,11 +251,12 @@ def CExplore(self):
         for shapeInfo in self.canva.drawList:
             s1 = shapeInfo[2]   # As object
             if s1:
-                if (s1.Shape().IsEqual(sel_shape)):
+                if s1.Shape().IsEqual(sel_shape):
                     print ("Выбран " + str(shapeInfo))
                     self.SetStatusText("Результат на консоли", 2)
     else:
         self.SetStatusText("Выберите объект и повторите команду", 0)
+
 
 def CEdit(self):
     """ Изменение координат объекта"""
@@ -257,21 +264,21 @@ def CEdit(self):
     if not sel_shape:
         self.SetStatusText("Выберите объект и повторите команду", 0)
         return
-    indexInfo = None;
+    indexInfo = None
     for i in range(len(self.canva.drawList)):
         s1 = self.canva.drawList[i][2]
         if s1:
-            if (s1.Shape().IsEqual(sel_shape)):     # Только в классе Shape есть метод IsEqual()
+            if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                 indexInfo = i
                 break
-    if indexInfo<>None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+    if indexInfo is not None and not self.canva.drawList[indexInfo][0] in (0,1,3):
         return
-    pnts=getPoints(sel_shape)
+    pnts = getPoints(sel_shape)
     dlg = CoordsDlg(self, - 1, "Диалог изменения координат",pnts)#,int(self.body_cnt_h.Value))
     dlg.CenterOnScreen()
     dlg.ShowModal()
     if dlg.save:
-        newpoints=dlg.ret()
+        newpoints = dlg.ret()
         selObj = self.canva._3dDisplay.Context.SelectedInteractive()
         selColor = None
         if selObj.GetObject().HasColor():
@@ -288,7 +295,7 @@ def CEdit(self):
         # Установить цвет, тип,толщину и др.
         if selColor:
             self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
-        if indexInfo <> None:
+        if indexInfo is not None:
             oldInfo = self.canva.drawList[indexInfo]
             oldInfo[2] = newShape.GetObject()
             oldInfo[5] = True
@@ -302,11 +309,12 @@ def CEdit(self):
 #    self._refreshui()
 #    self.SetStatusText("Укажите удаляемый элемент", 0)
 
+
 def Coord_yes(self,drawP=False,closeP=False):
     """ Ввод координат из окна Point от кнопки или мыши """
     Z = float(self.canva.coordZ.GetValue())
-    coordStr = self.canva.coord.GetValue()
-    #print(coordStr)
+    coordStr = self.canva.text.GetValue()
+    print(coordStr)
     if self.canva.MakePLine:
         # PolyLine
         #drawP = False
@@ -323,7 +331,7 @@ def Coord_yes(self,drawP=False,closeP=False):
             if drawP:
                 #if (self.canva._3dDisplay.Context.HasOpenedContext()):
                 #    self.canva._3dDisplay.Context.CloseLocalContext()
-                if self.canva.tmpEdge<>None:
+                if self.canva.tmpEdge is not None:
                     self.canva.Erase(self.canva.tmpEdge)
                     self.canva.tmpEdge = None
                 plgn = BRepBuilderAPI_MakePolygon()
@@ -333,63 +341,63 @@ def Coord_yes(self,drawP=False,closeP=False):
                     plgn.Close()
                 w = plgn.Wire()
                 #w=Interpolate(self.canva.lstPnt)
-                id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
+                id_hor = self.horIds[self.coordCur.GetCurrentSelection()][0]
                 #Quantity_Color(0.1,0.1,0.1)
-                type=self.getTypeByMenu()
-                if type==0:
-                    edge_type=self.egde_typeList[self.edge_typeCur.GetCurrentSelection()]
+                type = self.getTypeByMenu()
+                if type == 0:
+                    edge_type = self.egde_typeList[self.edge_typeCur.GetCurrentSelection()]
                     if closeP:
-                        geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
+                        geom = makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
                     else:
-                        geom=makeLINESTRING(self.canva.lstPnt)
-                    q="INSERT INTO edge (hor,edge_type,geom) VALUES ("+str(id_hor)+","+str(edge_type[0])+","+geom+") RETURNING id_edge;"
+                        geom = makeLINESTRING(self.canva.lstPnt)
+                    q = "INSERT INTO edge (hor,edge_type,geom) VALUES ("+str(id_hor)+","+str(edge_type[0])+","+geom+") RETURNING id_edge;"
                     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
                     curs.execute(q)
-                    id_edge=curs.fetchone()[0]
+                    id_edge = curs.fetchone()[0]
                     conn.commit() 
                     curs.close()
                     conn.close()
                     for i in range(len(self.colorList)):
-                        if self.colorList[i][0]==edge_type[3]:
-                            r=int(str(self.colorList[i][2]))/255.0
-                            g=int(str(self.colorList[i][3]))/255.0
-                            b=int(str(self.colorList[i][4]))/255.0
-                            s1=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(r,g,b,0), False)
+                        if self.colorList[i][0] == edge_type[3]:
+                            r = int(str(self.colorList[i][2]))/255.0
+                            g = int(str(self.colorList[i][3]))/255.0
+                            b = int(str(self.colorList[i][4]))/255.0
+                            s1 = self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(r, g, b, 0), False)
                             break
-                    self.canva.drawList = self.canva.drawList + [[0,id_edge,s1.GetObject(),id_hor,edge_type[0],False]]
-                elif type==1:
-                    sort=self.sortList[self.sortCur.GetCurrentSelection()]
-                    bodyh=float(self.bodyH.GetValue())
+                    self.canva.drawList = self.canva.drawList + [[0, id_edge, s1.GetObject(),id_hor,edge_type[0],False]]
+                elif type == 1:
+                    sort = self.sortList[self.sortCur.GetCurrentSelection()]
+                    bodyh = float(self.bodyH.GetValue())
                     if closeP:
-                        geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
+                        geom = makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
                     else:
-                        geom=makeLINESTRING(self.canva.lstPnt)
+                        geom = makeLINESTRING(self.canva.lstPnt)
                     q="INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES ("+str(id_hor)+","+str(bodyh)+","+str(sort[0])+","+geom+") RETURNING id_body;"
                     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
                     curs.execute(q)
-                    id_body=curs.fetchone()[0]
+                    id_body = curs.fetchone()[0]
                     conn.commit() 
                     curs.close()
                     conn.close()
                     face = BRepBuilderAPI_MakeFace(w);
-                    ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, bodyh)).Shape();#float(self.bodyh.GetValue())
-                    for i in range(len(self.colorList)):
-                        if self.colorList[i][0]==sort[3]:
+                    ShapeFused = BRepPrimAPI_MakePrism(face.Shape(), gp_Vec(0, 0, bodyh)).Shape()  # float(self.bodyh.GetValue())
+                    for i in xrange(len(self.colorList)):
+                        if self.colorList[i][0] == sort[3]:
                             r=int(str(self.colorList[i][2]))/255.0
                             g=int(str(self.colorList[i][3]))/255.0
                             b=int(str(self.colorList[i][4]))/255.0
                             s1=self.canva.DisplayShape(ShapeFused, OCC.Quantity.Quantity_Color(r,g,b,0), False)
                             break                                                        #point,h_body
                     self.canva.drawList = self.canva.drawList + [[1,id_body,s1.GetObject(),id_hor,0,bodyh,sort[0],sort[3],sort[6],False]]
-                elif type==3:
-                    coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
+                elif type == 3:
+                    coord_sys = self.coordList[self.coordCur.GetCurrentSelection()][0]
                     heigth=1
                     if closeP:
-                        geom=makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
+                        geom = makeLINESTRING(self.canva.lstPnt+[self.canva.lstPnt[0]])
                     else:
-                        geom=makeLINESTRING(self.canva.lstPnt)
+                        geom = makeLINESTRING(self.canva.lstPnt)
                     q="INSERT INTO topograph (heigth,coord_sys,geom) VALUES ("+str(heigth)+","+str(coord_sys)+","+geom+") RETURNING id_topo;" 
                     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
@@ -400,7 +408,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                     conn.close()
                     s1=self.canva.DisplayShape(w, 'GREEN', False)
                     self.canva.drawList = self.canva.drawList + [[3,id_topo,s1.GetObject(),heigth,coord_sys,False]]
-                elif self.menu_now=='start_cut_pline':
+                elif self.menu_now == 'start_cut_pline':
                     self.SetStatusText("Готово", 2)
                     return
                 self.SetStatusText("Готово", 2)
@@ -412,10 +420,10 @@ def Coord_yes(self,drawP=False,closeP=False):
         try:
             lst1 = lst1 + [float(crd)]
         except Exception:
-            self.SetStatusText("Ошибка в " + crd, 2)
+            self.SetStatusText(u"Ошибка в " + crd, 2)
             return
-    if ((len(lst1) < 2) or (len(lst1) > 3)):
-        self.SetStatusText("Ошибка в " + coordStr, 2)
+    if (len(lst1) < 2) or (len(lst1) > 3):
+        self.SetStatusText(u"Ошибка в " + coordStr, 2)
         return
     elif len(lst1) == 2:
         lst1 = lst1 + [Z]
@@ -442,7 +450,7 @@ def Coord_yes(self,drawP=False,closeP=False):
         # Установить цвет, тип,толщину и др.
         if selColor:
             self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
-        if indexInfo <> None:
+        if indexInfo is not None:
             oldInfo = self.canva.drawList[indexInfo]
             #print oldInfo
             oldInfo[2] = newShape.GetObject()
@@ -450,7 +458,7 @@ def Coord_yes(self,drawP=False,closeP=False):
             #print oldInfo
             self.canva.drawList[indexInfo] = oldInfo          # Обновить список
         self.SetStatusText("Готово!", 2)
-        if self.getTypeByMenu()==-1:
+        if self.getTypeByMenu() == -1:
             self.EdCmd = 0; self.EdStep = 0
         # Восстановить старые привязки
         self.canva.snap.SetSelection(0)
@@ -460,18 +468,18 @@ def Coord_yes(self,drawP=False,closeP=False):
     self.canva.lstPnt = self.canva.lstPnt + [lst1]
     #print(self.canva.lstPnt)
     # Line
-    if (self.canva.MakeLine) and (len(self.canva.lstPnt) > 1):
+    if self.canva.MakeLine and (len(self.canva.lstPnt) > 1):
         #print self.canva.lstPnt
         pnt1 = self.canva.lstPnt[0]
         pnt2 = self.canva.lstPnt[1]
         edge = BRepBuilderAPI_MakeEdge(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]),
-            gp_Pnt(pnt2[0], pnt2[1], pnt2[2]))
+                                       gp_Pnt(pnt2[0], pnt2[1], pnt2[2]))
         self.canva.DisplayShape(edge.Edge(), 'BLACK', False)        #
         self.SetStatusText("Готово", 2)
         CancelOp(self)
 
     # Временная линия    
-    if (self.canva.MakePLine and (len(self.canva.lstPnt) > 1)):
+    if self.canva.MakePLine and (len(self.canva.lstPnt) > 1):
         #if not (self.canva._3dDisplay.Context.HasOpenedContext()):
         #    self.canva._3dDisplay.Context.OpenLocalContext()    #False
             #self.canva.isLocalContext = True
@@ -484,13 +492,13 @@ def Coord_yes(self,drawP=False,closeP=False):
         w = plgn.Wire()
         self.canva.tmpEdge = self.canva.DisplayShape(w, 'ORANGE', False)        #,'WHITE'
     elif self.canva.MakePoint:
-        x=self.canva.lstPnt[-1][0]
-        y=self.canva.lstPnt[-1][1]
-        z=self.canva.lstPnt[-1][2]
-        dept=float(self.drillH.GetValue())
-        if dept<0:
-            z-=dept
-            dept*=-1
+        x = self.canva.lstPnt[-1][0]
+        y = self.canva.lstPnt[-1][1]
+        z = self.canva.lstPnt[-1][2]
+        dept = float(self.drillH.GetValue())
+        if dept < 0:
+            z -= dept
+            dept *= -1
         self.canva.lstPnt=self.canva.lstPnt[:-1]
         skv = BRepPrim_Cylinder(gp_Pnt(x,y,z-dept), 0.1, dept)
         skv = skv.Shell()
@@ -517,7 +525,8 @@ def Coord_yes(self,drawP=False,closeP=False):
             self.canva.Erase(self.canva.tmpEdge)
             self.canva.tmpEdge = None
         self.canva.tmpEdge = self.canva.DisplayShape(skv, 'ORANGE', False)
-                
+
+
 def CancelOp(self):
     """ Отмена рисования элементов """
     #if (self.canva._3dDisplay.Context.HasOpenedContext()):
@@ -528,7 +537,7 @@ def CancelOp(self):
         self.canva.tmpEdge = None
     if self.canva.gumline_edge:
         self.canva.Erase(self.canva.gumline_edge)
-        self.canva.gumline_edge=None
+        self.canva.gumline_edge = None
     self.canva.MakePLine = False
     self.canva.MakeLine = False
     self.canva.MakePoint = False
@@ -536,10 +545,11 @@ def CancelOp(self):
     self.canva.lstPnt = []
     self.canva.EdCmd = None
     self.canva.EdStep = None
-    self.tempIndex      = None
+    self.tempIndex = None
     self.tempPointIndex = None
     self.SetStatusText("Отмена", 2)
     self._refreshui()
+
 
 def Refresh(self):
     self.msgWin.AppendText("Загрузка из базы данных\n")
@@ -576,7 +586,7 @@ def Refresh(self):
     self.canva.EraseAll()
     self.canva.drawList = []
 
-    if ("Бровки" in objLst):
+    if "Бровки" in objLst:
         self.SetStatusText("Бровки", 2)
         conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
         curs = conn.cursor()
@@ -585,14 +595,16 @@ def Refresh(self):
         self.msgWin.AppendText("Query = " + query + "\n")
         curs.execute(query)
         rows = curs.fetchall()
-        for rec in rows:
+        for m in rows:
+            print m
+        for record in rows:
             #print(rec[0])
-            id_edge = int(rec[0])
-            id_hor = int(rec[1])
-            edge_type = int(rec[2])
-            coordsPLine = parsGeometry(str(rec[3]))
-            point = float(rec[4])
-            color=rec[5]
+            id_edge = int(record[0])
+            id_hor = int(record[1])
+            edge_type = int(record[2])
+            coordsPLine = parsGeometry(str(record[3]))
+            point = float(record[4])
+            color=record[5]
             query = "select red,green,blue from color where id_color=" + str(color) + ";"
             curs.execute(query)
             clr = curs.fetchone()
@@ -614,7 +626,7 @@ def Refresh(self):
         self.SetStatusText("Готово!", 2)
         #pass
 
-    if ("Тела" in objLst):
+    if "Тела" in objLst:
         self.SetStatusText("Тела", 2)
         conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
         curs = conn.cursor()
@@ -624,16 +636,15 @@ def Refresh(self):
         self.msgWin.AppendText("Query = " + query + "\n")
         curs.execute(query)
         rows = curs.fetchall()
-        for rec in rows:
-            #print(rec[0])
-            id_body = int(rec[0])
-            id_hor = int(rec[1])
-            h_body = int(rec[2])
-            id_sort = int(rec[3])
-            coordsPLine = parsGeometry(str(rec[4]))
-            point = float(rec[5])
-            color = int(rec[6])
-            color_fill = int(rec[7])
+        for record in rows:
+            id_body = int(record[0])
+            id_hor = int(record[1])
+            h_body = int(record[2])
+            id_sort = int(record[3])
+            coordsPLine = parsGeometry(str(record[4]))
+            point = float(record[5])
+            color = int(record[6])
+            color_fill = int(record[7])
             query = "select red,green,blue from color where id_color=" + str(color) + ";"
             curs.execute(query)
             clr = curs.fetchone()
@@ -669,7 +680,7 @@ def Refresh(self):
         self.SetStatusText("Готово!", 2)
         #pass
 
-    if ("Скважины" in objLst):
+    if "Скважины" in objLst:
         self.SetStatusText("Скважины", 2)
         conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
         curs = conn.cursor()
@@ -678,8 +689,8 @@ def Refresh(self):
         self.msgWin.AppendText("Query = " + query + "\n")
         curs.execute(query)
         rows = curs.fetchall()
-        for rec in rows:
-            id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = rec
+        for record in rows:
+            id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = record
             # Прочитать глубину скважины из БД
             query = "SELECT value FROM dril_pars WHERE (id_par=6) and (id_drill=" + str(id_drill_fld) + ");"
             curs.execute(query)
@@ -698,7 +709,7 @@ def Refresh(self):
         self.SetStatusText("Готово!", 2)
         #pass
 
-    if ("Изолинии" in objLst):
+    if "Изолинии" in objLst:
         #self.canva.drawList = []
         izoLst = (-10000, +10000)
         self.SetStatusText("Изолинии", 2)
@@ -709,12 +720,12 @@ def Refresh(self):
         self.msgWin.AppendText("Query = " + query + "\n")
         curs.execute(query)
         rows = curs.fetchall()
-        for rec in rows:
+        for record in rows:
             #print(rec[0])
-            id_topo = int(rec[0])
-            heigth = int(rec[1])
-            coord_sys = int(rec[2])
-            coordsPLine = parsGeometry(str(rec[3]))
+            id_topo = int(record[0])
+            heigth = int(record[1])
+            coord_sys = int(record[2])
+            coordsPLine = parsGeometry(str(record[3]))
             plgn = BRepBuilderAPI_MakePolygon()
             for pnt in coordsPLine:
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))
@@ -726,12 +737,13 @@ def Refresh(self):
         self.SetStatusText("Готово!", 2)
         #pass
 
-    if ("Отметки" in objLst):
+    if "Отметки" in objLst:
         pass
 
-    if ("Надписи" in objLst):
+    if "Надписи" in objLst:
         pass
     pass
+
 
 def DemoPit(self):
         """ Прямое рисование элементов карьера без сохранения в СУБД 
@@ -769,7 +781,7 @@ def DemoPit(self):
                 X = X00 + D2 * cos(fi)
                 Y = Y00 + D2 * sin(fi) * D2_D1
                 edgeUp.Add(gp_Pnt(X, Y, Z))
-                Cnt = Cnt + 1
+                Cnt += 1
             edgeUp.Close()
             self.canva.DisplayShape(edgeUp.Wire(), 'BLUE', False)
             self.canva._3dDisplay.DisplayMessage(gp_Pnt(X00 + D2 + 2, Y00, Z), str(Z), False)
@@ -780,7 +792,8 @@ def DemoPit(self):
         self.msgWin.AppendText("Время работы %f сек" % (t11 - t00) + "\n")
         self.SetStatusText("Бровки готовы", 2)
         #self.msgWin.AppendText(  + "\n")
-        
+
+
 def LoadDB(self):
         """ Загрузка элементов из базы данных PostGIS """
         dlg = LoadDlg(self, - 1, "Диалог загрузки БД")
@@ -804,7 +817,7 @@ def LoadDB(self):
         self.canva.EraseAll()
         self.canva.drawList = []
 
-        if (0 in objList):      # Бровки
+        if 0 in objList:      # Бровки
             self.SetStatusText("Бровки", 2)
             conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
             curs = conn.cursor()
@@ -812,13 +825,14 @@ def LoadDB(self):
             query = query + "where (id_hor in " + setHorIds + ") and (edge.hor=horizons.id_hor);"
             curs.execute(query)
             rows = curs.fetchall()
-            for rec in rows:
-                #print(rec[0])
-                id_edge = int(rec[0])
-                id_hor = int(rec[1])
-                edge_type = int(rec[2])
-                coordsPLine = parsGeometry(str(rec[3]))
-                point = float(rec[4])
+
+            for record in rows:
+                # print(rec[0])
+                id_edge = int(record[0])
+                id_hor = int(record[1])
+                edge_type = int(record[2])
+                coordsPLine = parsGeometry(str(record[3]))
+                point = float(record[4])
                 plgn = BRepBuilderAPI_MakePolygon()
                 for pnt in coordsPLine:
                     if len(pnt) < 3:
@@ -833,7 +847,7 @@ def LoadDB(self):
             self.SetStatusText("Готово!", 2)
             pass
         
-        if (1 in objList):      # Тела
+        if 1 in objList:      # Тела
             self.SetStatusText("Тела", 2)
             conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
             curs = conn.cursor()
@@ -842,16 +856,16 @@ def LoadDB(self):
             query = query + ") and (body.id_hor=horizons.id_hor) and (body.id_sort=sorts.id_sort);"
             curs.execute(query)
             rows = curs.fetchall()
-            for rec in rows:
+            for record in rows:
                 #print(rec[0])
-                id_body = int(rec[0])
-                id_hor = int(rec[1])
-                h_body = int(rec[2])
-                id_sort = int(rec[3])
-                coordsPLine = parsGeometry(str(rec[4]))
-                point = float(rec[5])
-                color = int(rec[6])
-                color_fill = int(rec[7])
+                id_body = int(record[0])
+                id_hor = int(record[1])
+                h_body = int(record[2])
+                id_sort = int(record[3])
+                coordsPLine = parsGeometry(str(record[4]))
+                point = float(record[5])
+                color = int(record[6])
+                color_fill = int(record[7])
                 query = "select red,green,blue from color where id_color=" + str(color) + ";"
                 curs.execute(query)
                 clr = curs.fetchone()
@@ -875,7 +889,7 @@ def LoadDB(self):
                 plgn.Close()
                 w = plgn.Wire()
                 myFaceProfile = BRepBuilderAPI_MakeFace(w).Shape()
-                aPrismVec = gp_Vec(0 , 0 , h_body);
+                aPrismVec = gp_Vec(0, 0, h_body)
                 #print myFaceProfile, aPrismVec
                 myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec).Shape()
                 #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
@@ -886,7 +900,7 @@ def LoadDB(self):
             self.SetStatusText("Готово!", 2)
             pass
         
-        if (2 in objList):      # Скважины
+        if 2 in objList:      # Скважины
             self.SetStatusText("Скважины", 2)
             conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
             curs = conn.cursor()
@@ -894,8 +908,8 @@ def LoadDB(self):
             query = query + " where (horiz in " + setHorIds + ");"
             curs.execute(query)
             rows = curs.fetchall()
-            for rec in rows:
-                id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = rec
+            for record in rows:
+                id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = record
                 # Прочитать глубину скважины из БД
                 query = "SELECT val FROM dril_pars WHERE (id_par=6) and (id_drill=" + str(id_drill_fld) + ");"
                 curs.execute(query)
@@ -914,7 +928,7 @@ def LoadDB(self):
             self.SetStatusText("Готово!", 2)
             pass        
         
-        if (3 in objList):      # Изолинии
+        if 3 in objList:      # Изолинии
             #self.canva.drawList = []
           
             self.SetStatusText("Изолинии", 2)
@@ -923,12 +937,12 @@ def LoadDB(self):
             curs.execute("select id_topo,heigth,coord_sys,ST_AsEWKT(geom) from topograph " + 
                          "where (heigth>='" + str(izoLst[0]) + "')and(heigth<='" + str(izoLst[1]) + "')")
             rows = curs.fetchall()
-            for rec in rows:
+            for record in rows:
                 #print(rec[0])
-                id_topo = int(rec[0])
-                heigth = int(rec[1])
-                coord_sys = int(rec[2])
-                coordsPLine = parsGeometry(str(rec[3]))
+                id_topo = int(record[0])
+                heigth = int(record[1])
+                coord_sys = int(record[2])
+                coordsPLine = parsGeometry(str(record[3]))
                 plgn = BRepBuilderAPI_MakePolygon()
                 for pnt in coordsPLine:
                     plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))
@@ -938,8 +952,8 @@ def LoadDB(self):
                 self.canva.drawList = self.canva.drawList + [[3, id_topo, s1, heigth, coord_sys, False]]
             #print self.canva.drawList
             self.SetStatusText("Готово!", 2)
-            pass
-        
+
+
 def SaveDB(self):
         """ Сохранить изменения в БД """
         self.SetStatusText("Сохранение в БД", 2)
@@ -952,7 +966,7 @@ def SaveDB(self):
                 if element[0] == 0:     # Бровка                    
                     id = element[1]
                     s1 = element[2]     # Объект
-                    if s1 == None:      # Удалять из БД
+                    if s1 is None:      # Удалять из БД
                         query = "DELETE FROM edge WHERE id_edge=" + str(id) + ";"  
                         #print query
                         curs.execute(query)
@@ -962,13 +976,13 @@ def SaveDB(self):
                         query = "UPDATE edge SET geom=" + geom + " WHERE id_edge=" + str(id) + ";"  
                         #print query
                         curs.execute(query)
-                    element[ - 1] = False # Снять флаг модификации
+                    element[ - 1] = False  # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element
 
                 if element[0] == 1:     # Тело
                     id = element[1]
                     s1 = element[2]     # Объект
-                    if s1 == None:      # Удалять из БД
+                    if s1 is None:      # Удалять из БД
                         query = "DELETE FROM body WHERE id_body=" + str(id) + ";"
                         #print query
                         curs.execute(query)
@@ -984,7 +998,7 @@ def SaveDB(self):
                 if element[0] == 3:     # Изолиния
                     id = element[1]
                     s1 = element[2]     # Объект
-                    if s1 == None:      # Удалять из БД
+                    if s1 is None:      # Удалять из БД
                         query = "DELETE FROM topograph WHERE id_topo=" + str(id) + ";"
                         #print query
                         curs.execute(query)
@@ -999,7 +1013,7 @@ def SaveDB(self):
                 if element[0] == 2:     # Скважина
                     id = element[1]
                     s1 = element[2]     # Объект
-                    if s1 == None:      # Удалять из БД
+                    if s1 is None:      # Удалять из БД
                         query = "DELETE FROM dril_pars WHERE id_drill=" + str(id) + ";"
                         #print query
                         curs.execute(query)
@@ -1014,19 +1028,20 @@ def SaveDB(self):
                         curs.execute(query)
                         query = "UPDATE dril_pars SET value=" + str(element[9]) + " where id_drill="+str(id)
                         curs.execute(query)
-                    element[ - 1] = False # Снять флаг модификации
+                    element[- 1] = False  # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element
         conn.commit()  
         curs.close()
         conn.close() 
         self.SetStatusText("Готово!", 2)
         #print(self.canva.drawList)
-        pass
-    
+
+
 def noise():
     MAXNOISE = 0.00
     return MAXNOISE * (random() - 0.5)
-        
+
+
 def Lidar(self):
         """ Загрузка элементов из .las файла """
         dltX = 2.0; dltY = 2.0;     # шаг сетки чертежа и хранения точек
@@ -1086,7 +1101,7 @@ def Lidar(self):
         fLog.write(" =============== \n")
         nPnt = h.point_records_count        # Число точек в снимке
         
-        if (nPnt == 0):
+        if nPnt == 0:
             fLas.close()
             self.SetStatusText("LiDAR файл пустой", 2)
             return False
@@ -1296,26 +1311,26 @@ def Lidar(self):
                         for j in (-2, -1, 0, 1, 2):                     #        4 x 6
                             rgn = XYZ[iX + i][iY + j]                   #        1 2 3
                             pov = povXYZ[iX + i][iY + j]                # [b0,b1,b2]
-                            if log(pnt[0],pnt[1]):
+                            if log(pnt[0], pnt[1]):
                                 fLog.write("i="+str(i)+" j="+str(j)+" rgn="+str(rgn)+" pov="+str(pov)+"\n")
                             if rgn and pov:         # and not((i==0) and (j==0)): 
                                 if abs(pov[1])+abs(pov[2])>KUKL:                # на уклоне
-                                    if not(uklRgn):                             # Первая область на уклоне
-                                        uklRgn = [iX + i,iY + j]
+                                    if not uklRgn:                             # Первая область на уклоне
+                                        uklRgn = [iX + i, iY + j]
                                     else:
                                         p1 = (sXYZ[iX+i])[iY+j]                 # Новая середина
                                         p2 = (sXYZ[uklRgn[0]])[uklRgn[1]]       # Старая середина
-                                        if distance2d(pnt,p1) < distance2d(pnt,p2):
-                                            uklRgn = [iX + i,iY + j]            # ближе
+                                        if distance2d(pnt, p1) < distance2d(pnt, p2):
+                                            uklRgn = [iX + i, iY + j]            # ближе
                                 else:                                           # на площадке
                                     if not(horRgn):
                                         horRgn = [iX + i,iY + j]
                                     else:
                                         p1 = (sXYZ[iX+i])[iY+j]                 # Новая
                                         p2 = (sXYZ[horRgn[0]])[horRgn[1]]       # Старая
-                                        if distance2d(pnt,p1) < distance2d(pnt,p2):
-                                            horRgn = [iX + i,iY + j]
-                    if log(pnt[0],pnt[1]):
+                                        if distance2d(pnt, p1) < distance2d(pnt, p2):
+                                            horRgn = [iX + i, iY + j]
+                    if log(pnt[0], pnt[1]):
                         fLog.write("uklRgn="+str(uklRgn)+" horRgn="+str(horRgn)+"\n")
                             
                     # Найти линию пересечения плоскостей uklRgn и horRgn                  
@@ -1360,7 +1375,7 @@ def Lidar(self):
                         p = p_1
                     # Сохранить граничную точку
                     granYZ.append(p)
-                    if log(pnt[0],pnt[1]):
+                    if log(pnt[0], pnt[1]):
                         fLog.write("p="+str(p)+"\n")
                     # Вариант: построить триангуляцию окрестности по фактическим точкам
                     #    построить профиль вдоль линии градиента откоса
@@ -1389,7 +1404,7 @@ def Lidar(self):
         #fLog.write("granXYZ="+str(granXYZ)+"\n")
         #print "Нашли границы за ", str(time.time() - sTime), " сек " , iPnt, " точек"
 
-        hors = [[[X00,Y00,Z00],0]]              # [[центр карьера], радиус верхней бровки]
+        hors = [[[X00, Y00, Z00], 0]]              # [[центр карьера], радиус верхней бровки]
         for i in range(0, n):                   # По уступам горизонтов
             rDn = R10 + i * R                   # Радиус нижней бровки
             zDn = Z00 + (i * Hust)              # Отметка нижней бровки
@@ -1403,7 +1418,7 @@ def Lidar(self):
         sTime = time.time() 
         edges = []                # Список фрагментов бровки для отрисовки
         # Сборка бровок из точек на границах
-        while True: # Найти некоторую точку - якорь
+        while True:  # Найти некоторую точку - якорь
             line = []
             for iX in range(1, nX + 1):            
                 for iY in range(1, nY + 1):
@@ -1467,7 +1482,7 @@ def Lidar(self):
                             errP = sqrt(pow((xC - xHor), 2) + pow((yC-yHor), 2))     # Найти погрешность в плане      
                             err = sqrt(pow((xC - xHor), 2) + pow((yC-yHor), 2) + pow((z-zc1), 2))  # Найти погрешность общую
                             break
-                    if errP <> None:
+                    if errP is not None:
                         sumErr = sumErr + err
                         sumErrP = sumErrP + errP
                         sumErrZ = sumErrZ + abs(z - zc1)
