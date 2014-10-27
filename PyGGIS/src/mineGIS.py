@@ -1235,11 +1235,11 @@ class AppFrame(wx.Frame):
         for sort in sorts_type:
             self.sortList = self.sortList + [list(sort)]
             sortLst = sortLst + [sort[1]]
-        if (sortLst):
+        if sortLst:
             value = sortLst[0]
         else:
             value = "Нет сортов в БД"
-        self.sortCur =  wx.ComboBox(panel, -1,
+        self.sortCur = wx.ComboBox(panel, -1,
                                          value,
                                          size=(150, 30),
                                          choices=sortLst,
@@ -1253,7 +1253,7 @@ class AppFrame(wx.Frame):
         self.bodyH = wx.TextCtrl(panel, -1, "5",size=(150,30))
         par1Box.Add(self.bodyH, flag=wx.EXPAND, border = 1)
 
-        par1Box.Add((10,40))
+        par1Box.Add((10, 40))
         par1Box.Add(wx.StaticText(panel,-1,"Система координат",size = (180,20)),
                     flag=wx.EXPAND)
         #[[id_coord_system, id_srid, description] , ... ]

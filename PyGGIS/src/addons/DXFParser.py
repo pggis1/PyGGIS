@@ -65,7 +65,7 @@ class DXFParser:
         while current_record < len(self.structured_dxf):
 
             if self.structured_dxf[current_record][self.VALUE] == "POLYLINE":
-                polyline = {'8': 0, '62': 0, '10': 0, '20': 0, '30': 0, '70': '0', 'VERTICES': '0'}
+                polyline = {'8': 0, '62': 0, '10': 0, '20': 0, '30': 0, '39': '0', '70': '0', 'VERTICES': '0'}
 
                 itr = 1
                 while self.structured_dxf[current_record + itr][self.KEY] != "0":
@@ -75,6 +75,8 @@ class DXFParser:
                     itr += 1
                 vertices = self.get_vertices(current_record + itr)
                 polyline['VERTICES'] = vertices
+                if (polyline['70'] == '9' or polyline['70'] == '1') and polyline['VERTICES']:
+                    polyline['VERTICES'].append(polyline['VERTICES'][0])
 
                 if 0 not in polyline.values():
                     self.polylines.append(polyline)
@@ -107,7 +109,14 @@ class DXFParser:
 
             current_record += 1
 
-        return tuple(vertices)
+        return vertices
+
+    def get_pl_hght(self, n):
+        try:
+            return float(self.polylines[n]['39'])
+        except IndexError:
+            print("No such polyline %i" % n)
+        return 0
 
     def get_pl_vrtcs(self, n):
         try:
@@ -131,13 +140,14 @@ class DXFParser:
 
     def is_pl_closed(self, n):
         try:
-            if self.polylines[n]['70'] == "9":
+            if self.polylines[n]['70'] == "9" or self.polylines[n]['70'] == "1":
                 return True
         except IndexError:
             print("No such polyline %i" % n)
         return False
 
-    def get_rgb(self, n):
+    @staticmethod
+    def get_rgb(n):
         """AutoCAD color number -> r, g, b"""
         try:
             db_connection = psycopg2.connect("dbname=postgres user=postgres")

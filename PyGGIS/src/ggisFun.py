@@ -402,7 +402,7 @@ def Coord_yes(self,drawP=False,closeP=False):
                     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
                     curs = conn.cursor()
                     curs.execute(q)
-                    id_topo=curs.fetchone()[0]
+                    id_topo = curs.fetchone()[0]
                     conn.commit() 
                     curs.close()
                     conn.close()
@@ -503,10 +503,10 @@ def Coord_yes(self,drawP=False,closeP=False):
         skv = BRepPrim_Cylinder(gp_Pnt(x,y,z-dept), 0.1, dept)
         skv = skv.Shell()
         if drawP:
-            id_hor=self.horIds[self.coordCur.GetCurrentSelection()][0]
-            coord_sys=self.coordList[self.coordCur.GetCurrentSelection()][0]
-            type_drill=1
-            name=self.drillName.GetValue()
+            id_hor = self.horIds[self.coordCur.GetCurrentSelection()][0]
+            coord_sys = self.coordList[self.coordCur.GetCurrentSelection()][0]
+            type_drill = 1
+            name = self.drillName.GetValue()
             q="INSERT INTO drills (horiz,coord_system, coord_x, coord_y, coord_z,type_drill,name) VALUES ("+str(id_hor)+","+str(coord_sys)+","+str(x)+","+str(y)+","+str(z)+",1,'"+name+"') RETURNING id_drill_fld;"
             conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
             curs = conn.cursor()
@@ -617,11 +617,14 @@ def Refresh(self):
                     pnt = pnt + [point]
                 #self.msgWin.AppendText(str(pnt) + ", ")
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
-            w = plgn.Wire()
+            try:
+                w = plgn.Wire()
             #s = self.canva.DisplayShape(w, 'BLUE', False)
-            s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
-            s1 = s.GetObject()
-            self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
+                s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(int(str(clrRed))/255.0,int(str(clrGreen))/255.0,int(str(clrBlue))/255.0,0), False)
+                s1 = s.GetObject()
+                self.canva.drawList = self.canva.drawList + [[0, id_edge, s1, id_hor, edge_type, False]]
+            except:
+                pass
         #print("Бровки=",self.canva.edgeList)
         self.SetStatusText("Готово!", 2)
         #pass
@@ -636,6 +639,7 @@ def Refresh(self):
         self.msgWin.AppendText("Query = " + query + "\n")
         curs.execute(query)
         rows = curs.fetchall()
+        print rows
         for record in rows:
             id_body = int(record[0])
             id_hor = int(record[1])
@@ -660,15 +664,17 @@ def Refresh(self):
             clrFillBlue = clr[2]
                 
             plgn = BRepBuilderAPI_MakePolygon()
+            print coordsPLine
             for pnt in coordsPLine:
                 if len(pnt) < 3:
                     pnt = pnt + [point]
                 #print pnt
+
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
             #plgn.Close()
             w = plgn.Wire()
             myFaceProfile = BRepBuilderAPI_MakeFace(w).Shape()
-            aPrismVec = gp_Vec(0 , 0 , h_body);
+            aPrismVec = gp_Vec(0 , 0 , h_body)
             #print myFaceProfile, aPrismVec
             myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec).Shape()
             #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
@@ -760,7 +766,7 @@ def DemoPit(self):
         D10 = 150
         Z0 = - 100
         t00 = time.time()
-        for i in range(0, n):
+        for i in xrange(0, n):
             edgeUp = BRepBuilderAPI_MakePolygon()
             D1 = D10 + i * R
             Z = Z0 + (i * Hust)
@@ -771,7 +777,7 @@ def DemoPit(self):
                 X = X00 + D1 * cos(fi)
                 Y = Y00 + D1 * sin(fi) * D2_D1
                 edgeUp.Add(gp_Pnt(X, Y, Z))
-                Cnt = Cnt + 1
+                Cnt += 1
             edgeUp.Close()
             self.canva.DisplayShape(edgeUp.Wire(), 'BLUE', False)
             edgeUp = BRepBuilderAPI_MakePolygon()
@@ -992,7 +998,7 @@ def SaveDB(self):
                         query = "UPDATE body SET geom=" + geom + " WHERE id_edge=" + str(id) + ";"
                         #print query
                         curs.execute(query)
-                    element[ - 1] = False # Снять флаг модификации
+                    element[- 1] = False # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element
 
                 if element[0] == 3:     # Изолиния
@@ -1008,7 +1014,7 @@ def SaveDB(self):
                         query = "UPDATE topograph SET geom=" + geom + " WHERE id_topo=" + str(id) + ";"
                         #print query
                         curs.execute(query)
-                    element[ - 1] = False # Снять флаг модификации
+                    element[- 1] = False # Снять флаг модификации
                     self.canva.drawList[indexInfo] = element
                 if element[0] == 2:     # Скважина
                     id = element[1]
@@ -1066,7 +1072,7 @@ def Lidar(self):
         dlg = wx.FileDialog(self, "Задание имени файла", self.lasdir, "",
                          "Las Files (*.las)|*.las|All Files (*.*)|*.*",
                          wx.OPEN)
-        if dlg.ShowModal() <> wx.ID_OK:
+        if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
             self.SetStatusText("LiDAR не задан файл", 2)
             return False
@@ -1119,9 +1125,10 @@ def Lidar(self):
             #self.SetStatusText(""+str(int(iX/nX*100))+"%", 2)
         sTime = time.time()    
         #print 'Чтение точек Las'
-        shapes = []; iPnt = 0
+        shapes = []
+        iPnt = 0
         for p in fLas:      # по точкам из файла-снимка в клетки матрицы
-            iPnt = iPnt + 1
+            iPnt += 1
             iX = int((p.x - minX - h.offset[0]) / dltX)             # номер клетки по Х
             iY = int((p.y - minY - h.offset[1]) / dltY)             # номер клетки по У
             #print "iX = ",iX, " iY = ",iY, p.x,minX,dltX,p.y,minY,dltY
@@ -1141,7 +1148,7 @@ def Lidar(self):
                 if cloud:
                     nc = 0; Zc = 0.0; Xc = 0.0; Yc = 0.0
                     for p in cloud:
-                        nc = nc + 1
+                        nc += 1
                         Xc = Xc + p[0]
                         Yc = Yc + p[1]
                         Zc = Zc + p[2]
@@ -1173,7 +1180,7 @@ def Lidar(self):
                                         ns = ns + 1
                                         dZ = dZ + abs(sXY[2] - Zc)
                     if ns > 0:
-                        dZ = dZ / ns    # Средняя первая разность
+                        dZ /= ns    # Средняя первая разность
                         if dZ > HdZ:    # Порог контраста dltX = 2.0; dltY = 2.0;
                             dZ = 1.0
                         else:
@@ -1206,7 +1213,7 @@ def Lidar(self):
                                     dXY = ((dXYZ[iX + sX])[iY + sY])      # [Первая разность соседа]
                                     if not((sX == 0) and (sY == 0)) and dXY:
                                         ns = ns + 1
-                                        if type(dXY).__name__ <> 'list':
+                                        if type(dXY).__name__ != 'list':
                                             print 'Error ddZ: ',dXY, dZ, ((XYZ[iX + sX])[iY + sY])
                                         ddZ = ddZ + abs(dXY[0] - dZ[0])
                     if ns > 0:
@@ -1242,7 +1249,7 @@ def Lidar(self):
                     povYZ.append(pov)
                     if pov:
                         nGist = int((abs(pov[1])+abs(pov[2]))*10)
-                        if (nGist>50): nGist = 50
+                        if nGist>50: nGist = 50
                         gistAB[nGist] = gistAB[nGist]+1                    
                 else:
                     povYZ.append([])
@@ -1258,7 +1265,7 @@ def Lidar(self):
         #            print iX,iY,sXYZ[iX][iY], povXYZ[iX][iY], XYZ[iX][iY]
         
         # Рисование клеток        НЕ ВЫПОЛНЯЕТСЯ См. условие == False
-        if (False):
+        if False:
             #print 'Рисование клеток'    
             fLog.write('\nРисование клеток\n\n')
             sTime = time.time() 
@@ -1271,14 +1278,14 @@ def Lidar(self):
                         plgn = BRepBuilderAPI_MakePolygon()
                         dltX = 2.0; dltY = 2.0;
                         x,y,z = pnt
-                        plgn.Add(gp_Pnt(x - dltX*0.4 , y - dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x + dltX*0.4 , y + dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x - dltX*0.4 , y + dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x + dltX*0.4 , y - dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x - dltX*0.4 , y - dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x - dltX*0.4 , y + dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x + dltX*0.4 , y + dltY*0.4 , z))
-                        plgn.Add(gp_Pnt(x + dltX*0.4 , y - dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x - dltX*0.4, y - dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x + dltX*0.4, y + dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x - dltX*0.4, y + dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x + dltX*0.4, y - dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x - dltX*0.4, y - dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x - dltX*0.4, y + dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x + dltX*0.4, y + dltY*0.4 , z))
+                        plgn.Add(gp_Pnt(x + dltX*0.4, y - dltY*0.4 , z))
                         w = plgn.Wire()
                         if abs(pov[1])+abs(pov[2])>KUKL:                # на уклоне
                             otkos.append(w)
@@ -1297,7 +1304,7 @@ def Lidar(self):
         #shapes = []
         granXYZ = []                # матрица с точками на границах
         iPnt = 0
-        for iX in range(nX + 2):
+        for iX in xrange(nX + 2):
             granYZ = []
             for iY in range(nY + 2):
                 pnt = ((sXYZ[iX])[iY]); dZ = ((dXYZ[iX])[iY]); ddZ = ((ddXYZ[iX])[iY])
@@ -1336,27 +1343,27 @@ def Lidar(self):
                     # Найти линию пересечения плоскостей uklRgn и horRgn                  
                     # Найти проекцию точки pnt на пересечение плоских граней
                     if uklRgn:
-                        xc,yc,zc = (sXYZ[uklRgn[0]])[uklRgn[1]] 
+                        xc, yc, zc = (sXYZ[uklRgn[0]])[uklRgn[1]]
                     else:
-                        xc,yc,zc = pnt
+                        xc, yc, zc = pnt
                     if horRgn:
-                        xp,yp,zp = (sXYZ[horRgn[0]])[horRgn[1]]
+                        xp, yp, zp = (sXYZ[horRgn[0]])[horRgn[1]]
                     else:
-                        xp,yp,zp = pnt
+                        xp, yp, zp = pnt
                     try:
-                        b0,b1,b2 = (povXYZ[uklRgn[0]])[uklRgn[1]]           ## z = b0 + b1*(x-xc) + b2*(y-yc)   xc,yc,zc уклон
-                        p0,p1,p2 = (povXYZ[horRgn[0]])[horRgn[1]]           ## z = p0 + p1*(x-xp) + p2*(y-yp)   xp,yp,zp площадка
+                        b0, b1, b2 = (povXYZ[uklRgn[0]])[uklRgn[1]]           ## z = b0 + b1*(x-xc) + b2*(y-yc)   xc,yc,zc уклон
+                        p0, p1, p2 = (povXYZ[horRgn[0]])[horRgn[1]]           ## z = p0 + p1*(x-xp) + p2*(y-yp)   xp,yp,zp площадка
                         A1 = b1; B1 = b2; C1 = -1.0; D1 = b0-b1*xc-b2*yc    ## A1*x + B1*y + C1*z + D1 = 0 - уклон
                         A2 = p1; B2 = p2; C2 = -1.0; D2 = p0-p1*xc-p2*yc    ## A2*x + B2*y + C2*z + D2 = 0 - площадка
-                        if (abs(b1) < 0.000001): 
+                        if abs(b1) < 0.000001:
                             K = 0.0
                         else:
                             K = b2/b1
                         x = (B1*K*xc-B1*yc-D1-(C1/C2)*B2*xc+(C1/C2)*B2*yc+(C1/C2)*D2) / (A1+B1*K-(C1/C2)*A2-(C1/C2)*B2*K)
                         y = K*(x - xc) + yc
                         z = (-1.0/C2)*(A2*x+B2*y+D2)
-                        p = [x,y,z]
-                        if log(pnt[0],pnt[1]):                            
+                        p = [x, y, z]
+                        if log(pnt[0], pnt[1]):
                             fLog.write("b0="+str(b0)+" b1="+str(b1)+" b2="+str(b2)+"\n")
                             fLog.write("p0="+str(p0)+" p1="+str(p1)+" p2="+str(p2)+"\n")
                             fLog.write("xc="+str(xc)+" yc="+str(yc)+" zc="+str(zc)+"\n")
@@ -1483,10 +1490,10 @@ def Lidar(self):
                             err = sqrt(pow((xC - xHor), 2) + pow((yC-yHor), 2) + pow((z-zc1), 2))  # Найти погрешность общую
                             break
                     if errP is not None:
-                        sumErr = sumErr + err
-                        sumErrP = sumErrP + errP
-                        sumErrZ = sumErrZ + abs(z - zc1)
-                        cntPnt = cntPnt + 1
+                        sumErr += err
+                        sumErrP += errP
+                        sumErrZ += abs(z - zc1)
+                        cntPnt += + 1
                 w = plgn.Wire()                # Преобразование полигона в каркас
                 shapes.append(w)        # Добавили каркас в список форм для отрисовки
         self.canva.DisplayShape(shapes, 'BLUE', False)     # Рисование форм на экране синим цветом  
@@ -1528,7 +1535,7 @@ def Etalon(self):
                 X = X00 + rDn * cos(fi)
                 Y = Y00 + rDn * sin(fi) * D2_D1
                 edgeDn.Add(gp_Pnt(X, Y, zDn))
-                Cnt = Cnt + 1
+                Cnt += 1
             edgeDn.Close()
             self.canva.DisplayShape(edgeDn.Wire(), 'GREEN', False)
             
@@ -1538,7 +1545,7 @@ def Etalon(self):
                 X = X00 + rUp * cos(fi)
                 Y = Y00 + rUp * sin(fi) * D2_D1
                 edgeUp.Add(gp_Pnt(X, Y, zUp))
-                Cnt = Cnt + 1
+                Cnt += 1
             edgeUp.Close()
             self.canva.DisplayShape(edgeUp.Wire(), 'GREEN', False)
             
