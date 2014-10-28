@@ -284,7 +284,7 @@ class GraphicsCanva3D(wx.Panel):
                 midleH /= len(pnts)
                 cur = gp_Pnt(resPnt[0], resPnt[1],midleH)
                 te = ShapeToTopology()
-                bt = BRep.BRep_Tool()
+                bt = BRep.BRep_Tool
                 #print bt
                 isP1 = False
                 isNea = False
@@ -410,7 +410,7 @@ class GraphicsCanva3D(wx.Panel):
             sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
-            ItemIndex = None;
+            ItemIndex = None
             for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
                 if s1:
