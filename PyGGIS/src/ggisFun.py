@@ -17,6 +17,7 @@ import time
 from math import *
 from inpLAS import *
 from random import random
+from LoadFunctions import *
 
 from OCC.Quantity import Quantity_Color
 
@@ -578,151 +579,16 @@ def Refresh(self):
     self.canva.drawList = []
 
     if "Бровки" in objLst:
-        self.SetStatusText("Бровки", 2)
-        conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-        curs = conn.cursor()
-        query = "select id_edge,hor,edge_type,ST_AsEWKT(geom),point,color from edge,horizons,edge_type "
-        query += "where (id_hor in " + setHorIds + ") and (edge.hor=horizons.id_hor) and (edge.edge_type=edge_type.id_edge_type);;"
-        self.msgWin.AppendText("Query = " + query + "\n")
-        curs.execute(query)
-        rows = curs.fetchall()
-        for record in rows:
-            id_edge = int(record[0])
-            id_hor = int(record[1])
-            edge_type = int(record[2])
-            coordsPLine = parsGeometry(str(record[3]))
-            point = float(record[4])
-            color = record[5]
-            query = "select red,green,blue from colors where id_color=" + str(color) + ";"
-            curs.execute(query)
-            clr = curs.fetchone()
-            clrRed = clr[0]
-            clrBlue = clr[1]
-            clrGreen = clr[2]
-            plgn = BRepBuilderAPI_MakePolygon()
-            for pnt in coordsPLine:
-                if len(pnt) < 3:
-                    pnt = pnt + [point]
-                plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
-            try:
-                w = plgn.Wire()
-                s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(clrRed, clrGreen, clrBlue, 0), False)
-                s1 = s.GetObject()
-                self.canva.drawList +=[[0, id_edge, s1, id_hor, edge_type, False]]
-            except:
-                self.msgWin.AppendText("Не удалось преобразовать полилинию %i в бровку.\n" % id_hor)
-        #print("Бровки=",self.canva.edgeList)
-        self.SetStatusText("Готово!", 2)
+        load_horizons(self, setHorIds)
 
     if "Тела" in objLst:
-        self.SetStatusText("Тела", 2)
-        conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-        curs = conn.cursor()
-        query = "select id_body,body.id_hor,h_body,body.id_sort,ST_AsEWKT(geom),point,color,color_fill from body,horizons,sorts "
-        query += "where (body.id_hor in " + setHorIds
-        query += ") and (body.id_hor=horizons.id_hor) and (body.id_sort=sorts.id_sort);"
-        self.msgWin.AppendText("Query = " + query + "\n")
-        curs.execute(query)
-        rows = curs.fetchall()
-        for record in rows:
-            id_body = int(record[0])
-            id_hor = int(record[1])
-            h_body = int(record[2])
-            id_sort = int(record[3])
-            coordsPLine = parsGeometry(str(record[4]))
-            point = float(record[5])
-            color = int(record[6])
-            color_fill = int(record[7])
-            query = "select red,green,blue from colors where id_color=" + str(color) + ";"
-            curs.execute(query)
-            clr = curs.fetchone()
-
-            clrRed = clr[0]
-            clrGreen = clr[1]
-            clrBlue = clr[2]
-                
-            query = "select red,green,blue from colors where id_color=" + str(color_fill) + ";"
-            curs.execute(query)
-            clr = curs.fetchone()
-            clrFillRed = clr[0]
-            clrFillGreen = clr[1]
-            clrFillBlue = clr[2]
-                
-            plgn = BRepBuilderAPI_MakePolygon()
-            for pnt in coordsPLine:
-                if len(pnt) < 3:
-                    pnt = pnt + [point]
-
-                plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
-            #plgn.Close()
-            try:
-                w = plgn.Wire()
-                my_face = BRepBuilderAPI_MakeFace(w).Shape()
-                aPrismVec = gp_Vec(0, 0, h_body)
-                my_body = BRepPrimAPI_MakePrism(my_face, aPrismVec).Shape()
-                #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
-                s=self.canva.DisplayShape(my_body, OCC.Quantity.Quantity_Color(clrRed, clrGreen, clrBlue, 0), False)
-                s1 = s.GetObject()
-                self.canva.drawList +=[[1, id_body, s1, id_hor, point, h_body, id_sort, color, color_fill, False]]
-            except:
-                self.msgWin.AppendText("Не удалось преобразовать полилинию %i в тело.\n" % id_body)
-        #print("Тела=",self.canva.drawList)            
-        self.SetStatusText("Готово!", 2)
+        load_bodies(self, setHorIds)
 
     if "Скважины" in objLst:
-        self.SetStatusText("Скважины", 2)
-        conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-        curs = conn.cursor()
-        query = "select id_drill_fld,horiz,coord_system,type_drill,coord_x,coord_y,coord_z,name from drills"
-        query = query + " where (horiz in " + setHorIds + ");"
-        self.msgWin.AppendText("Query = " + query + "\n")
-        curs.execute(query)
-        rows = curs.fetchall()
-        for record in rows:
-            id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = record
-            # Прочитать глубину скважины из БД
-            query = "SELECT value FROM dril_pars WHERE (id_par=6) and (id_drill=" + str(id_drill_fld) + ");"
-            curs.execute(query)
-            pars = curs.fetchone()
-            if pars:
-                dept = pars[0]
-            else:
-                dept = 16.0
-            position = gp_Ax2(gp_Pnt(coord_x, coord_y, coord_z), gp_Dir(0, 0, - 1))
-            skv = BRepPrim_Cylinder(position, 0.1, dept)
-            skv = skv.Shell()
-            s = self.canva.DisplayShape(skv, 'YELLOW', False)
-            s1 = s.GetObject()
-            self.canva.drawList += [[2, id_drill_fld, s1, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, dept, name, False]]
-            #print [2,id_drill_fld,s1,horiz,coord_system,type_drill,coord_x,coord_y,coord_z,dept,name,False]
-        self.SetStatusText("Готово!", 2)
-        #pass
+        load_skv(self, setHorIds)
 
     if "Изолинии" in objLst:
-        #self.canva.drawList = []
-        izoLst = (-10000, +10000)
-        self.SetStatusText("Изолинии", 2)
-        conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-        curs = conn.cursor()
-        query = "select id_topo,heigth,coord_sys,ST_AsEWKT(geom) from topograph "
-        query = query + "where (heigth>='" + str(izoLst[0]) + "')and(heigth<='" + str(izoLst[1]) + "')"
-        self.msgWin.AppendText("Query = " + query + "\n")
-        curs.execute(query)
-        rows = curs.fetchall()
-        for record in rows:
-            id_topo = int(record[0])
-            heigth = int(record[1])
-            coord_sys = int(record[2])
-            coordsPLine = parsGeometry(str(record[3]))
-            plgn = BRepBuilderAPI_MakePolygon()
-            for pnt in coordsPLine:
-                plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))
-            w = plgn.Wire()
-            s = self.canva.DisplayShape(w, 'GREEN', False)
-            s1 = s.GetObject()
-            self.canva.drawList += [[3, id_topo, s1, heigth, coord_sys, False]]
-        #print self.canva.drawList
-        self.SetStatusText("Готово!", 2)
+        load_isolines(self)
 
     if "Отметки" in objLst:
         pass
@@ -772,9 +638,9 @@ def DemoPit(self):
             self.canva.DisplayShape(edgeUp.Wire(), 'BLUE', False)
             self.canva._3dDisplay.DisplayMessage(gp_Pnt(X00 + D2 + 2, Y00, Z), str(Z), False)
         t11 = time.time()        
-        print("Число вершин в контурах всех бровок = %f" % (Cnt))
+        print("Число вершин в контурах всех бровок = %f" % Cnt)
         print("Время работы %f сек" % (t11 - t00))
-        self.msgWin.AppendText("Число вершин в контурах всех бровок = %f" % (Cnt) + "\n")
+        self.msgWin.AppendText("Число вершин в контурах всех бровок = %f" % Cnt + "\n")
         self.msgWin.AppendText("Время работы %f сек" % (t11 - t00) + "\n")
         self.SetStatusText("Бровки готовы", 2)
         #self.msgWin.AppendText(  + "\n")
@@ -802,137 +668,17 @@ def LoadDB(self):
         # Clear display
         self.canva.EraseAll()
         self.canva.drawList = []
-
         if 0 in objList:      # Бровки
-            self.SetStatusText("Бровки", 2)
-            conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-            curs = conn.cursor()
-            query = "select id_edge,hor,edge_type,ST_AsEWKT(geom),point from edge,horizons "
-            query = query + "where (id_hor in " + setHorIds + ") and (edge.hor=horizons.id_hor);"
-            curs.execute(query)
-            rows = curs.fetchall()
-
-            for record in rows:
-                id_edge = int(record[0])
-                id_hor = int(record[1])
-                edge_type = int(record[2])
-                coordsPLine = parsGeometry(str(record[3]))
-                point = float(record[4])
-                plgn = BRepBuilderAPI_MakePolygon()
-                for pnt in coordsPLine:
-                    if len(pnt) < 3:
-                        pnt = pnt + [point]
-                    #print pnt
-                    plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
-                w = plgn.Wire()
-                s = self.canva.DisplayShape(w, 'BLUE', False)
-                s1 = s.GetObject()
-                self.canva.drawList += [[0, id_edge, s1, id_hor, edge_type, False]]
-            #print("Бровки=",self.canva.edgeList)
-            self.SetStatusText("Готово!", 2)
+            load_horizons(self, setHorIds)
         
         if 1 in objList:      # Тела
-            self.SetStatusText("Тела", 2)
-            conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-            curs = conn.cursor()
-            query = "select id_body,body.id_hor,h_body,body.id_sort,ST_AsEWKT(geom),point,color,color_fill from body,horizons,sorts "
-            query += "where (body.id_hor in " + setHorIds
-            query += ") and (body.id_hor=horizons.id_hor) and (body.id_sort=sorts.id_sort);"
-            curs.execute(query)
-            rows = curs.fetchall()
-            for record in rows:
-                #print(rec[0])
-                id_body = int(record[0])
-                id_hor = int(record[1])
-                h_body = int(record[2])
-                id_sort = int(record[3])
-                coordsPLine = parsGeometry(str(record[4]))
-                point = float(record[5])
-                color = int(record[6])
-                color_fill = int(record[7])
-                query = "select red,green,blue from color where id_color=" + str(color) + ";"
-                curs.execute(query)
-                clr = curs.fetchone()
-                clrRed = clr[0]
-                clrBlue = clr[1]
-                clrGreen = clr[2]
-                
-                query = "select red,green,blue from color where id_color=" + str(color_fill) + ";"
-                curs.execute(query)
-                clr = curs.fetchone()
-                clrFillRed = clr[0]
-                clrFillBlue = clr[1]
-                clrFillGreen = clr[2]
-                
-                plgn = BRepBuilderAPI_MakePolygon()
-                for pnt in coordsPLine:
-                    if len(pnt) < 3:
-                        pnt = pnt + [point]
-                    #print pnt
-                    plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
-                plgn.Close()
-                w = plgn.Wire()
-                myFaceProfile = BRepBuilderAPI_MakeFace(w).Shape()
-                aPrismVec = gp_Vec(0, 0, h_body)
-                myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec).Shape()
-                #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
-                s = self.canva.DisplayShape(myBody, 'BLUE', False)
-                s1 = s.GetObject()
-                self.canva.drawList += [[1, id_body, s1, id_hor, point, h_body, id_sort, color, color_fill, False]]
-            #print("Тела=",self.canva.drawList)            
-            self.SetStatusText("Готово!", 2)
+            load_bodies(self, setHorIds)
         
         if 2 in objList:      # Скважины
-            self.SetStatusText("Скважины", 2)
-            conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-            curs = conn.cursor()
-            query = "select id_drill_fld,horiz,coord_system,type_drill,coord_x,coord_y,coord_z,name from drills"
-            query = query + " where (horiz in " + setHorIds + ");"
-            curs.execute(query)
-            rows = curs.fetchall()
-            for record in rows:
-                id_drill_fld, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, name = record
-                # Прочитать глубину скважины из БД
-                query = "SELECT val FROM dril_pars WHERE (id_par=6) and (id_drill=" + str(id_drill_fld) + ");"
-                curs.execute(query)
-                pars = curs.fetchone()
-                if pars:
-                    dept = pars[0]
-                else:
-                    dept = 16.0
-                position = gp_Ax2(gp_Pnt(coord_x, coord_y, coord_z), gp_Dir(0, 0, - 1))
-                skv = BRepPrim_Cylinder(position, 0.1, dept)
-                skv = skv.Shell()
-                s = self.canva.DisplayShape(skv, 'YELLOW', False)
-                s1 = s.GetObject()
-                self.canva.drawList += [[2, id_drill_fld, s1, horiz, coord_system, type_drill, coord_x, coord_y, coord_z, dept, name, False]]
-            self.SetStatusText("Готово!", 2)
+            load_skv(self, setHorIds)
         
         if 3 in objList:      # Изолинии
-            #self.canva.drawList = []
-          
-            self.SetStatusText("Изолинии", 2)
-            conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-            curs = conn.cursor()
-            curs.execute("select id_topo,heigth,coord_sys,ST_AsEWKT(geom) from topograph " + 
-                         "where (heigth>='" + str(izoLst[0]) + "')and(heigth<='" + str(izoLst[1]) + "')")
-            rows = curs.fetchall()
-            for record in rows:
-                #print(rec[0])
-                id_topo = int(record[0])
-                heigth = int(record[1])
-                coord_sys = int(record[2])
-                coordsPLine = parsGeometry(str(record[3]))
-                plgn = BRepBuilderAPI_MakePolygon()
-                for pnt in coordsPLine:
-                    plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))
-                w = plgn.Wire()
-                s = self.canva.DisplayShape(w, 'GREEN', False)
-                s1 = s.GetObject()
-                self.canva.drawList += [[3, id_topo, s1, heigth, coord_sys, False]]
-            #print self.canva.drawList
-            self.SetStatusText("Готово!", 2)
-
+            load_isolines(self)
 
 def SaveDB(self):
         """ Сохранить изменения в БД """
