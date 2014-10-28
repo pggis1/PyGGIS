@@ -1909,7 +1909,7 @@ class AppFrame(wx.Frame):
         if indexInfo is not None and not self.canva.drawList[indexInfo][0] in (0,1,3):
             return
         pnts = getPoints(sel_shape)
-        self.msgWin.AppendText(u"Длинна каркаса: "+str(length(pnts)+"\n"))
+        self.msgWin.AppendText("Длинна каркаса: "+str(length(pnts))+"\n")
 
     def OnDebug(self,event):
         """

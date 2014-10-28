@@ -145,21 +145,3 @@ class DXFParser:
         except IndexError:
             print("No such polyline %i" % n)
         return False
-
-    @staticmethod
-    def get_rgb(n):
-        """AutoCAD color number -> r, g, b"""
-        try:
-            db_connection = psycopg2.connect("dbname=postgres user=postgres")
-            db_curs = db_connection.cursor()
-            db_curs.execute("SELECT red, green, blue FROM colors WHERE id_color=%s;", (str(n),))
-            rgb = db_curs.fetchall()[0]
-            if rgb:
-                return rgb
-            else:
-                raise IndexError
-        except IndexError:
-            print("Color not supported.")
-        except:
-            print("Somethings gone wrong with db.")
-        return tuple([0.0, 0.0, 0.0])
