@@ -464,6 +464,7 @@ def length(pnts):
     l=0
     for i in xrange(len(pnts)-1):
         l += distance3d(pnts[i],pnts[i+1])
+    print l
     return l
 
 def getGrided(coord,gridSize):
