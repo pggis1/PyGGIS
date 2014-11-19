@@ -100,7 +100,8 @@ class GraphicsCanva3D(wx.Panel):
         wx.EVT_RIGHT_UP(self, self.OnRightUp)
         wx.EVT_MIDDLE_UP(self, self.OnMiddleUp)
         wx.EVT_MOTION(self, self.OnMotion)
-        wx.EVT_KEY_DOWN(self,self.OnKeyDown)
+        wx.EVT_KEY_DOWN(self, self.OnKeyDown)
+        wx.EVT_MOUSEWHEEL(self, self.MouseWheel)
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
@@ -217,6 +218,7 @@ class GraphicsCanva3D(wx.Panel):
         
         self.startPt = evt.GetPosition()
         xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(self.startPt.x, self.startPt.y) #, Xw,Yw,Zw
+        print xt
         resPnt = [xt, yt, zt]
         if self.EdCmd == CMD_AddText:
             mousexyz = gp_Pnt(xt, yt, zt)  # (c) Broly
@@ -919,7 +921,7 @@ class GraphicsCanva3D(wx.Panel):
         self._drawbox = False
         if event.ControlDown() and event.ShiftDown():
             pt = event.GetPosition()
-            if ((abs(self.dragStartPos.x - pt.x) > 1) or (abs(self.dragStartPos.y - pt.y) > 1)):
+            if (abs(self.dragStartPos.x - pt.x) > 1) or (abs(self.dragStartPos.y - pt.y) > 1):
                 self._3dDisplay.Zoom_Window(self.dragStartPos.x, self.dragStartPos.y, pt.x, pt.y)
 
     def OnRightDown(self, event):
@@ -990,7 +992,7 @@ class GraphicsCanva3D(wx.Panel):
         self.SetCursor(cursor)
 
 
-    def _dynazoom(self,event):
+    def _dynazoom(self, event):
         self.SetDynaCursor(os.path.join(THISPATH, "icons", "zoom_cur.bmp"))
         pt = event.GetPosition()
         self._3dDisplay.Repaint()
@@ -1019,6 +1021,7 @@ class GraphicsCanva3D(wx.Panel):
         
     def OnMotion(self, event):
         self.CentreDisplayToggle = False
+        #if event.Dragging():
         if self.DynaZoom and event.Dragging():
             self._dynazoom(event)
         if self.WinZoom and event.Dragging():
@@ -1037,7 +1040,7 @@ class GraphicsCanva3D(wx.Panel):
                 
                 dc = wx.ClientDC(self)
                 dc.BeginDrawing()
-                dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))##     BLACK_DASHED_PEN ##DOT
+                dc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))#     BLACK_DASHED_PEN ##DOT
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 dc.SetLogicalFunction(wx.COPY)
                 if self._drawline:
@@ -1090,9 +1093,9 @@ class GraphicsCanva3D(wx.Panel):
                 #print 'repaint'
                 #return
             else:
-                dc=wx.ClientDC(self)
+                dc = wx.ClientDC(self)
                 dc.SetLogicalFunction(wx.COPY)                
-            self._3dDisplay.MoveTo(pt.x,pt.y)   # Уход в ОСС для обработки выбора около точки
+            self._3dDisplay.MoveTo(pt.x, pt.y)   # Уход в ОСС для обработки выбора около точки
             # отобразить координаты в статусной строке
             view = self._3dDisplay.GetView().GetObject()
             xt, yt, zt, Pt, Ut, Vt = view.ConvertWithProj(pt.x, pt.y)  # Xw,Yw,Zw
@@ -1100,7 +1103,7 @@ class GraphicsCanva3D(wx.Panel):
             #self.frame.canva.coord.SetValue("%.2f,%.2f"%(xt,yt))
         elif event.Dragging() and event.RightIsDown() and event.ControlDown() and event.ShiftDown():
             # Zoom win
-            #self._winzoom(event)
+            # self._winzoom(event)
             pass    
         elif (event.Dragging() and event.RightIsDown() and event.ControlDown()) or \
                 (event.Dragging() and event.RightIsDown() and event.MiddleIsDown()):
@@ -1115,6 +1118,17 @@ class GraphicsCanva3D(wx.Panel):
         elif event.Dragging() and event.RightIsDown():
             # Pan
             self._dynapan(event)
+
+    def MouseWheel(self, event):
+        x, y = event.GetPosition()
+        wheel_vector = event.GetWheelRotation()
+        if wheel_vector > 0:
+            self._3dDisplay.ZoomFactor(1.5)
+        elif wheel_vector < 0:
+            self._3dDisplay.ZoomFactor(0.5)
+        self._3dDisplay.Repaint()
+
+
         
     def SaveAsImage(self, filename):
         """Save the current canvas view to an image file."""
