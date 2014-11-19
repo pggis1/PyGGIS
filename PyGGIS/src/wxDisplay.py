@@ -760,7 +760,7 @@ class GraphicsCanva3D(wx.Panel):
 
         ### разорвать линию
         if (self.EdCmd == CMD_EdBrBrkV) and (self.EdStep == 1):
-            sel_shape=self._3dDisplay.selected_shape
+            sel_shape = self._3dDisplay.selected_shape
             if not sel_shape:
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии

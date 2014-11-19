@@ -29,22 +29,21 @@ def load_horizons(self, horizons):
         color = record[5]
         query = "select red,green,blue from colors where id_color=" + str(color) + ";"
         curs.execute(query)
-        clr = curs.fetchone()
-        red = clr[0]
-        green = clr[1]
-        blue = clr[2]
+        red, green, blue = curs.fetchone()
+
         plgn = BRepBuilderAPI_MakePolygon()
         for pnt in poly_coords:
             if len(pnt) < 3:
-                pnt = pnt + [point]
+                pnt += [point]
             plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
         try:
             w = plgn.Wire()
-            s=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(red, green, blue, 0), False)
+            s = self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(red, green, blue, 0), False)
             s1 = s.GetObject()
             self.canva.drawList += [[0, id_edge, s1, id_hor, edge_type, False]]
         except:
             self.msgWin.AppendText("Не удалось преобразовать полилинию %i в бровку.\n" % id_hor)
+
         self.SetStatusText("Готово!", 2)
 
 
@@ -69,15 +68,12 @@ def load_bodies(self, horizons):
             color_fill = int(record[7])
             query = "select red,green,blue from colors where id_color=" + str(color) + ";"
             curs.execute(query)
-            clr = curs.fetchone()
-            red = clr[0]
-            green = clr[1]
-            blue = clr[2]
+            red, green, blue = curs.fetchone()
 
             plgn = BRepBuilderAPI_MakePolygon()
             for pnt in poly_coords:
                 if len(pnt) < 3:
-                    pnt = pnt + [point]
+                    pnt += [point]
 
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
             try:
@@ -86,11 +82,12 @@ def load_bodies(self, horizons):
                 aPrismVec = gp_Vec(0, 0, h_body)
                 my_body = BRepPrimAPI_MakePrism(my_face, aPrismVec).Shape()
                 #self.canva._3dDisplay.Context.SetMaterial(myBody,4)
-                s=self.canva.DisplayShape(my_body, OCC.Quantity.Quantity_Color(red, green, blue, 0), False)
+                s = self.canva.DisplayShape(my_body, OCC.Quantity.Quantity_Color(red, green, blue, 0), False)
                 s1 = s.GetObject()
                 self.canva.drawList += [[1, id_body, s1, id_hor, point, h_body, id_sort, color, color_fill, False]]
             except:
                 self.msgWin.AppendText("Не удалось преобразовать полилинию %i в тело.\n" % id_body)
+
         self.SetStatusText("Готово!", 2)
 
 

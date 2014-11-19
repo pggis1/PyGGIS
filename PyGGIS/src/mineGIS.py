@@ -643,7 +643,7 @@ class AppFrame(wx.Frame):
     def CreateMenu(self):
         return wx.ToolBar(self.panel1, - 1, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER | wx.TB_VERTICAL )
 
-    def NavigateMenu(self,event=None,menuname='main'):
+    def NavigateMenu(self, event=None, menuname='main'):
         if event is not None:
             if not isinstance(event.EventObject, wx.Button):
                 return
@@ -668,7 +668,7 @@ class AppFrame(wx.Frame):
         self.tb3.Fit()
 
     def getTypeByMenu(self):
-        for i,v in enumerate(menu_types):
+        for i, v in enumerate(menu_types):
             if self.menu_now in menu_types[i]:
                 return i
         return -1
