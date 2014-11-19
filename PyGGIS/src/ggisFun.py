@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 ##Copyright 2009, 2010 Владимир Суханов 
 ##
-#from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
-#from OCC.AIS import AIS_Shape
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepPrim import *
@@ -29,8 +27,7 @@ def SaveProt(self):
                u"Все файлы (*.*)|*.*"
     dlg = wx.FileDialog(
         self.msgWin, message="Сохранить протокол в ...", defaultDir=os.getcwd(), 
-        defaultFile="log.log", wildcard=wildcard, style=wx.SAVE
-        )
+        defaultFile="log.log", wildcard=wildcard, style=wx.SAVE)
     dlg.SetFilterIndex(1)
     if dlg.ShowModal() == wx.ID_OK:
         fileName = dlg.GetPath()
@@ -196,7 +193,7 @@ def CreateDB(self):
             geom += "%.0f %.0f %.0f," % (X, Y, Z)
             #if (j < (m-1)):
             #    geom = geom + ","
-            Cnt = Cnt + 1
+            Cnt += 1
         D2 += 3 * R
         for j in range(0, m / 2):
             fi = (m / 2 - j) * D_Ugol
@@ -206,7 +203,7 @@ def CreateDB(self):
             if j < (m / 2 - 1):
                 geom += ","
             Cnt += + 1
-        geom = geom + ")')"
+        geom += ")')"
         #print geom
         query = "INSERT INTO body (id_hor,h_body,id_sort,geom) VALUES (" + str(id_hor) + "," + str(Hust) + ",4," + geom + ");"  
         curs.execute(query)
@@ -285,7 +282,7 @@ def CEdit(self):
         for pnt1 in newpoints:
             plgn.Add(gp_Pnt(pnt1[0], pnt1[1], pnt1[2]))
         w = plgn.Wire()
-        newShape = self.canva.DisplayShape(w,'YELLOW', False)        #,'WHITE'
+        newShape = self.canva.DisplayShape(w, 'YELLOW', False)        #,'WHITE'
         # Установить цвет, тип,толщину и др.
         if selColor:
             self.canva._3dDisplay.Context.SetColor(newShape,selColor,0)
@@ -889,7 +886,7 @@ def Lidar(self):
             for iY in range(nY + 2):
                 pnt = (sXYZ[iX])[iY];
                 if pnt:
-                    Xc,Yc,Zc = pnt;
+                    Xc,Yc,Zc = pnt
                     ns = 0; dZ = 0.0
                     for sX in [ - 1, 0, + 1]:
                         if ((iX + sX) >= 0) and ((iX + sX) <= nX):
@@ -1027,12 +1024,12 @@ def Lidar(self):
         iPnt = 0
         for iX in xrange(nX + 2):
             granYZ = []
-            for iY in range(nY + 2):
+            for iY in xrange(nY + 2):
                 pnt = ((sXYZ[iX])[iY]); dZ = ((dXYZ[iX])[iY]); ddZ = ((ddXYZ[iX])[iY])
                 #print pnt, dZ, ddZ
                 if pnt and dZ and ddZ and (dZ[0] < HdZ) and (ddZ[0] > HddZ):     # По площадке у бровки. Искать здесь
                     # Найти плоскости с минимальным и максимальным уклоном в окресности точки pnt = sXYZ[iX])[iY]
-                    if log(pnt[0],pnt[1]):
+                    if log(pnt[0], pnt[1]):
                         fLog.write("iX="+str(iX)+" iY="+str(iY)+" pnt="+str(pnt)+" dZ="+str(dZ)+" ddZ="+str(ddZ)+"\n")
                     horRgn = uklRgn = []                                # индексы областей площадки и уклона
                     for i in (-2,-1, 0, 1, 2):                          #        7 8 9
