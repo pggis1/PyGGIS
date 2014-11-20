@@ -69,7 +69,7 @@ import os
 import os.path
 import sys
 import wx
-import types
+
 
 # --------------------------------------------------
 try:
@@ -138,7 +138,7 @@ class GraphicsCanva3D(wx.Panel):
         self.gumline_edge = None
         self.MakePoint = False
 
-        if sys.platform=='win32':
+        if sys.platform == 'win32':
             self.Init3dViewer()
 
         self.main = main
@@ -157,13 +157,13 @@ class GraphicsCanva3D(wx.Panel):
 
     def OnKeyDown(self,evt):
         key_code = evt.GetKeyCode()
-        if key_code == 87:#"W"
+        if key_code == 87:  # "W"
             self._3dDisplay.SetModeWireFrame()
-        elif key_code == 83:#"S"
+        elif key_code == 83:  # "S"
             self._3dDisplay.SetModeShaded()
-        elif key_code == 65:#"A"
+        elif key_code == 65:  # "A"
             self._3dDisplay.EnableAntiAliasing()
-        elif key_code == 66:#"B"
+        elif key_code == 66:  # "B"
             self._3dDisplay.DisableAntiAliasing()
               
     def OnSize(self, event):
@@ -218,7 +218,6 @@ class GraphicsCanva3D(wx.Panel):
         
         self.startPt = evt.GetPosition()
         xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(self.startPt.x, self.startPt.y) #, Xw,Yw,Zw
-        print xt
         resPnt = [xt, yt, zt]
         if self.EdCmd == CMD_AddText:
             mousexyz = gp_Pnt(xt, yt, zt)  # (c) Broly
@@ -349,9 +348,9 @@ class GraphicsCanva3D(wx.Panel):
                                 neaP1 = p1; neaP2 = p2
                         p1 = p2
                 #resPnt = [nea.X(),nea.Y(),nea.Z()]
-                cx=min(neaP1[0],neaP2[0])+math.fabs(max(neaP1[0],neaP2[0])-min(neaP1[0],neaP2[0]))/2
-                cy=min(neaP1[1],neaP2[1])+math.fabs(max(neaP1[1],neaP2[1])-min(neaP1[1],neaP2[1]))/2
-                cz=min(neaP1[2],neaP2[2])+math.fabs(max(neaP1[2],neaP2[2])-min(neaP1[2],neaP2[2]))/2
+                cx = min(neaP1[0],neaP2[0])+math.fabs(max(neaP1[0],neaP2[0])-min(neaP1[0],neaP2[0]))/2
+                cy = min(neaP1[1],neaP2[1])+math.fabs(max(neaP1[1],neaP2[1])-min(neaP1[1],neaP2[1]))/2
+                cz = min(neaP1[2],neaP2[2])+math.fabs(max(neaP1[2],neaP2[2])-min(neaP1[2],neaP2[2]))/2
                 resPnt = [cx, cy, cz]
             pass
         elif snap == 4:    # tangent
@@ -640,7 +639,7 @@ class GraphicsCanva3D(wx.Panel):
                 return
             # Получить цвет, тип линии, толщину и др. параметры линии
             selObj = self._3dDisplay.Context.SelectedInteractive()
-            type=self.frame.getTypeByMenu()
+            type = self.frame.getTypeByMenu()
             indexInfo = None
             for i in xrange(len(self.drawList)):
                 s1 = self.drawList[i][2]
@@ -1021,7 +1020,6 @@ class GraphicsCanva3D(wx.Panel):
         
     def OnMotion(self, event):
         self.CentreDisplayToggle = False
-        #if event.Dragging():
         if self.DynaZoom and event.Dragging():
             self._dynazoom(event)
         if self.WinZoom and event.Dragging():
@@ -1057,7 +1055,7 @@ class GraphicsCanva3D(wx.Panel):
                                                                                  Z+0*resPnt[2])).Edge()
                 if self.gumline_edge:
                     self.Erase(self.gumline_edge)
-                shape=OCC.AIS.AIS_Shape(edge)
+                shape = OCC.AIS.AIS_Shape(edge)
                 shape.UnsetSelectionMode()
                 self.gumline_edge = shape.GetHandle()
                 self._3dDisplay.Context.SetColor(self.gumline_edge,OCC.Quantity.Quantity_NOC_BLACK,0)
@@ -1120,14 +1118,16 @@ class GraphicsCanva3D(wx.Panel):
             self._dynapan(event)
 
     def MouseWheel(self, event):
-        x, y = event.GetPosition()
         wheel_vector = event.GetWheelRotation()
-        if wheel_vector > 0:
-            self._3dDisplay.ZoomFactor(1.5)
-        elif wheel_vector < 0:
-            self._3dDisplay.ZoomFactor(0.5)
-        self._3dDisplay.Repaint()
+        cur_x, cur_y = event.GetPosition()
+        window_center = map(lambda i: int(i/2), self.GetSize())
 
+        if wheel_vector > 0:
+            self._3dDisplay.View.Pan(-(int((cur_x - window_center[0])/6)), int((cur_y - window_center[1])/6), 1.2)
+        elif wheel_vector < 0:
+            self._3dDisplay.View.Pan(int((cur_x - window_center[0])/6), -(int((cur_y - window_center[1])/6)), 0.75)
+
+        self._3dDisplay.Repaint()
 
         
     def SaveAsImage(self, filename):
@@ -1183,10 +1183,10 @@ class GraphicsCanva3D(wx.Panel):
         else:
             SOLO = False
             
-        if line_type==0:
-            line_type=OCC.Aspect.Aspect_TOL_SOLID
+        if line_type == 0:
+            line_type = OCC.Aspect.Aspect_TOL_SOLID
         else:
-            line_type=OCC.Aspect.Aspect_TOL_DASH
+            line_type = OCC.Aspect.Aspect_TOL_DASH
         
         for shape in shapes:
             #shape_to_display=OCC.AIS.AIS_Shape(shape)

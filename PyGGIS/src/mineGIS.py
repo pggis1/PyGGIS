@@ -266,7 +266,7 @@ class AppFrame(wx.Frame):
                      wx.EXPAND |    # make horizontally stretchable
                      wx.ALL,        # and make border all around
                      2 )            # set border width to 2
-        self.panel3.SetSizer( topsizer_M )    # use the sizer for layout
+        self.panel3.SetSizer(topsizer_M)    # use the sizer for layout
         self.msgWin.AppendText("Сегодня: " +
                   time.strftime("%d.%m.%Y %H:%M", time.localtime(time.time())) + "\n")
 

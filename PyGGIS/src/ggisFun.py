@@ -593,10 +593,14 @@ def Refresh(self):
     if "Надписи" in objLst:
         pass
 
+    self.canva.ZoomAll()
+
 
 def DemoPit(self):
         """ Прямое рисование элементов карьера без сохранения в СУБД 
         для нагрузочного тестирования"""
+        self.canva.EraseAll()
+        self.canva.drawList = []
         self.SetStatusText("Бровки карьера", 2)
         n = 15
         X00 = 5000  # Center of pit
@@ -641,7 +645,7 @@ def DemoPit(self):
         self.msgWin.AppendText("Время работы %f сек" % (t11 - t00) + "\n")
         self.SetStatusText("Бровки готовы", 2)
         #self.msgWin.AppendText(  + "\n")
-
+        self.canva.ZoomAll()
 
 def LoadDB(self):
         """ Загрузка элементов из базы данных PostGIS """
@@ -676,6 +680,8 @@ def LoadDB(self):
         
         if 3 in objList:      # Изолинии
             load_isolines(self)
+
+        self.canva.ZoomAll()
 
 def SaveDB(self):
         """ Сохранить изменения в БД """
