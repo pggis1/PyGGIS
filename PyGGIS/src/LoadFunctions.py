@@ -26,11 +26,12 @@ def load_horizons(self, horizons):
         edge_type = int(record[2])
         poly_coords = parsGeometry(str(record[3]))
         point = float(record[4])
+        if point not in self.canva.usedHorizons:
+                self.canva.usedHorizons.append(point)
         color = record[5]
         query = "select red,green,blue from colors where id_color=" + str(color) + ";"
         curs.execute(query)
         red, green, blue = curs.fetchone()
-
         plgn = BRepBuilderAPI_MakePolygon()
         for pnt in poly_coords:
             if len(pnt) < 3:
@@ -61,6 +62,8 @@ def load_bodies(self, horizons):
             id_body = int(record[0])
             id_hor = int(record[1])
             h_body = int(record[2])
+            if h_body not in self.canva.usedHorizons:
+                self.canva.usedHorizons.append(float(h_body))
             id_sort = int(record[3])
             poly_coords = parsGeometry(str(record[4]))
             point = float(record[5])
@@ -74,7 +77,6 @@ def load_bodies(self, horizons):
             for pnt in poly_coords:
                 if len(pnt) < 3:
                     pnt += [point]
-
                 plgn.Add(gp_Pnt(pnt[0], pnt[1], pnt[2]))
             try:
                 w = plgn.Wire()

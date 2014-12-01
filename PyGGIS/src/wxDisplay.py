@@ -91,7 +91,7 @@ class GraphicsCanva3D(wx.Panel):
         wx.EVT_MOVE(self, self.OnMove)
         wx.EVT_SET_FOCUS(self, self.OnFocus)
         wx.EVT_KILL_FOCUS(self, self.OnLostFocus)
-        wx.EVT_MAXIMIZE(self, self.OnMaximize)
+        wx.EVT_PAINT(self, self.OnMaximize)
 
         wx.EVT_LEFT_DOWN(self, self.OnLeftDown)
         wx.EVT_LEFT_UP(self, self.OnLeftUp)
@@ -104,6 +104,8 @@ class GraphicsCanva3D(wx.Panel):
         wx.EVT_MOUSEWHEEL(self, self.MouseWheel)
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
+
+        self.usedHorizons = []
 
         self._3dDisplay     = None
         self._inited        = False
@@ -132,8 +134,10 @@ class GraphicsCanva3D(wx.Panel):
         self.tempPointIndex = None # Временый индекс точки
         self.tempPoint      = None # Временная точка
 
-        self.Net_DoOnce = 0
-        self.Net_rev = 0
+        # Переменные сетки
+        self.Grid_DoOnce = 0
+        self.GridLines = None
+        self.GridCoords = None
 
         self.gumline_edge = None
         self.MakePoint = False
@@ -175,7 +179,8 @@ class GraphicsCanva3D(wx.Panel):
     def OnMaximize(self, event):
         if self._inited:
             self._3dDisplay.OnResize()
-            self._3dDisplay.Repaint()
+            #self._3dDisplay.Repaint()
+            self.Repaint(event)
         
     def OnMove(self, event):
         if self._inited:
@@ -219,8 +224,9 @@ class GraphicsCanva3D(wx.Panel):
         self.startPt = evt.GetPosition()
         xt, yt, zt, Pt,Ut,Vt = self._3dDisplay.GetView().GetObject().ConvertWithProj(self.startPt.x, self.startPt.y) #, Xw,Yw,Zw
         resPnt = [xt, yt, zt]
+
         if self.EdCmd == CMD_AddText:
-            mousexyz = gp_Pnt(xt, yt, zt)  # (c) Broly
+            mousexyz = gp_Pnt(xt, yt, zt)
             CurrentText = self.frame.canva.text.GetValue()
             print CurrentText
 
@@ -234,7 +240,7 @@ class GraphicsCanva3D(wx.Panel):
                     if CurrentText[Cnt] == aUnicode[Ctt]:
                         ASCIIRes = ASCIIRes+aASCII[Ctt]
 
-            CurrentText = ASCIIRes;
+            CurrentText = ASCIIRes
             CurrentText = CurrentText.replace("<XYZ>","["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]")
             CurrentText = CurrentText.replace("<koopdinati>","["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]")
             CurrentText = CurrentText.replace("<XY>","["+str(trunc(xt))+"; "+str(trunc(yt))+"]")
@@ -246,8 +252,8 @@ class GraphicsCanva3D(wx.Panel):
             CurrentText = '. '+CurrentText
 
             #print '---==========---'
-            #self._3dDisplay.DisplayMessage(mousexyz,". ["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]") # /(c) Broly
-            self._3dDisplay.DisplayMessage(mousexyz,CurrentText) # /(c) Broly
+            #self._3dDisplay.DisplayMessage(mousexyz,". ["+str(trunc(xt))+"; "+str(trunc(yt))+"; "+str(trunc(zt))+"]") #
+            self._3dDisplay.DisplayMessage(mousexyz, CurrentText)
 
         self.worldPt = resPnt
         # Обслуживание привязок
@@ -1120,7 +1126,7 @@ class GraphicsCanva3D(wx.Panel):
     def MouseWheel(self, event):
         wheel_vector = event.GetWheelRotation()
         cur_x, cur_y = event.GetPosition()
-        window_center = map(lambda i: int(i/2), self.GetSize())
+        window_center = self.GetWindowCenterPosition()
 
         if wheel_vector > 0:
             self._3dDisplay.View.Pan(-(int((cur_x - window_center[0])/6)), int((cur_y - window_center[1])/6), 1.2)
@@ -1129,12 +1135,35 @@ class GraphicsCanva3D(wx.Panel):
 
         self._3dDisplay.Repaint()
 
+    def GetWindowCenterPosition(self, world=True):
+        if world:
+            return tuple(map(lambda i: int(i/2), self.GetSize()))
+        else:
+            return  \
+                self._3dDisplay.GetView().GetObject().ConvertWithProj(*tuple(map(lambda i: int(i/2), self.GetSize())))
         
     def SaveAsImage(self, filename):
         """Save the current canvas view to an image file."""
         self._3dDisplay.ExportToImage(filename)
 
-    def Erase(self,shape):
+    def Remove(self, shape):
+        self._3dDisplay.Context.Remove(shape, False)
+        if self.main:
+            try:
+                self.frame.canva_top._3dDisplay.Context.Remove(shape.canva_top, False)
+                #print "ok top"
+            except AttributeError:
+                #print 'attribute error top'
+                self.frame.canva_top._3dDisplay.Context.Remove(shape, False)
+            try:
+                self.frame.canva_front._3dDisplay.Context.Remove(shape.canva_front, False)
+                #print "ok front"
+            except AttributeError:
+                #print 'attribute error front'
+                self.frame.canva_front._3dDisplay.Context.Remove(shape, False)
+
+
+    def Erase(self, shape):
         self._3dDisplay.Context.Erase(shape)
         #print shape
         if self.main:
@@ -1157,9 +1186,9 @@ class GraphicsCanva3D(wx.Panel):
             self.frame.canva_top._3dDisplay.EraseAll()
             self.frame.canva_front._3dDisplay.EraseAll()
 
-    def DisplayShape(self, shapes, color='YELLOW', update=True, line_type = 0, line_thickness = 1,toggle=True, ):
+    def DisplayShape(self, shapes, color='YELLOW', update=True, line_type=0, line_thickness=1, toggle=True, ):
         ais_shapes = []
-        color_to_send=color
+        color_to_send = color
         if isinstance(color, str):
             dict_color = {'WHITE': OCC.Quantity.Quantity_NOC_WHITE,
                           'BLUE': OCC.Quantity.Quantity_NOC_BLUE1,
