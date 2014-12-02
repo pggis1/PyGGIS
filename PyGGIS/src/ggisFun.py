@@ -1249,7 +1249,7 @@ def Etalon(self):
         startTime = time.time()
 
         Cnt = 0        
-        for i in range(0, n):               # По числу уступов горизонтов
+        for i in xrange(0, n):               # По числу уступов горизонтов
             rDn = R10 + i * R               # Радиус  нижней бровки
             zDn = Z00 + (i * Hust)          # Отметка нижней бровки
             rUp = rDn + Hust/tan(Ugl)       # Радиус  верхней бровки
@@ -1257,7 +1257,7 @@ def Etalon(self):
             m   = int(6.28 * rDn / DLT_l)   # Число точек на бровках
             D_Ugol = 6.28 / m               # Приращение угла поворота луча
             edgeDn = BRepBuilderAPI_MakePolygon()
-            for j in range(0, m):
+            for j in xrange(0, m):
                 fi = j * D_Ugol
                 X = X00 + rDn * cos(fi)
                 Y = Y00 + rDn * sin(fi) * D2_D1
@@ -1267,7 +1267,7 @@ def Etalon(self):
             self.canva.DisplayShape(edgeDn.Wire(), 'GREEN', False)
             
             edgeUp = BRepBuilderAPI_MakePolygon()
-            for j in range(0, m):
+            for j in xrange(0, m):
                 fi = j * D_Ugol
                 X = X00 + rUp * cos(fi)
                 Y = Y00 + rUp * sin(fi) * D2_D1
@@ -1278,18 +1278,30 @@ def Etalon(self):
             
         #print "Создали бровки за ", time.time() - startTime, "сек. Число точек = ", Cnt
 
-def DrawGrid(self, scale=9, something=400, level=None):
+
+def DrawGrid(self, scale=9, level=None):
     if level is None:
         level = self.canva.usedHorizons[0]
+    self.canva.GridParams = [scale, level, 2000]
     pos = self.canva.GridCoords
     self.canva.GridLines = []
+    MakeGridBorder(self, pos)
     for i in xrange(scale):
-        x_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+i*100-something, pos[1]-something, level), gp_Pnt(pos[0]+i*100-something, pos[1]+something, level))
-        y_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]-something, pos[1]+i*100-something, level), gp_Pnt(pos[0]+something, pos[1]+i*100-something, level))
-        x = self.canva.DisplayShape(x_line.Wire(), 'WHITE', False, toggle=False)
-        y = self.canva.DisplayShape(y_line.Wire(), 'WHITE', False, toggle=False)
-        self.canva.GridLines.append(x)
-        self.canva.GridLines.append(y)
+        x_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+i*self.canva.GridParams[2]/scale, pos[1], level), gp_Pnt(pos[0]+i*self.canva.GridParams[2]/scale, pos[1]+self.canva.GridParams[2], level))
+        y_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1]+i*self.canva.GridParams[2]/scale, level), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1]+i*self.canva.GridParams[2]/scale, level))
+        self.canva.GridLines.append(self.canva.DisplayShape(x_line.Wire(), 'WHITE', False, toggle=False))
+        self.canva.GridLines.append(self.canva.DisplayShape(y_line.Wire(), 'WHITE', False, toggle=False))
+
+
+def MakeGridBorder(self, pos):
+    border = []
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1], self.canva.GridParams[1]), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1], self.canva.GridParams[1])))
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1], self.canva.GridParams[1]), gp_Pnt(pos[0], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1])))
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1], self.canva.GridParams[1]), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1])))
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1]), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1])))
+    for line in border:
+        self.canva.GridLines.append(self.canva.DisplayShape(line.Wire(), 'WHITE', False, toggle=False))
+
 
 def RemoveGrid(self, totally=False):
     for i in xrange(len(self.canva.GridLines)):
@@ -1298,5 +1310,6 @@ def RemoveGrid(self, totally=False):
     if totally:
         self.canva.GridCoords = None
         self.canva.Grid_DoOnce = 0
+        self.canva.GridParams = []
         self.GridSlider(None)
         self.canva.ZoomAll()

@@ -669,15 +669,21 @@ class AppFrame(wx.Frame):
         self.tb3.Fit()
 
     def OnGridSlider(self, event, slider):
-        RemoveGrid(self)
-        DrawGrid(self, 9, 400, self.canva.usedHorizons[slider.GetValue()])
+        if slider.GetName() == "GridSlider":
+            RemoveGrid(self)
+            DrawGrid(self, self.canva.GridParams[0], self.canva.usedHorizons[slider.GetValue()])
+        elif slider.GetName() == "GridScaleSlider":
+            RemoveGrid(self)
+            DrawGrid(self, slider.GetValue(), self.canva.GridParams[1])
 
     def GridSlider(self, event):
         if self.canva.Grid_DoOnce:
             GridMenuTitle = wx.StaticText(self.panel1, -1, menu_titles['grid_title'], (20, 460), wx.DefaultSize, name="GridTitle")
             GridMenuEdges = wx.StaticText(self.panel1, -1, menu_titles['edge'], (40, 495), wx.DefaultSize, name="GridEdges")
             GridSlider = wx.Slider(self.panel1, -1, 0, 0, len(self.canva.usedHorizons)-1, (5, 480), (30, 100), wx.VERTICAL, name="GridSlider")
-            self.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridSlider))
+            GridScaleSlider = wx.Slider(self.panel1, -1, 3, 3, 20, (15, 580), (100, 20), wx.HORIZONTAL, name="GridScaleSlider")
+            GridSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridSlider))
+            GridScaleSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridScaleSlider))
         else:
             for child in self.panel1.GetChildren():
                 if child.GetName().startswith("Grid"):
@@ -1923,6 +1929,8 @@ class AppFrame(wx.Frame):
             self.canva.Grid_DoOnce = 1
             self.SetView(None, self.canva._3dDisplay.View_Iso)
             self.canva.GridCoords = self.canva.GetWindowCenterPosition(False)
+            self.canva.GridCoords[0] -= 2400  # temp
+            self.canva.GridCoords[1] += 400
             DrawGrid(self)
             self.GridSlider(None)
             self.canva.ZoomAll()

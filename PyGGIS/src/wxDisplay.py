@@ -138,6 +138,7 @@ class GraphicsCanva3D(wx.Panel):
         self.Grid_DoOnce = 0
         self.GridLines = None
         self.GridCoords = None
+        self.GridParams = []
 
         self.gumline_edge = None
         self.MakePoint = False
@@ -1140,7 +1141,7 @@ class GraphicsCanva3D(wx.Panel):
             return tuple(map(lambda i: int(i/2), self.GetSize()))
         else:
             return  \
-                self._3dDisplay.GetView().GetObject().ConvertWithProj(*tuple(map(lambda i: int(i/2), self.GetSize())))
+                list(self._3dDisplay.GetView().GetObject().ConvertWithProj(*(map(lambda i: i/2, self.GetSize()))))
         
     def SaveAsImage(self, filename):
         """Save the current canvas view to an image file."""
