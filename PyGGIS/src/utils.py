@@ -6,7 +6,6 @@
 LoadDlg, getPoints, parsGeometry, makeLINESTRING, distance2d
 """
 from OCC.BRepOffsetAPI import BRepOffsetAPI_MakeOffset
-
 import wx
 import wx.grid
 import psycopg2
@@ -18,7 +17,6 @@ from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
 from OCC.BRepBuilderAPI import *
 from OCC.gp import *
 from regim import *
-#import OCC.KBE
 from utils import *
 from math import *
 from scipy import *
@@ -30,6 +28,7 @@ from OCC.TopExp import *
 from OCC.TColgp import *
 from OCC.GeomAPI import *
 
+
 def GetRowsTbl(tableName, where=""):
     conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
     curs = conn.cursor()
@@ -39,6 +38,7 @@ def GetRowsTbl(tableName, where=""):
     curs.execute(query)
     rows = curs.fetchall()
     return rows
+
 
 class LoadDlg(wx.Dialog):
     """Класс диалога задания объектов из базы данных"""
@@ -146,10 +146,10 @@ def parsGeometry(geom):
     """Разобрать координаты геометрического объекта"""
     coords = geom[geom.find('(')+1:geom.find(')')]
     lstCoords = coords.split(',')
-    lstXYZ=[]
+    lstXYZ = []
     for pnt in lstCoords:
-        pntXYZ=[]
-        xyz=pnt.split(' ')
+        pntXYZ = []
+        xyz = pnt.split(' ')
         for val in xyz:
             #if val.isdigit():
                 pntXYZ = pntXYZ + [float(val)]
@@ -170,7 +170,6 @@ def getPoints(shape):
             vv = te(sv)
             p1 = OCC.BRep.BRep_Tool.Pnt(vv)
             p1 = [p1.X(), p1.Y(), p1.Z()]
-            print('Точка: '+str([p1]))
             if (len(result) == 0) or (p1 != result[-1]):
                 result = result + [p1]
             sv = ex.Next()

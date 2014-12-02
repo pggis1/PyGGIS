@@ -558,7 +558,7 @@ def Refresh(self):
         return
     setHorIds = "("
     gorLst = []
-    for i in range(len(self.horList)):
+    for i in xrange(len(self.horList)):
         if self.gorLst.IsChecked(i):
             gorLst = gorLst + [self.horIds[i]]
             setHorIds = setHorIds + str(self.horIds[i][0]) + ","
@@ -574,6 +574,9 @@ def Refresh(self):
     # Clear display
     self.canva.EraseAll()
     self.canva.drawList = []
+    self.canva.usedHorizons = []
+    if self.canva.Grid_DoOnce:
+        RemoveGrid(self, True)
 
     if "Бровки" in objLst:
         load_horizons(self, setHorIds)
@@ -593,6 +596,7 @@ def Refresh(self):
     if "Надписи" in objLst:
         pass
 
+    self.canva.usedHorizons.sort(reverse=True)
     self.canva.ZoomAll()
 
 
@@ -613,13 +617,13 @@ def DemoPit(self):
         D10 = 150
         Z0 = - 100
         t00 = time.time()
-        for i in xrange(0, n):
+        for i in xrange(n):
             edgeUp = BRepBuilderAPI_MakePolygon()
             D1 = D10 + i * R
             Z = Z0 + (i * Hust)
             m = int(3.14 * D1 / DLT_l)
             D_Ugol = 6.28 / m
-            for j in range(0, m):
+            for j in xrange(m):
                 fi = j * D_Ugol
                 X = X00 + D1 * cos(fi)
                 Y = Y00 + D1 * sin(fi) * D2_D1
@@ -629,7 +633,7 @@ def DemoPit(self):
             self.canva.DisplayShape(edgeUp.Wire(), 'BLUE', False)
             edgeUp = BRepBuilderAPI_MakePolygon()
             D2 = D1 + R - Hust / 2
-            for j in range(0, m):
+            for j in xrange(m):
                 fi = j * D_Ugol
                 X = X00 + D2 * cos(fi)
                 Y = Y00 + D2 * sin(fi) * D2_D1
@@ -644,7 +648,6 @@ def DemoPit(self):
         self.msgWin.AppendText("Число вершин в контурах всех бровок = %f" % Cnt + "\n")
         self.msgWin.AppendText("Время работы %f сек" % (t11 - t00) + "\n")
         self.SetStatusText("Бровки готовы", 2)
-        #self.msgWin.AppendText(  + "\n")
         self.canva.ZoomAll()
 
 def LoadDB(self):
@@ -653,10 +656,7 @@ def LoadDB(self):
         dlg.CenterOnScreen()
         dlg.ShowModal()
         resDict = dlg.result()
-        # {'izoLst': (250.0, 260.0), 'objList': [0, 1, 2, 3], 'horIds': [1, 3]}
-        # objList: 0 - "Бровки", 1 - "Тела", 2 - "Скважины", 3 - "Изолинии"]
         dlg.Destroy()
-        #print resDict
         if len(resDict) == 0:
             return
         horIds = resDict['horIds']      # Список ключей горизонтов
@@ -666,9 +666,13 @@ def LoadDB(self):
         setHorIds = setHorIds[: - 1] + ")"
         objList = resDict['objList']    # Список типов объектов из БД
         izoLst = resDict['izoLst']     # Диапазон отметок изолиний
-        # Clear display
+
         self.canva.EraseAll()
         self.canva.drawList = []
+        self.canva.usedHorizons = []
+        if self.canva.Grid_DoOnce:
+            RemoveGrid(self, True)
+
         if 0 in objList:      # Бровки
             load_horizons(self, setHorIds)
         
@@ -681,6 +685,7 @@ def LoadDB(self):
         if 3 in objList:      # Изолинии
             load_isolines(self)
 
+        self.canva.usedHorizons.sort(reverse=True)
         self.canva.ZoomAll()
 
 def SaveDB(self):
@@ -1232,8 +1237,6 @@ def Lidar(self):
                                " общая = " + str(sumErr)  + "\n")
         self.msgWin.AppendText("Нарисовали за " + str(time.time() - sTime) + " сек " + str(cntPnt) + " точек"  + "\n")
         self.SetStatusText("Готово!", 2)
-        #print 'Finish Las'
-        pass
         fLog.write("Нарисовали бровки за "+str(time.time() - sTime)+ "сек. Число точек = "+str(iPnt)+" \n")
         fLog.close()
     
@@ -1246,7 +1249,7 @@ def Etalon(self):
         startTime = time.time()
 
         Cnt = 0        
-        for i in range(0, n):               # По числу уступов горизонтов
+        for i in xrange(0, n):               # По числу уступов горизонтов
             rDn = R10 + i * R               # Радиус  нижней бровки
             zDn = Z00 + (i * Hust)          # Отметка нижней бровки
             rUp = rDn + Hust/tan(Ugl)       # Радиус  верхней бровки
@@ -1254,7 +1257,7 @@ def Etalon(self):
             m   = int(6.28 * rDn / DLT_l)   # Число точек на бровках
             D_Ugol = 6.28 / m               # Приращение угла поворота луча
             edgeDn = BRepBuilderAPI_MakePolygon()
-            for j in range(0, m):
+            for j in xrange(0, m):
                 fi = j * D_Ugol
                 X = X00 + rDn * cos(fi)
                 Y = Y00 + rDn * sin(fi) * D2_D1
@@ -1264,7 +1267,7 @@ def Etalon(self):
             self.canva.DisplayShape(edgeDn.Wire(), 'GREEN', False)
             
             edgeUp = BRepBuilderAPI_MakePolygon()
-            for j in range(0, m):
+            for j in xrange(0, m):
                 fi = j * D_Ugol
                 X = X00 + rUp * cos(fi)
                 Y = Y00 + rUp * sin(fi) * D2_D1
@@ -1274,3 +1277,39 @@ def Etalon(self):
             self.canva.DisplayShape(edgeUp.Wire(), 'GREEN', False)
             
         #print "Создали бровки за ", time.time() - startTime, "сек. Число точек = ", Cnt
+
+
+def DrawGrid(self, scale=9, level=None):
+    if level is None:
+        level = self.canva.usedHorizons[0]
+    self.canva.GridParams = [scale, level, 2000]
+    pos = self.canva.GridCoords
+    self.canva.GridLines = []
+    MakeGridBorder(self, pos)
+    for i in xrange(scale):
+        x_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+i*self.canva.GridParams[2]/scale, pos[1], level), gp_Pnt(pos[0]+i*self.canva.GridParams[2]/scale, pos[1]+self.canva.GridParams[2], level))
+        y_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1]+i*self.canva.GridParams[2]/scale, level), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1]+i*self.canva.GridParams[2]/scale, level))
+        self.canva.GridLines.append(self.canva.DisplayShape(x_line.Wire(), 'WHITE', False, toggle=False))
+        self.canva.GridLines.append(self.canva.DisplayShape(y_line.Wire(), 'WHITE', False, toggle=False))
+
+
+def MakeGridBorder(self, pos):
+    border = []
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1], self.canva.GridParams[1]), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1], self.canva.GridParams[1])))
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1], self.canva.GridParams[1]), gp_Pnt(pos[0], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1])))
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1], self.canva.GridParams[1]), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1])))
+    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1]), gp_Pnt(pos[0]+self.canva.GridParams[2], pos[1]+self.canva.GridParams[2], self.canva.GridParams[1])))
+    for line in border:
+        self.canva.GridLines.append(self.canva.DisplayShape(line.Wire(), 'WHITE', False, toggle=False))
+
+
+def RemoveGrid(self, totally=False):
+    for i in xrange(len(self.canva.GridLines)):
+        self.canva.Remove(self.canva.GridLines[i])
+    self.canva.GridLines = None
+    if totally:
+        self.canva.GridCoords = None
+        self.canva.Grid_DoOnce = 0
+        self.canva.GridParams = []
+        self.GridSlider(None)
+        self.canva.ZoomAll()

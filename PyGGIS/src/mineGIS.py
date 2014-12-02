@@ -56,22 +56,19 @@ import wx
 import wx.aui
 import wx.py
 from wxDisplay import GraphicsCanva3D
-import time
 from OCC import STEPControl, StlAPI, IGESControl, TopoDS, BRep, BRepTools
 from OCC.AIS import AIS_Shape
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepPrim import *
+from OCC.TopTools import *
 from OCC.gp import *
-#import OCC.KBE TMP
-#from OCC.KBE.TypesLookup import ShapeToTopology #for old pOCC
-#from OCC.KBE.types_lut import ShapeToTopology TMP
 import psycopg2
 from regim import *
 from utils import *
 from ggisFun import *
 
-VERSION = "Edited by Broly..."
+VERSION = "0.01"
 
 def CreateMaskedBitmap(fname, h=16, w=16):
     '''Ceate a masked bitmap where the mask colour is pink.'''
@@ -404,9 +401,8 @@ class AppFrame(wx.Frame):
                 ['',wx.NewId(),u'Обновить',self.OnRefresh,None],
                 ['',wx.NewId(),u'Очистить',self.OnErase,None],
                 ['',wx.NewId(),u'СохранитьБД',self.OnSaveDB,None],
-                ['',wx.NewId(),u'ПоказатьВсё',self._zoomall,None],
                 ['',wx.NewId(),u'Добавить текст',self.OnAddText,None],
-                ['',wx.NewId(),u'Сетка',self.OnShowNet,None]
+                ['',wx.NewId(),u'Сетка',self.OnShowGrid,None],
                 ]
 
         self.menu_now = 'main'
@@ -478,25 +474,25 @@ class AppFrame(wx.Frame):
         viewmenu.AppendSeparator()
         v_Top = wx.NewId()
         viewmenu.Append(v_Top, MNU_TOP[0], MNU_TOP[1])
-        self.Bind(wx.EVT_MENU, self.View_Top, id=v_Top)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Top), id=v_Top)
         v_Bottom = wx.NewId()
         viewmenu.Append(v_Bottom, MNU_BOTTOM[0], MNU_BOTTOM[1])
-        self.Bind(wx.EVT_MENU, self.View_Bottom, id=v_Bottom)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Bottom), id=v_Bottom)
         v_Left = wx.NewId()
         viewmenu.Append(v_Left, MNU_LEFT[0], MNU_LEFT[1])
-        self.Bind(wx.EVT_MENU, self.View_Left, id=v_Left)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Left), id=v_Left)
         v_Right = wx.NewId()
         viewmenu.Append(v_Right, MNU_RIGHT[0], MNU_RIGHT[1])
-        self.Bind(wx.EVT_MENU, self.View_Right, id=v_Right)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Right), id=v_Right)
         v_Front = wx.NewId()
         viewmenu.Append(v_Front, MNU_FRONT[0], MNU_FRONT[1])
-        self.Bind(wx.EVT_MENU, self.View_Front, id=v_Front)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Front), id=v_Front)
         v_Rear = wx.NewId()
         viewmenu.Append(v_Rear, MNU_REAR[0], MNU_REAR[1])
-        self.Bind(wx.EVT_MENU, self.View_Rear, id=v_Rear)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Rear), id=v_Rear)
         v_Iso = wx.NewId()
         viewmenu.Append(v_Iso, MNU_ISO[0], MNU_ISO[1])
-        self.Bind(wx.EVT_MENU, self.View_Iso, id=v_Iso)
+        self.Bind(wx.EVT_MENU, lambda event: self.SetView(event, self.canva._3dDisplay.View_Iso), id=v_Iso)
         z = wx.NewId()
         viewmenu.Append(z, MNU_ZOOMALL[0], MNU_ZOOMALL[1])
         self.Bind(wx.EVT_MENU, self._zoomall, id=z)
@@ -630,6 +626,11 @@ class AppFrame(wx.Frame):
         self.InitCanva(self.canva_top)
         self.InitCanva(self.canva_front)
 
+    def SetView(self, event, perspective_func):
+        """Call self.canva._3dDisplay.View_*() and ZoomAll"""
+        perspective_func()
+        self.canva.ZoomAll()
+
     def InitCanva(self, canva):
         canva.frame = self
         canva.GumLine = False
@@ -666,6 +667,28 @@ class AppFrame(wx.Frame):
                     self.tb3.AddControl(self.buttonMenu[i][4])
                     self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][3], self.buttonMenu[i][4])
         self.tb3.Fit()
+
+    def OnGridSlider(self, event, slider):
+        if slider.GetName() == "GridSlider":
+            RemoveGrid(self)
+            DrawGrid(self, self.canva.GridParams[0], self.canva.usedHorizons[slider.GetValue()])
+        elif slider.GetName() == "GridScaleSlider":
+            RemoveGrid(self)
+            DrawGrid(self, slider.GetValue(), self.canva.GridParams[1])
+
+    def GridSlider(self, event):
+        if self.canva.Grid_DoOnce:
+            GridMenuTitle = wx.StaticText(self.panel1, -1, menu_titles['grid_title'], (20, 460), wx.DefaultSize, name="GridTitle")
+            GridMenuEdges = wx.StaticText(self.panel1, -1, menu_titles['edge'], (40, 495), wx.DefaultSize, name="GridEdges")
+            GridSlider = wx.Slider(self.panel1, -1, 0, 0, len(self.canva.usedHorizons)-1, (5, 480), (30, 100), wx.VERTICAL, name="GridSlider")
+            GridScaleSlider = wx.Slider(self.panel1, -1, 3, 3, 20, (15, 580), (100, 20), wx.HORIZONTAL, name="GridScaleSlider")
+            GridSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridSlider))
+            GridScaleSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridScaleSlider))
+        else:
+            for child in self.panel1.GetChildren():
+                if child.GetName().startswith("Grid"):
+                    child.Destroy()
+
 
     def getTypeByMenu(self):
         for i, v in enumerate(menu_types):
@@ -731,7 +754,6 @@ class AppFrame(wx.Frame):
         self.OnCancel(event)
 
         self.NavigateMenu(event)
-        pass
 
     def OnWayCreate(self, event):
         pnts = getPoints(self.canva.drawList[self.canva.tempIndex][2].Shape())
@@ -1283,13 +1305,13 @@ class AppFrame(wx.Frame):
         par1Box.Add(self.drillH, flag=wx.EXPAND, border = 1)
 
         par1Box.Add((10,40))
-        par1Box.Add(wx.StaticText(panel,-1,"Имя сважины",size = (180,20)),
+        par1Box.Add(wx.StaticText(panel,-1,"Имя сважины",size = (180, 20)),
             flag=wx.EXPAND)
-        self.drillName = wx.TextCtrl(panel, -1, "Скважина",size=(150,30))
+        self.drillName = wx.TextCtrl(panel, -1, "Скважина",size=(150, 30))
         par1Box.Add(self.drillName, flag=wx.EXPAND, border = 1)
 
         par1Box.Add((10,40))
-        par1Box.Add(wx.StaticText(panel,-1,"Ширина площадок",size = (180,20)),
+        par1Box.Add(wx.StaticText(panel,-1,"Ширина площадок",size = (180, 20)),
         flag=wx.EXPAND)
         self.ploshWidth = wx.TextCtrl(panel, -1, "16",size=(150,30))
         par1Box.Add(self.ploshWidth, flag=wx.EXPAND, border = 1)
@@ -1499,28 +1521,6 @@ class AppFrame(wx.Frame):
         #py_icon = CreateMaskedBitmap(os.path.join(THISPATH, 'icons', 'py.png'), 16, 16)
         #self.notebook.AddPage(py, "Python shell", True, py_icon)
         self.pyshell = py
-
-    def View_Top(self, event):
-        self.canva._3dDisplay.View_Top()
-
-    def View_Bottom(self, event):
-        self.canva._3dDisplay.View_Bottom()
-
-    def View_Left(self, event):
-        self.canva._3dDisplay.View_Left()
-
-    def View_Right(self, event):
-        self.canva._3dDisplay.View_Right()
-
-    def View_Front(self, event):
-        self.canva._3dDisplay.View_Front()
-
-    def View_Rear(self, event):
-        self.canva._3dDisplay.View_Rear()
-
-    def View_Iso(self, event):
-        #print "View Iso!!"
-        self.canva._3dDisplay.View_Iso()
 
     def OnSelectionVertex(self, event):
         self.canva._3dDisplay.SetSelectionModeVertex()
@@ -1912,107 +1912,30 @@ class AppFrame(wx.Frame):
 
         self.msgWin.AppendText("Длинна каркаса: "+str(length(pnts))+"\n")
 
-    def OnDebug(self,event):
+    def OnDebug(self, event):
         """
         Prints debug information into console
         """
-        '''
-        for i in range (21):
-            edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0,i*5,0),gp_Pnt(100,i*5,0)).Edge()
-            self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
-            edge = BRepBuilderAPI_MakeEdge(gp_Pnt(i*5,0,0),gp_Pnt(i*5,100,0)).Edge()
-            self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
-        '''
-        '''
-        plgn = BRepBuilderAPI_MakePolygon()
-        plgn.Add(gp_Pnt(0, 0, 0))
-        plgn.Add(gp_Pnt(0, 5, 0))
-        plgn.Add(gp_Pnt(5, 5, 0))
-        plgn.Add(gp_Pnt(5, 0, 0))
-        plgn.Close()
-        w = plgn.Wire()
-        s1=self.canva.DisplayShape(w, OCC.Quantity.Quantity_Color(0.6,0.9,0.9,0), False)
-        self.canva.SetTogglesToFalse(event)
-        self.canva.ZoomAll()
-        self._refreshui()
-        '''
-
-        gridSize = self.stepXY.GetValue()
-        if gridSize > 0:
-            minx, miny = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(0, 0)[:2]
-            maxx, maxy = self.canva._3dDisplay.GetView().GetObject().ConvertWithProj(self.canva.GetSize()[0], self.canva.GetSize()[1])[:2]
-            #print minx, miny, maxx, maxy
-            if maxx > minx:
-                stepx = 1
-            else:
-                stepx = -1
-            if maxy > miny:
-                stepy = 1
-            else:
-                stepy = -1
-            for x in range(int(minx), int(maxx)+stepx,stepx):
-                for y in range(int(miny), int(maxy)+stepy,stepy):
-                    if x % gridSize == 0 and y % gridSize == 0:
-                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(x, miny, 0), gp_Pnt(x, maxy, 0)).Edge()
-                        self.canva.DisplayShape(edge, 'BLACK', False, 0, 1, False)
-                        edge = BRepBuilderAPI_MakeEdge(gp_Pnt(minx, y, 0),gp_Pnt(maxx, y, 0)).Edge()
-                        self.canva.DisplayShape(edge,'BLACK',False,0,1,False)
-
-
-
-
-        return
-        print '---==========---'
-        print 'self.canva.drawList:'
-        print self.canva.drawList
-        print 'self.horList:'
-        print self.horList
-        print 'self.egde_typeList:'
-        print self.egde_typeList
-        print 'self.sortList:'
-        print self.sortList
-        print 'self.coordList:'
-        print self.coordList
-        print 'self.line_typeList:'
-        print self.line_typeList
-        print 'self.colorList:'
-        print self.colorList
+        pass
 
     def OnAddText(self, event):
         self.canva.EdCmd = CMD_AddText
 
-    def OnShowNet(self, event):
-        ListEdges = []
-        if self.canva.Net_DoOnce == 0:
-            List = []
-            for i in range(0,11):
-                edge1 = BRepBuilderAPI_MakeEdge(gp_Pnt(i*500-2500, 0-2500, 0), gp_Pnt(i*500-2500, 5000-2500, 0))
-                edge2 = BRepBuilderAPI_MakeEdge(gp_Pnt(0-2500, i*500-2500, 0), gp_Pnt(5000-2500, i*500-2500, 0))
-                List.append(edge1)
-                List.append(edge2)
-            self.canva.Net_rev = 1
-            self.canva.Net_DoOnce = 1
-
-        z = 0
-        if self.canva.Net_rev:
-            print "creating NET"
-            self.canva.Net_rev = 0
-            for i in range(0,22):
-
-                edge1 = List[i]
-                redge = self.canva.DisplayShape(edge1.Edge(), 'GREEN')
-                ListEdges.append(redge)
-
+    def OnShowGrid(self, event):
+        if not self.canva.usedHorizons:
+            self.SetStatusText("Загрузите объекты для отображения сетки", 0)
+            return
+        if self.canva.Grid_DoOnce == 0:
+            self.canva.Grid_DoOnce = 1
+            self.SetView(None, self.canva._3dDisplay.View_Iso)
+            self.canva.GridCoords = self.canva.GetWindowCenterPosition(False)
+            self.canva.GridCoords[0] -= 2400  # temp
+            self.canva.GridCoords[1] += 400
+            DrawGrid(self)
+            self.GridSlider(None)
+            self.canva.ZoomAll()
         else:
-            self.canva.Net_rev = 1
-            print "destroing NET"
-            for i in range(0, 22):
-                redge = ListEdges[i]
-                self.canva.Erase(redge)
-
-        #self.canva.Net_rev = not self.canva.Net_rev#
-
-
+            RemoveGrid(self, True)
 
 #====================================================================
 
