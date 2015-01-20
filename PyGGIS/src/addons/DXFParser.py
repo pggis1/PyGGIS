@@ -1,5 +1,3 @@
-import psycopg2
-
 class DXFParser:
 
     def __init__(self, filename):
@@ -41,7 +39,7 @@ class DXFParser:
             current_record += 1
         return tuple(self.lines)
 
-    def get_ln_crd(self, n, point='0x', scale=1):
+    def get_line_coordinate(self, n, point='0x', scale=1):
         points = {'0x': '10', '0y': '20', '0z': '30', 'x': '11', 'y': '21', 'z': '31'}
         try:
             return float(self.lines[n][points[point]])/scale
@@ -51,7 +49,7 @@ class DXFParser:
             print("No such point %s" % point)
         return 0
 
-    def get_ln_layer(self, n):
+    def get_line_layer(self, n):
         try:
             return self.lines[n]['8']
         except IndexError:
@@ -111,34 +109,34 @@ class DXFParser:
 
         return vertices
 
-    def get_pl_hght(self, n):
+    def get_polyline_height(self, n):
         try:
             return float(self.polylines[n]['39'])
         except IndexError:
             print("No such polyline %i" % n)
         return 0
 
-    def get_pl_vrtcs(self, n):
+    def get_polyline_vertices(self, n):
         try:
             return self.polylines[n]['VERTICES']
         except IndexError:
             print("No such polyline %i" % n)
 
-    def get_pl_layer(self, n):
+    def get_polyline_layer(self, n):
         try:
             return self.polylines[n]['8']
         except IndexError:
             print("No such polyline %i" % n)
         return 0
 
-    def get_pl_color(self, n):
+    def get_polyline_color(self, n):
         try:
             return int(self.polylines[n]['62'])
         except IndexError:
             print("No such polyline %i" % n)
         return 0
 
-    def is_pl_closed(self, n):
+    def is_polyline_closed(self, n):
         try:
             if self.polylines[n]['70'] == "9" or self.polylines[n]['70'] == "1":
                 return True

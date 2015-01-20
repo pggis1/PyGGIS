@@ -15,7 +15,7 @@ import time
 from math import *
 from inpLAS import *
 from random import random
-from LoadFunctions import *
+from db_load_functions import *
 
 from OCC.Quantity import Quantity_Color
 
@@ -262,7 +262,7 @@ def CEdit(self):
             if s1.Shape().IsEqual(sel_shape):     # Только в классе Shape есть метод IsEqual()
                 indexInfo = i
                 break
-    if indexInfo is not None and not self.canva.drawList[indexInfo][0] in (0,1,3):
+    if indexInfo is not None and not self.canva.drawList[indexInfo][0] in (0, 1, 3):
         return
     pnts = getPoints(sel_shape)
     dlg = CoordsDlg(self, - 1, "Диалог изменения координат",pnts)#,int(self.body_cnt_h.Value))
@@ -301,7 +301,7 @@ def CEdit(self):
 #    self.SetStatusText("Укажите удаляемый элемент", 0)
 
 
-def Coord_yes(self,drawP=False,closeP=False):
+def Coord_yes(self,drawP=False, closeP=False):
     """ Ввод координат из окна Point от кнопки или мыши """
     Z = float(self.canva.coordZ.GetValue())
     coordStr = self.canva.text.GetValue()
@@ -659,9 +659,9 @@ def LoadDB(self):
         dlg.Destroy()
         if len(resDict) == 0:
             return
-        horIds = resDict['horIds']      # Список ключей горизонтов
+        hor_ids = resDict['horIds']      # Список ключей горизонтов
         setHorIds = "("
-        for h in horIds:
+        for h in hor_ids:
             setHorIds = setHorIds + str(h) + ","
         setHorIds = setHorIds[: - 1] + ")"
         objList = resDict['objList']    # Список типов объектов из БД

@@ -55,7 +55,7 @@ from OCC.TColgp import *
 from OCC.gp import *
 from regim import *
 from utils import *
-from ggisFun import Point
+from functions import Point
 #from OCC.BRep.BRep_Tool import Curve
 from OCC.Visual3d import Visual3d_Layer
 from OCC.Aspect import *

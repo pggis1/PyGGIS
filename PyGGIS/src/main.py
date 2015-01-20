@@ -66,7 +66,7 @@ from OCC.gp import *
 import psycopg2
 from regim import *
 from utils import *
-from ggisFun import *
+from functions import *
 
 VERSION = "0.01"
 
@@ -1693,7 +1693,7 @@ class AppFrame(wx.Frame):
 
     #===================================================================
     # Обработка меню ГГИС добавил Суханов В.И.
-    # Тексты функций расположены в модуле ggisFun.py
+    # Тексты функций расположены в модуле functions.py
 
     def OnCLine(self, event):
         """Рисование отрезка"""

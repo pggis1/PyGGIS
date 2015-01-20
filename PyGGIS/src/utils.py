@@ -418,6 +418,7 @@ def polar(point, angle, dist, height=0):
         #angle=angle-math.pi
     return [sin(angle) * dist + point[0],cos(angle) * dist + point[1],point[2]+height]
 
+
 def measure_angle(p1,p2,p3):
     l1=distance2d(p1,p2)
     #print 'distance between ',p1,' and ',p2,' is ',l1
@@ -432,39 +433,43 @@ def measure_angle(p1,p2,p3):
     #print tmp1,tmp2,tmp1/tmp2
     return math.acos(tmp1/tmp2)
 
+
 def Interpolate(pnts):
     print pnts
-    array = TColgp_HArray1OfPnt (1,len(pnts))
+    array = TColgp_HArray1OfPnt(1, len(pnts))
     for i, v in enumerate(pnts):
         print v
-        array.SetValue(i+1,gp_Pnt (v[0],v[1],v[2]))
+        array.SetValue(i+1, gp_Pnt(v[0],v[1],v[2]))
     print array.Length()
     anInterpolation = GeomAPI_Interpolate(array.GetHandle(),True,1)
     anInterpolation.Perform()
-    cu=anInterpolation.Curve()
+    cu = anInterpolation.Curve()
     spline = BRepBuilderAPI_MakeEdge(cu)
     spline.Build()
     return spline.Shape()
 
-def continueLine(pnt,l):
-    newpnt = [0,0,0]
-    if pnt[0]<0:
-        newpnt[0]=pnt[0]-l
+
+def continueLine(pnt, l):
+    newpnt = [0, 0, 0]
+    if pnt[0] < 0:
+        newpnt[0] = pnt[0]-l
     else:
-        newpnt[0]=pnt[0]+l
-    if pnt[1]<0:
-        newpnt[1]=pnt[1]-l
+        newpnt[0] = pnt[0]+l
+    if pnt[1] < 0:
+        newpnt[1] = pnt[1]-l
     else:
-        newpnt[1]=pnt[1]+l
-    newpnt[2]=pnt[2]
+        newpnt[1] = pnt[1]+l
+    newpnt[2] = pnt[2]
     return newpnt
 
+
 def length(pnts):
-    l=0
+    l = 0
     for i in xrange(len(pnts)-1):
-        l += distance3d(pnts[i],pnts[i+1])
+        l += distance3d(pnts[i], pnts[i+1])
     print l
     return l
+
 
 def getGrided(coord,gridSize):
     per = coord%gridSize
@@ -472,6 +477,7 @@ def getGrided(coord,gridSize):
         return coord-per
     else:
         return coord+(gridSize-per)
+
 
 def invert(obj):
     pnts = getPoints(obj)
