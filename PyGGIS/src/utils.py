@@ -3,7 +3,7 @@
 ##Copyright 2009, 2010 Владимир Суханов 
 """
 Утилиты и функции для ГГИС: 
-LoadDlg, getPoints, parsGeometry, makeLINESTRING, distance2d
+getPoints, pars_geometry, makeLINESTRING, distance2d
 """
 from OCC.BRepOffsetAPI import BRepOffsetAPI_MakeOffset
 import wx
@@ -39,110 +39,7 @@ def GetRowsTbl(tableName, where=""):
     rows = curs.fetchall()
     return rows
 
-
-class LoadDlg(wx.Dialog):
-    """Класс диалога задания объектов из базы данных"""
-    def __init__(self,parent,ID,title,
-        size = wx.DefaultSize, pos=wx.DefaultPosition,
-        style = wx.DEFAULT_DIALOG_STYLE):
-        pre = wx.PreDialog()
-        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
-        pre.Create(parent, ID, title, pos, size, style)
-        self.this = pre.this        
-        sizer = wx.BoxSizer(wx.VERTICAL)
-
-        label = wx.StaticText(self,-1,"Введите параметры загрузки БД")
-        sizer.Add(label, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        # Остальные окна        
-        dataBox = wx.BoxSizer(wx.HORIZONTAL)
-        # Горизонты
-        horBox = wx.BoxSizer(wx.VERTICAL)
-        horBox.Add(wx.StaticText(self,-1,"Горизонты"),0,wx.ALIGN_CENTRE|wx.ALL,5)
-        conn = psycopg2.connect("dbname="+POSTGR_DBN+" user="+POSTGR_USR)
-        curs=conn.cursor()
-        curs.execute("select id_hor,point from horizons")
-        hors = curs.fetchall()
-        self.horList = []
-        self.horIds = []
-        for hor in hors:
-            self.horIds = self.horIds + [hor[0]]
-            self.horList = self.horList + [str(hor[1])]
-        self.chkHors = wx.CheckListBox(self, -1, (20, 20), (120, 200), self.horList, wx.LB_MULTIPLE)
-        for i in xrange(len(self.horIds)):
-            self.chkHors.Check(i, True)
-        horBox.Add(self.chkHors, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        dataBox.Add(horBox, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        # Конец горизонтов
-        # Геометрия
-        geomBox = wx.BoxSizer(wx.VERTICAL)
-        geomBox.Add(wx.StaticText(self, -1, "Объекты"),0,wx.ALIGN_CENTRE|wx.ALL,5)
-        self.geomList = ["Бровки", "Тела", "Скважины", "Изолинии"]
-        self.chkGeoms = wx.CheckListBox(self, -1, (20, 20), (120, 150), self.geomList, wx.LB_MULTIPLE)
-        geomBox.Add(self.chkGeoms, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        dataBox.Add(geomBox, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        # Конец геометрии      
-        # Изолинии
-        curs.execute("select min(heigth), max(heigth) from topograph")
-        res = curs.fetchone()
-        self.minH = res[0]
-        self.maxH = res[1]
-        izoBox = wx.BoxSizer(wx.VERTICAL)
-        izoBox.Add(wx.StaticText(self,-1,"Поверхность"),0,wx.ALIGN_CENTRE|wx.ALL,5)
-        izoBox.Add(wx.StaticText(self,-1,"Интервал высот"),0,wx.ALIGN_CENTRE|wx.ALL,5)
-        self.chkInterval = wx.TextCtrl(self, -1, str((self.minH,self.maxH)), size=(250, -1))
-        izoBox.Add(self.chkInterval,0,wx.ALIGN_CENTRE|wx.ALL,5)         
-        dataBox.Add(izoBox,0,wx.ALIGN_CENTRE|wx.ALL,5)
-        # Конец изолиний     
-        
-        sizer.Add(dataBox,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL,5)
-        # Buttons
-        cmdBox = wx.BoxSizer(wx.HORIZONTAL)
-        btnOk = wx.Button(self, wx.ID_OK, "Принять")
-        btnOk.SetDefault()
-        btnOk.SetHelpText("Загрузить объекты из БД")
-        self.Bind(wx.EVT_BUTTON, self.onBtnOk, id=btnOk.GetId())
-        cmdBox.Add(btnOk, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        
-        btnCancel = wx.Button(self, wx.ID_CANCEL, "Отменить")
-        btnCancel.SetHelpText("Отменить и выйти")
-        cmdBox.Add(btnCancel, 0, wx.ALIGN_CENTRE|wx.ALL,5)
-        self.Bind(wx.EVT_BUTTON, self.onBtnCancel, id=btnCancel.GetId())
-        sizer.Add(cmdBox,0,wx.ALIGN_CENTER_VERTICAL|wx.ALL,5)
-        self.SetSizer(sizer)
-        self.SetAutoLayout(True)
-        sizer.Fit(self)
-        self.resDict = dict()
-        
-    def onBtnOk(self, event):
-        self.resDict = dict()
-        # сформировать словарь
-        lstHor = []
-        for indHor in xrange(0, len(self.horList)):
-            if self.chkHors.IsChecked(indHor):
-                lstHor = lstHor + [self.horIds[indHor]]
-        self.resDict['horIds'] = lstHor
-        
-        lstObj = []
-        for indObj in xrange(0, len(self.geomList)):
-            if self.chkGeoms.IsChecked(indObj):
-                lstObj = lstObj + [indObj]        
-        self.resDict['objList'] = lstObj
-        
-        try:
-            self.resDict['izoLst'] = eval(self.chkInterval.GetValue())
-        except Exception:
-            self.resDict['izoLst'] = (self.minH,self.maxH)
-        self.EndModal(0)
-        
-    def onBtnCancel(self, event):
-        self.resDict = dict()
-        self.EndModal(0)
-        
-    def result(self):
-        return self.resDict
-# End of class LoadDlg
-
-def parsGeometry(geom):
+def pars_geometry(geom):
     """Разобрать координаты геометрического объекта"""
     coords = geom[geom.find('(')+1:geom.find(')')]
     lstCoords = coords.split(',')
@@ -151,8 +48,7 @@ def parsGeometry(geom):
         pntXYZ = []
         xyz = pnt.split(' ')
         for val in xyz:
-            #if val.isdigit():
-                pntXYZ = pntXYZ + [float(val)]
+            pntXYZ = pntXYZ + [float(val)]
         lstXYZ = lstXYZ + [pntXYZ]
     return lstXYZ
         

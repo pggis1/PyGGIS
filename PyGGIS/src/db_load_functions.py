@@ -3,7 +3,7 @@
 
 import psycopg2
 from regim import *
-from utils import parsGeometry
+from utils import pars_geometry
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepPrim import *
@@ -24,7 +24,7 @@ def load_horizons(self, horizons):
         id_edge = int(record[0])
         id_hor = int(record[1])
         edge_type = int(record[2])
-        poly_coords = parsGeometry(str(record[3]))
+        poly_coords = pars_geometry(str(record[3]))
         point = float(record[4])
         if point not in self.canva.usedHorizons:
                 self.canva.usedHorizons.append(point)
@@ -65,7 +65,7 @@ def load_bodies(self, horizons):
             if h_body not in self.canva.usedHorizons:
                 self.canva.usedHorizons.append(float(h_body))
             id_sort = int(record[3])
-            poly_coords = parsGeometry(str(record[4]))
+            poly_coords = pars_geometry(str(record[4]))
             point = float(record[5])
             color = int(record[6])
             color_fill = int(record[7])
@@ -134,7 +134,7 @@ def load_isolines(self):
         id_topo = int(record[0])
         heigth = int(record[1])
         coord_sys = int(record[2])
-        poly_coords = parsGeometry(str(record[3]))
+        poly_coords = pars_geometry(str(record[3]))
         plgn = BRepBuilderAPI_MakePolygon()
         for pnt in poly_coords:
             plgn.Add(gp_Pnt(pnt[0], pnt[1], heigth))

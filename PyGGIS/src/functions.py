@@ -12,6 +12,7 @@ from utils import *
 from liblas import *
 import os
 import time
+import ui
 from math import *
 from inpLAS import *
 from random import random
@@ -293,13 +294,9 @@ def CEdit(self):
             self.canva.drawList[indexInfo] = oldInfo          # Обновить список
     dlg.Destroy()
 
-#def CErase(self):
-#    """ Заказ на удаление элемента """
-#    self.canva.SetTogglesToFalse(event)
-#    self.canva.MakeErase = True
-#    self._refreshui()
-#    self.SetStatusText("Укажите удаляемый элемент", 0)
-
+def CErase(self):
+    """ Заказ на удаление элемента """
+    pass
 
 def Coord_yes(self,drawP=False, closeP=False):
     """ Ввод координат из окна Point от кнопки или мыши """
@@ -569,9 +566,7 @@ def Refresh(self):
     else:
         self.msgWin.AppendText("Не заданы горизонты базы данных\n")
         return
-    # gorLst = [[id_hor, point, h_ledge, description], ...]
-    # objLst = ["Бровки", "Тела", "Скважины", "Изолинии", "Отметки","Надписи", "БВР"]
-    # Clear display
+
     self.canva.EraseAll()
     self.canva.drawList = []
     self.canva.usedHorizons = []
@@ -652,7 +647,7 @@ def DemoPit(self):
 
 def LoadDB(self):
         """ Загрузка элементов из базы данных PostGIS """
-        dlg = LoadDlg(self, - 1, "Диалог загрузки БД")
+        dlg = ui.LoadDialog(self, - 1, "Диалог загрузки БД")
         dlg.CenterOnScreen()
         dlg.ShowModal()
         resDict = dlg.result()
@@ -1141,7 +1136,7 @@ def Lidar(self):
         #print "Нашли границы за ", str(time.time() - sTime), " сек " , iPnt, " точек"
 
         hors = [[[X00, Y00, Z00], 0]]              # [[центр карьера], радиус верхней бровки]
-        for i in range(0, n):                   # По уступам горизонтов
+        for i in xrange(0, n):                   # По уступам горизонтов
             rDn = R10 + i * R                   # Радиус нижней бровки
             zDn = Z00 + (i * Hust)              # Отметка нижней бровки
             hors.append([[X00,Y00,zDn], rDn])   # Нижняя бровка
@@ -1156,8 +1151,8 @@ def Lidar(self):
         # Сборка бровок из точек на границах
         while True:  # Найти некоторую точку - якорь
             line = []
-            for iX in range(1, nX + 1):            
-                for iY in range(1, nY + 1):
+            for iX in xrange(1, nX + 1):
+                for iY in xrange(1, nY + 1):
                     gpnt = granXYZ[iX][iY]              # [iX,iY,[px,py,pz]]
                     if gpnt:
                         line.append([iX,iY,gpnt])       # Координаты точки [iX,iY,[px,py,pz]]
@@ -1241,42 +1236,6 @@ def Lidar(self):
         fLog.close()
     
         # Закрашивание бортов и площадок 
-        
-    
-def Etalon(self):
-        # Рисование эталона
-        #print "Построение эталона карьера"
-        startTime = time.time()
-
-        Cnt = 0        
-        for i in xrange(0, n):               # По числу уступов горизонтов
-            rDn = R10 + i * R               # Радиус  нижней бровки
-            zDn = Z00 + (i * Hust)          # Отметка нижней бровки
-            rUp = rDn + Hust/tan(Ugl)       # Радиус  верхней бровки
-            zUp = zDn + Hust                # Отметка верхней бровки
-            m   = int(6.28 * rDn / DLT_l)   # Число точек на бровках
-            D_Ugol = 6.28 / m               # Приращение угла поворота луча
-            edgeDn = BRepBuilderAPI_MakePolygon()
-            for j in xrange(0, m):
-                fi = j * D_Ugol
-                X = X00 + rDn * cos(fi)
-                Y = Y00 + rDn * sin(fi) * D2_D1
-                edgeDn.Add(gp_Pnt(X, Y, zDn))
-                Cnt += 1
-            edgeDn.Close()
-            self.canva.DisplayShape(edgeDn.Wire(), 'GREEN', False)
-            
-            edgeUp = BRepBuilderAPI_MakePolygon()
-            for j in xrange(0, m):
-                fi = j * D_Ugol
-                X = X00 + rUp * cos(fi)
-                Y = Y00 + rUp * sin(fi) * D2_D1
-                edgeUp.Add(gp_Pnt(X, Y, zUp))
-                Cnt += 1
-            edgeUp.Close()
-            self.canva.DisplayShape(edgeUp.Wire(), 'GREEN', False)
-            
-        #print "Создали бровки за ", time.time() - startTime, "сек. Число точек = ", Cnt
 
 
 def DrawGrid(self, scale=9, level=None):

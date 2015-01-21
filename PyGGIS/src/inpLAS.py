@@ -17,7 +17,4 @@ R = 50.0            # ширина площадки
 R10 = 150.0         # начальный радиус
 # Имя файла без расширения
 name_las = '/home/cyx/ggis/LibLas_Python/Las/test2f'
-#name_las = '/home/cyx/ggis/LibLas_Python/Las/las12_format0'
-#name_las = '/home/cyx/ggis/LibLas_Python/Las/las12_format1'
-#name_las = '/home/cyx/ggis/LibLas_Python/Las/las12_format2'
 

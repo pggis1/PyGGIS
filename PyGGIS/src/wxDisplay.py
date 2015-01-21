@@ -293,7 +293,6 @@ class GraphicsCanva3D(wx.Panel):
                 cur = gp_Pnt(resPnt[0], resPnt[1],midleH)
                 te = ShapeToTopology()
                 bt = BRep.BRep_Tool
-                #print bt
                 isP1 = False
                 isNea = False
                 for pnt in pnts:

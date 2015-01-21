@@ -147,7 +147,7 @@ startTime = time()
 i_my = 0
 for col in mCol:
     pt = col.GetOrg()
-    if pt <> None:
+    if pt is not None:
         org = [pt.x, pt.y, pt.z, pt.isInf]
     else: org = None
     #get adresses

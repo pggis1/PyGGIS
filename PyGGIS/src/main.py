@@ -557,9 +557,6 @@ class AppFrame(wx.Frame):
         construct_menu.Append(c_lidar, MNU_LIDAR[0], MNU_LIDAR[1])
         self.Bind(wx.EVT_MENU, self.OnLidar, id=c_lidar)
 
-        c_etalon = wx.NewId()
-        construct_menu.Append(c_etalon, "Эталон", "Эталон")
-        self.Bind(wx.EVT_MENU, self.OnEtalon, id=c_etalon)
 
         #c_explore = wx.NewId()
         #construct_menu.Append(c_explore, MNU_EXPLORE[0], MNU_EXPLORE[1])
@@ -914,17 +911,8 @@ class AppFrame(wx.Frame):
     def OnCutPLineYesMany(self, event):
         self.OnCutPLineYes(event,True)
 
-    def OnCutPLineYes(self,event, force=False):
-        """
-        PLine(self)
-        self.canva.lstPnt=pnts
-        Coord_yes(self,True)
-        self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
-        self.canva.drawList[self.canva.tempIndex][2]=None
-        self.canva.drawList[self.canva.tempIndex][-1]=True
-        self.OnCancel(event)
-        """
-        if self.cutPlineId==None:
+    def OnCutPLineYes(self, event, force=False):
+        if self.cutPlineId is None:
             pnts=getPoints(self.canva.tmpEdge.GetObject().Shape())
             self.canva.Erase(self.canva.drawList[self.canva.tempIndex][2].GetHandle())
             self.canva.Erase(self.canva.tmpEdge)
@@ -1446,7 +1434,7 @@ class AppFrame(wx.Frame):
         self._mgr.LoadPerspective(self.DefaultPerspective)
         has_help_pane = False
         has_py_pane = False
-        for i in range(self.notebook.PageCount):
+        for i in xrange(self.notebook.PageCount):
             pagetext = self.notebook.GetPageText(i)
             if pagetext == "Help":
                 has_help_pane = True
@@ -1745,10 +1733,6 @@ class AppFrame(wx.Frame):
     def OnLidar(self, event):
         """ Рисовать файл .las  """
         Lidar(self)
-
-    def OnEtalon(self, event):
-        """ Рисовать файл эталон  """
-        Etalon(self)
 
     def OnRefresh(self, event):
         """ Обновить окно  """
