@@ -116,4 +116,5 @@ menu_titles={
     'cut_levels': u'Поур.Прирезка',
     'start_cut_levels_pline': u'Задание Прирезки',
     'grid_title' : u'Настройки сетки',
+    'grid_scale_title' : u'Шаг сетки',
 }

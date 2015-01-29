@@ -237,7 +237,7 @@ class AppFrame(wx.Frame):
         self.panel1.win.SetSizer(topsizer_K)
         self._mgr.AddPane(self.panel1.win, wx.aui.AuiPaneInfo().Name("Canvas").Caption("Canvas").MaximizeButton().BestSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).MinSize(wx.Size(CANVAS_SIZE[0], CANVAS_SIZE[1])).CenterPane())
 
-        self.panel2 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Панель для настройки параметров
+        self.panel2 = wx.Panel(nb, -1, style=wx.CLIP_CHILDREN)  # Панель для настройки параметро
         nb.AddPage(self.panel2, 'О')
         #topsizer_O = wx.BoxSizer( wx.VERTICAL );
         #self.panel2.win = wx.Window(self.panel2, -1,
@@ -665,22 +665,38 @@ class AppFrame(wx.Frame):
                     self.Bind(wx.EVT_BUTTON, self.buttonMenu[i][3], self.buttonMenu[i][4])
         self.tb3.Fit()
 
-    def OnGridSlider(self, event, slider):
-        if slider.GetName() == "GridSlider":
+    def OnGridControl(self, event, ui_element):
+        if ui_element.GetName() == "GridSlider":
             RemoveGrid(self)
-            DrawGrid(self, self.canva.GridParams[0], self.canva.usedHorizons[slider.GetValue()])
-        elif slider.GetName() == "GridScaleSlider":
+            DrawGrid(self, self.canva.GridParams[0], self.canva.usedHorizons[ui_element.GetValue()])
+            for child in self.panel1.GetChildren():
+                if child.GetName() == "GridHorizonsNumber":
+                    child.SetLabel(str(self.canva.usedHorizons[ui_element.GetValue()]))
+        elif ui_element.GetName() == "GridScaleField":
+            try:
+                int(ui_element.GetValue())
+            except TypeError:
+                ui_element.SetValue("10")
             RemoveGrid(self)
-            DrawGrid(self, slider.GetValue(), self.canva.GridParams[1])
+            DrawGrid(self, int(ui_element.GetValue()), self.canva.GridParams[1])
 
     def GridSlider(self, event):
         if self.canva.Grid_DoOnce:
-            GridMenuTitle = wx.StaticText(self.panel1, -1, menu_titles['grid_title'], (20, 460), wx.DefaultSize, name="GridTitle")
-            GridMenuEdges = wx.StaticText(self.panel1, -1, menu_titles['edge'], (40, 495), wx.DefaultSize, name="GridEdges")
-            GridSlider = wx.Slider(self.panel1, -1, 0, 0, len(self.canva.usedHorizons)-1, (5, 480), (30, 100), wx.VERTICAL, name="GridSlider")
-            GridScaleSlider = wx.Slider(self.panel1, -1, 3, 3, 20, (15, 580), (100, 20), wx.HORIZONTAL, name="GridScaleSlider")
-            GridSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridSlider))
-            GridScaleSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridSlider(evn, GridScaleSlider))
+            GridMenuTitle = wx.StaticText(self.panel1, -1, menu_titles['grid_title'], (20, 460),
+                                          wx.DefaultSize, name="GridTitle")
+            GridMenuEdges = wx.StaticText(self.panel1, -1, menu_titles['edge'], (40, 495),
+                                          wx.DefaultSize, name="GridEdges")
+            GridScaleTitle = wx.StaticText(self.panel1, -1, menu_titles['grid_scale_title'], (40, 540),
+                                          wx.DefaultSize, name="GridScaleTitle")
+
+            GridSlider = wx.Slider(self.panel1, -1, 0, 0, len(self.canva.usedHorizons)-1, (5, 480), (30, 100),
+                                   wx.VERTICAL, name="GridSlider")
+            GridScaleField = wx.TextCtrl(self.panel1, -1, pos=(35, 560), size=(55, 20), name="GridScaleField",
+                                         style=wx.TE_PROCESS_ENTER)
+            GridScaleField.Bind(wx.EVT_TEXT_ENTER, lambda evn: self.OnGridControl(evn, GridScaleField))
+            GridSlider.Bind(wx.EVT_SLIDER, lambda evn: self.OnGridControl(evn, GridSlider))
+            GridHorizons = wx.StaticText(self.panel1, -1, str(self.canva.usedHorizons[GridSlider.GetValue()]),
+                                         (40, 515), wx.DefaultSize, name="GridHorizonsNumber")
         else:
             for child in self.panel1.GetChildren():
                 if child.GetName().startswith("Grid"):
