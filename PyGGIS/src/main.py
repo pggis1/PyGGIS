@@ -675,6 +675,7 @@ class AppFrame(wx.Frame):
         elif ui_element.GetName() == "GridScaleField":
             try:
                 int(ui_element.GetValue())
+                int(ui_element.GetValue())/int(ui_element.GetValue())  # Проверка на нулевое значение
             except Exception:
                 self.SetStatusText("Некорректное значение шага сетки.", 0)
                 ui_element.SetValue("200")
