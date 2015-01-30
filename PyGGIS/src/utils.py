@@ -39,6 +39,9 @@ def GetRowsTbl(tableName, where=""):
     rows = curs.fetchall()
     return rows
 
+def get_model_center():
+    return [9735, 10087]  # временно
+
 def pars_geometry(geom):
     """Разобрать координаты геометрического объекта"""
     coords = geom[geom.find('(')+1:geom.find(')')]

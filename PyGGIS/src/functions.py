@@ -67,14 +67,16 @@ def PLine(self):
 
 def CAxis(self):
     """ Рисование длинных осей """
-    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
-                                   gp_Pnt(0, 10000, 0))
+    self.SetView(None, self.canva._3dDisplay.View_Iso)
+    AxisCoords = map(lambda x: x - 1500, get_model_center())
+    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
+                                   gp_Pnt(AxisCoords[0], AxisCoords[1] + 3000, 0))
     self.canva.DisplayShape(edge.Edge(), 'CYAN')            
-    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
-                                   gp_Pnt(10000, 0, 0))
+    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
+                                   gp_Pnt(AxisCoords[0] + 3000, AxisCoords[1], 0))
     self.canva.DisplayShape(edge.Edge(), 'CYAN')       
-    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(0, 0, 0),
-                                   gp_Pnt(0, 0, 10000))
+    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
+                                   gp_Pnt(AxisCoords[0], AxisCoords[1], 3000))
     self.canva.DisplayShape(edge.Edge(), 'CYAN')
 
 
@@ -1249,7 +1251,7 @@ def DrawGrid(self, scale=400, level=None):
                 self.canva.GridParams["length"] += i
                 break
 
-    pos = self.canva.GridCoords
+    pos = map(lambda x: x - (self.canva.GridParams["length"]/2), get_model_center())
     self.canva.GridLines = []
     MakeGridBorder(self, pos)
     for i in xrange(int(self.canva.GridParams["length"]/scale)):

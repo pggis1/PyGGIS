@@ -41,6 +41,7 @@ import os.path
 from addons import browser
 #import urllib
 from math import *
+from utils import get_model_center
 
 try:
     THISPATH = os.path.dirname(os.path.abspath(__file__))
@@ -1930,9 +1931,7 @@ class AppFrame(wx.Frame):
         if self.canva.Grid_DoOnce == 0:
             self.canva.Grid_DoOnce = 1
             self.SetView(None, self.canva._3dDisplay.View_Iso)
-            self.canva.GridCoords = self.canva.GetWindowCenterPosition(False)
-            self.canva.GridCoords[0] -= 2400  # temp
-            self.canva.GridCoords[1] += 400
+            self.canva.GridCoords = map(lambda x: x - 1500, get_model_center())
             DrawGrid(self)
             self.GridUIControl(None)
             self.canva.ZoomAll()
