@@ -138,7 +138,7 @@ class GraphicsCanva3D(wx.Panel):
         self.Grid_DoOnce = 0
         self.GridLines = None
         self.GridCoords = None
-        self.GridParams = []
+        self.GridParams = dict
 
         self.gumline_edge = None
         self.MakePoint = False

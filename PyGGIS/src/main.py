@@ -668,19 +668,20 @@ class AppFrame(wx.Frame):
     def OnGridControl(self, event, ui_element):
         if ui_element.GetName() == "GridSlider":
             RemoveGrid(self)
-            DrawGrid(self, self.canva.GridParams[0], self.canva.usedHorizons[ui_element.GetValue()])
+            DrawGrid(self, self.canva.GridParams["scale"], self.canva.usedHorizons[ui_element.GetValue()])
             for child in self.panel1.GetChildren():
                 if child.GetName() == "GridHorizonsNumber":
                     child.SetLabel(str(self.canva.usedHorizons[ui_element.GetValue()]))
         elif ui_element.GetName() == "GridScaleField":
             try:
                 int(ui_element.GetValue())
-            except TypeError:
-                ui_element.SetValue("10")
+            except Exception:
+                self.SetStatusText("Некорректное значение шага сетки.", 0)
+                ui_element.SetValue("200")
             RemoveGrid(self)
-            DrawGrid(self, int(ui_element.GetValue()), self.canva.GridParams[1])
+            DrawGrid(self, int(ui_element.GetValue()), self.canva.GridParams["level"])
 
-    def GridSlider(self, event):
+    def GridUIControl(self, event):
         if self.canva.Grid_DoOnce:
             GridMenuTitle = wx.StaticText(self.panel1, -1, menu_titles['grid_title'], (20, 460),
                                           wx.DefaultSize, name="GridTitle")
@@ -1932,7 +1933,7 @@ class AppFrame(wx.Frame):
             self.canva.GridCoords[0] -= 2400  # temp
             self.canva.GridCoords[1] += 400
             DrawGrid(self)
-            self.GridSlider(None)
+            self.GridUIControl(None)
             self.canva.ZoomAll()
         else:
             RemoveGrid(self, True)
