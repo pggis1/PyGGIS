@@ -1253,35 +1253,13 @@ def DrawGrid(self, scale=400, level=None):
 
     pos = map(lambda x: x - (self.canva.GridParams["length"]/2), get_model_center())
     self.canva.GridLines = []
-    MakeGridBorder(self, pos)
-    for i in xrange(int(self.canva.GridParams["length"]/scale)):
+    for i in xrange(int(self.canva.GridParams["length"]/scale) + 1):
         x_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+i*scale, pos[1], level),
                                             gp_Pnt(pos[0]+i*scale, pos[1]+self.canva.GridParams["length"], level))
         y_line = BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1]+i*scale, level),
                                             gp_Pnt(pos[0]+self.canva.GridParams["length"], pos[1]+i*scale, level))
         self.canva.GridLines.append(self.canva.DisplayShape(x_line.Wire(), 'WHITE', False, toggle=False))
         self.canva.GridLines.append(self.canva.DisplayShape(y_line.Wire(), 'WHITE', False, toggle=False))
-
-
-
-def MakeGridBorder(self, pos):
-    border = []
-    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1], self.canva.GridParams["level"]),
-                                             gp_Pnt(pos[0]+self.canva.GridParams["length"],
-                                                    pos[1], self.canva.GridParams["level"])))
-    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1], self.canva.GridParams["level"]),
-                                             gp_Pnt(pos[0], pos[1]+self.canva.GridParams["length"],
-                                                    self.canva.GridParams["level"])))
-    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0]+self.canva.GridParams["length"], pos[1],
-                                                    self.canva.GridParams["level"]),
-                                             gp_Pnt(pos[0]+self.canva.GridParams["length"],
-                                                    pos[1]+self.canva.GridParams["length"], self.canva.GridParams["level"])))
-    border.append(BRepBuilderAPI_MakePolygon(gp_Pnt(pos[0], pos[1]+self.canva.GridParams["length"],
-                                                    self.canva.GridParams["level"]),
-                                             gp_Pnt(pos[0]+self.canva.GridParams["length"],
-                                                    pos[1]+self.canva.GridParams["length"], self.canva.GridParams["level"])))
-    for line in border:
-        self.canva.GridLines.append(self.canva.DisplayShape(line.Wire(), 'WHITE', False, toggle=False))
 
 
 def RemoveGrid(self, totally=False):
