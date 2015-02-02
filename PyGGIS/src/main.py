@@ -1712,7 +1712,10 @@ class AppFrame(wx.Frame):
 
     def OnCAxis(self, event):
         """ Рисование длинных осей """
-        CAxis(self)
+        if not self.canva.Axis_DoOnce:
+            DrawCAxis(self)
+        else:
+            RemoveCAxis(self)
 
     def OnCreateDB(self, event):
         """ Создание элементов в базе данных PostGIS """

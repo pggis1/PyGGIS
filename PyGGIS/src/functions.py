@@ -52,7 +52,7 @@ def CLine(self):
 
 def PLine(self):
     """ Рисование ломаной """
-    #self.canva.SetTogglesToFalse(event)
+    self.canva.SetTogglesToFalse(event)
     self.canva.MakePLine = True
     self.canva.MakeLine = False
     self.canva.MakePoint = False
@@ -65,20 +65,29 @@ def PLine(self):
     #    self.canva._3dDisplay.Context.OpenLocalContext(True,True,True,True)    #False
 
 
-def CAxis(self):
+def DrawCAxis(self):
     """ Рисование длинных осей """
-    self.SetView(None, self.canva._3dDisplay.View_Iso)
-    AxisCoords = map(lambda x: x - 1500, get_model_center())
-    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
-                                   gp_Pnt(AxisCoords[0], AxisCoords[1] + 3000, 0))
-    self.canva.DisplayShape(edge.Edge(), 'CYAN')            
-    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
-                                   gp_Pnt(AxisCoords[0] + 3000, AxisCoords[1], 0))
-    self.canva.DisplayShape(edge.Edge(), 'CYAN')       
-    edge = BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
-                                   gp_Pnt(AxisCoords[0], AxisCoords[1], 3000))
-    self.canva.DisplayShape(edge.Edge(), 'CYAN')
 
+    AxisCoords = map(lambda x: x - 1500, get_model_center())
+    axis_length = self.canva.Axis_Length
+    self.canva.All_Axis = [BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
+                                                   gp_Pnt(AxisCoords[0], AxisCoords[1] + axis_length, 0)),
+                           BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
+                                                   gp_Pnt(AxisCoords[0] + axis_length, AxisCoords[1], 0)),
+                           BRepBuilderAPI_MakeEdge(gp_Pnt(AxisCoords[0], AxisCoords[1], 0),
+                                                   gp_Pnt(AxisCoords[0], AxisCoords[1], axis_length))]
+    for iter in xrange(len(self.canva.All_Axis)):
+        self.canva.All_Axis[iter] = self.canva.DisplayShape(self.canva.All_Axis[iter].Edge(), 'CYAN', False,
+                                                            toggle=False)
+
+    self.canva.Axis_DoOnce = True
+    self.SetView(None, self.canva._3dDisplay.View_Iso)
+
+def RemoveCAxis(self):
+    for axis in xrange(len(self.canva.All_Axis)):
+        self.canva.Remove(self.canva.All_Axis[axis])
+    self.canva.All_Axis = []
+    self.canva.Axis_DoOnce = False
 
 def Point(self):
     self.canva.MakePLine = False

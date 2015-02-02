@@ -134,6 +134,11 @@ class GraphicsCanva3D(wx.Panel):
         self.tempPointIndex = None # Временый индекс точки
         self.tempPoint      = None # Временная точка
 
+        # Переменые осей
+        self.Axis_DoOnce = False
+        self.Axis_Length = 3000
+        self.All_Axis = []
+
         # Переменные сетки
         self.Grid_DoOnce = 0
         self.GridLines = None
